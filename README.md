@@ -31,3 +31,13 @@
 3. 替换 `[Proxy]` 段为你的代理节点
 4. 替换 `Flower Cloud` 订阅链接
 5. 在 Surge UI 中配置 MITM 证书
+
+## 从本地 Surge 同步到仓库
+
+如果需要把当前设备上的 Surge 配置更新回仓库，可以运行：
+
+```bash
+scripts/sync-local-surge.sh /path/to/Surge
+```
+
+不传路径时，脚本会尝试查找 macOS 上常见的 Surge / iCloud Drive 配置目录，并同步 `Surge.conf`、`Shared.dconf`、`bilibili.sgmodule` 中存在的文件。同步后请检查 diff，确认没有误提交敏感订阅或节点信息。
