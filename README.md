@@ -6,7 +6,8 @@
 
 | 文件 | 说明 |
 |------|------|
-| `Surge.conf` | 通用配置模板（Mac / iPhone 通用，需替换节点和订阅） |
+| `Surge.conf` | Mac 配置模板 |
+| `iPhone.conf` | iPhone 配置模板 |
 | `Shared.dconf` | 共享规则（代理节点 + 策略组 + 分流规则） |
 | `bilibili.sgmodule` | Bilibili 增强模块 |
 
@@ -26,8 +27,9 @@
 
 ## 使用方法
 
-1. 将 `Surge.conf` 导入 Surge
-2. 将 `Shared.dconf` 放入 iCloud Drive Surge 目录
-3. 替换 `[Proxy]` 段为你的代理节点
-4. 替换 `Flower Cloud` 订阅链接
-5. 在 Surge UI 中配置 MITM 证书
+1. Mac 导入 `Surge.conf`，iPhone 导入 `iPhone.conf`。
+2. 将 `Shared.dconf` 放入 iCloud Drive 的 Surge 目录，确保与设备配置同目录。
+3. 将 `Shared.dconf` 中的 `example.com`、`YOUR_SNELL_PSK` 和 `YOUR_SURGE_SUBSCRIPTION_URL` 替换为自己的值。
+4. 在 Surge UI 中生成并配置设备自己的 MITM 证书。
+
+> 本仓库只保存脱敏模板；请勿提交节点地址、订阅链接、密钥或 MITM 证书。

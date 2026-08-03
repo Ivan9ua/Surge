@@ -1,0 +1,4 @@
+# 本机实际配置与凭据：仅保留仓库内的脱敏模板。
+*.local.conf
+*.private.conf
+secrets/
