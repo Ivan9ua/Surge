@@ -9,7 +9,8 @@
 | `Surge.conf` | Mac 配置模板 |
 | `iPhone.conf` | iPhone 配置模板 |
 | `Shared.dconf` | 共享规则（代理节点 + 策略组 + 分流规则） |
-| `bilibili.sgmodule` | Bilibili 增强模块 |
+| `bilibili.sgmodule` | Bilibili 去广告模块（无伪造会员） |
+| `youtube-enhance-bounded.sgmodule` | YouTube 增强模块（正文上限 2 MiB） |
 
 ## 规则排序逻辑
 
@@ -31,5 +32,10 @@
 2. 将 `Shared.dconf` 放入 iCloud Drive 的 Surge 目录，确保与设备配置同目录。
 3. 将 `Shared.dconf` 中的 `example.com`、`YOUR_SNELL_PSK` 和 `YOUR_SURGE_SUBSCRIPTION_URL` 替换为自己的值。
 4. 在 Surge UI 中生成并配置设备自己的 MITM 证书。
+
+## 在线模块
+
+- [安装 Bilibili 去广告模块](https://raw.githubusercontent.com/Ivan9ua/Surge/main/bilibili.sgmodule)
+- [安装 YouTube Enhance 受控版](https://raw.githubusercontent.com/Ivan9ua/Surge/main/youtube-enhance-bounded.sgmodule)
 
 > 本仓库只保存脱敏模板；请勿提交节点地址、订阅链接、密钥或 MITM 证书。
