@@ -35,7 +35,7 @@ Bilibili 数据流白名单 → 微信 → 广告拦截 → 内网/国内直连 
 
 ### Mac 模块兼容说明
 
-`Surge.conf` 已内置 `[Sukka] Always Real IP Plus` 的独有 Host Lists 条目。为避免与 `Fix Windows No Network Alert`、`HTTP Download Optimization` 等模块重复追加，请不要同时启用 `[Sukka] Always Real IP Plus`。
+Mac 以 `[Sukka] Always Real IP Plus` 为主要 Host Lists 模块。为避免重复追加，请启用该模块，并停用 `Fix Windows No Network Alert` 与 `HTTP Download Optimization`；`Surge.conf` 只保留 Sukka 模块未覆盖的基础项和 `*.windowsupdate.com`。
 
 ## 在线模块
 
