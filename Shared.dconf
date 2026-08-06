@@ -25,32 +25,29 @@ Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, no-alert=0, hidd
 DOMAIN,dataflow.biliapi.com,DIRECT
 DOMAIN,dataflow.bilibili.com,DIRECT
 # 微信：Blackmatrix7 高覆盖规则，必须使用 RULE-SET（含域名、IP、IPv6、User-Agent）
-RULE-SET,https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Surge/WeChat/WeChat.list,DIRECT
+RULE-SET,https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Surge/WeChat/WeChat.list,DIRECT,no-resolve
 # 广告：iPhone 仅域名匹配，降低误杀；Mac 保留增强匹配
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
-# iPhone：仅保留低噪声的请求风暴防护，避免通用 URL 正则误伤应用请求
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
+# iPhone：保留低噪声拒绝规则，但使用普通匹配，确保前置业务白名单优先
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP #!IOS-ONLY
 # Mac：保留完整广告、隐私和恶意域名拦截
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 # 国内
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT
-# CDN
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
-# 流媒体
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/stream.conf,Stream
 # AI
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
+# 流媒体
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/stream.conf,Stream
 # Telegram
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/telegram.conf,Telegram
 # Apple
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_cn.conf,DIRECT
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/apple_cdn.conf,Apple
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_cn.conf,DIRECT
 # Microsoft
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,Microsoft
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
@@ -59,6 +56,9 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 下载
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/download.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT
+# CDN：通用规则置于专用服务与下载之后，避免提前截获
+DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
 # 海外
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy
 
