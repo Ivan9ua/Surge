@@ -37,5 +37,6 @@
 
 - [安装 Bilibili 去广告模块](https://raw.githubusercontent.com/Ivan9ua/Surge/main/bilibili.sgmodule)
 - [安装 YouTube Enhance 受控版](https://raw.githubusercontent.com/Ivan9ua/Surge/main/youtube-enhance-bounded.sgmodule)
+- [安装 Sukka Google 中国 307 重定向模块](https://ruleset.skk.moe/Modules/google_cn_307.sgmodule)
 
 > 本仓库只保存脱敏模板；请勿提交节点地址、订阅链接、密钥或 MITM 证书。
