@@ -1,0 +1,26 @@
+name: Validate public Surge templates
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+
+      - name: Validate templates and Git history
+        run: bash scripts/validate-public-config.sh --history
+
+      - name: Verify unpinned remote scripts
+        run: bash scripts/verify-remote-integrity.sh
