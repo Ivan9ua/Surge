@@ -12,7 +12,6 @@
 | `bilibili.sgmodule` | Bilibili 去广告模块（无伪造会员） |
 | `youtube-enhance-bounded.sgmodule` | YouTube 增强模块（正文上限 2 MiB） |
 | `youtube-enhance.qxrewrite` | Maasea YouTube 增强模块的 Quantumult X 原生转译版 |
-| `google-cn-redirect.qxrewrite` | Sukka Google 中国 307 重定向模块的 Quantumult X 原生转译版 |
 | `bilibili-enhance.qxrewrite` | 不依赖 BiliUniverse 的 Quantumult X 原生 Bilibili 去广告模块 |
 
 ## 规则排序逻辑
@@ -45,7 +44,6 @@ Mac 以 `[Sukka] Always Real IP Plus` 为主要 Host Lists 模块。为避免重
 - [安装 Bilibili 去广告模块](https://raw.githubusercontent.com/Ivan9ua/Surge/main/bilibili.sgmodule)
 - [安装 YouTube Enhance 受控版](https://raw.githubusercontent.com/Ivan9ua/Surge/main/youtube-enhance-bounded.sgmodule)
 - [安装 Quantumult X YouTube Enhance](https://raw.githubusercontent.com/Ivan9ua/Surge/main/youtube-enhance.qxrewrite)
-- [安装 Quantumult X Google 中国 307 重定向](https://raw.githubusercontent.com/Ivan9ua/Surge/main/google-cn-redirect.qxrewrite)
 - [安装 Quantumult X Bilibili Enhance](https://raw.githubusercontent.com/Ivan9ua/Surge/main/bilibili-enhance.qxrewrite)
 
 > 本仓库只保存脱敏模板；请勿提交节点地址、订阅链接、密钥或 MITM 证书。
