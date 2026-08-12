@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule)
+required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -34,7 +34,7 @@ fail() {
 }
 
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared.dconf")
-all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule")
+all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite")
 
 if grep -nE -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' "${all_public_files[@]}" >/dev/null; then
   fail "发现 PEM 私钥材料"
@@ -101,6 +101,15 @@ if grep -q 'script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master
   fail "YouTube 可执行脚本仍跟随 master"
 fi
 
+qx_youtube="$scan_root/youtube-enhance.qxrewrite"
+grep -Fq 'youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config)' "$qx_youtube" || fail "Quantumult X YouTube 响应规则不完整"
+grep -Fq 'googlevideo\.com\/initplayback.+&ack.* url script-request-body' "$qx_youtube" || fail "Quantumult X YouTube 缺少 initplayback 请求规则"
+grep -Fq 'youtubei\.googleapis\.com\/youtubei\/v1\/log_event' "$qx_youtube" || fail "Quantumult X YouTube 缺少 log_event 请求规则"
+grep -Fq 'hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com' "$qx_youtube" || fail "Quantumult X YouTube MITM 主机不完整"
+if grep -q 'raw.githubusercontent.com/Maasea/sgmodule/\(master\|refs/heads/master\)/' "$qx_youtube"; then
+  fail "Quantumult X YouTube 可执行脚本仍跟随 master"
+fi
+
 script_manifest="$repo_root/scripts/remote-assets.sha256"
 while IFS= read -r script_url; do
   case "$script_url" in
@@ -113,7 +122,12 @@ while IFS= read -r script_url; do
       fail "发现未固定或未监控的可执行脚本: $script_url"
       ;;
   esac
-done < <(grep -hEo 'script-path=https://[^,[:space:]]+' "$scan_root"/*.sgmodule | sed 's/^script-path=//' | sort -u)
+done < <(
+  {
+    grep -hEo 'script-path=https://[^,[:space:]]+' "$scan_root"/*.sgmodule | sed 's/^script-path=//'
+    grep -hEo 'url script-(request|response)-body https://[^[:space:]]+' "$scan_root"/*.qxrewrite | awk '{print $NF}'
+  } | sort -u
+)
 
 if command -v surge-cli >/dev/null 2>&1; then
   surge-cli --check "$scan_root/Surge.conf" >/dev/null
