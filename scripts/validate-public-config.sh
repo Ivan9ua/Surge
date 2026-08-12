@@ -111,8 +111,8 @@ if grep -q 'raw.githubusercontent.com/Maasea/sgmodule/\(master\|refs/heads/maste
 fi
 
 qx_google_cn="$scan_root/google-cn-redirect.qxrewrite"
-grep -Fq '^https?://(?:www\.)?(?:g|google)\.cn(?=[:/?]|$) url 307 https://www.google.com' "$qx_google_cn" || fail "Quantumult X Google CN 307 重定向规则不完整"
-grep -Fq 'hostname = %APPEND% g.cn, www.g.cn, google.cn, www.google.cn' "$qx_google_cn" || fail "Quantumult X Google CN MITM 主机不完整"
+grep -Fq '^https?://(www\.)?(g|google)\.cn([:/?]|$) url 307 https://www.google.com' "$qx_google_cn" || fail "Quantumult X Google CN 307 重定向规则不完整"
+grep -Fq 'hostname = g.cn, www.g.cn, google.cn, www.google.cn' "$qx_google_cn" || fail "Quantumult X Google CN MITM 主机不完整"
 [[ $(grep -cE '^[^#[:space:]].* url 307 ' "$qx_google_cn" || true) -eq 1 ]] || fail "Quantumult X Google CN 必须且只能包含一条 307 重定向规则"
 
 qx_bilibili="$scan_root/bilibili-enhance.qxrewrite"

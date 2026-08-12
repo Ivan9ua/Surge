@@ -3,6 +3,6 @@
 #!source=https://ruleset.skk.moe/Modules/google_cn_307.sgmodule
 
 # 仅匹配 g.cn、google.cn 及其 www 子域，避免命中后缀相似的其他域名
-^https?://(?:www\.)?(?:g|google)\.cn(?=[:/?]|$) url 307 https://www.google.com
+^https?://(www\.)?(g|google)\.cn([:/?]|$) url 307 https://www.google.com
 
-hostname = %APPEND% g.cn, www.g.cn, google.cn, www.google.cn
+hostname = g.cn, www.g.cn, google.cn, www.google.cn
