@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite google-cn-redirect.qxrewrite)
+required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite google-cn-redirect.qxrewrite bilibili-enhance.qxrewrite)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -34,7 +34,7 @@ fail() {
 }
 
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared.dconf")
-all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/google-cn-redirect.qxrewrite")
+all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/google-cn-redirect.qxrewrite" "$scan_root/bilibili-enhance.qxrewrite")
 
 if grep -nE -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' "${all_public_files[@]}" >/dev/null; then
   fail "发现 PEM 私钥材料"
@@ -115,10 +115,20 @@ grep -Fq '^https?://(?:www\.)?(?:g|google)\.cn(?=[:/?]|$) url 307 https://www.go
 grep -Fq 'hostname = %APPEND% g.cn, www.g.cn, google.cn, www.google.cn' "$qx_google_cn" || fail "Quantumult X Google CN MITM 主机不完整"
 [[ $(grep -cE '^[^#[:space:]].* url 307 ' "$qx_google_cn" || true) -eq 1 ]] || fail "Quantumult X Google CN 必须且只能包含一条 307 重定向规则"
 
+qx_bilibili="$scan_root/bilibili-enhance.qxrewrite"
+grep -Fq 'app2smile/rules/5380447220ea3df4abee8b77dd118de9165631fa/js/bilibili-json.js' "$qx_bilibili" || fail "Quantumult X Bilibili JSON 脚本未固定到审核提交"
+grep -Fq 'app2smile/rules/5890c30ff94aa619ed06ec4f343c609acb6bd461/js/bilibili-proto.js' "$qx_bilibili" || fail "Quantumult X Bilibili ProtoBuf 脚本未固定到审核提交"
+grep -Fq 'hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, api.bilibili.com, api.live.bilibili.com, line3-h5-mobile-api.biligame.com' "$qx_bilibili" || fail "Quantumult X Bilibili MITM 主机不完整"
+if grep -Eqi 'github\.com/BiliUniverse|BiliUniverse/ADBlock|ADBlock/releases' "$qx_bilibili"; then
+  fail "Quantumult X Bilibili 模块仍依赖 BiliUniverse"
+fi
+
 script_manifest="$repo_root/scripts/remote-assets.sha256"
 while IFS= read -r script_url; do
   case "$script_url" in
     https://raw.githubusercontent.com/Maasea/sgmodule/65075cdb388fc5e3094afd7e7314c67b243f3525/*)
+      ;;
+    https://raw.githubusercontent.com/app2smile/rules/5380447220ea3df4abee8b77dd118de9165631fa/js/bilibili-json.js|https://raw.githubusercontent.com/app2smile/rules/5890c30ff94aa619ed06ec4f343c609acb6bd461/js/bilibili-proto.js)
       ;;
     https://kelee.one/*)
       grep -Fq "  $script_url" "$script_manifest" || fail "Bilibili 远程脚本缺少完整性清单: $script_url"
