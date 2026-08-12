@@ -1,0 +1,13 @@
+#!name=YouTube (Music) Enhance for Quantumult X
+#!desc=Maasea YouTube 增强模块的 Quantumult X 原生转译版；使用脚本默认参数。
+#!source=https://github.com/Maasea/sgmodule/blob/master/YouTube.Enhance.sgmodule
+#!upstream-commit=65075cdb388fc5e3094afd7e7314c67b243f3525
+
+# 响应处理：视频、音乐、瀑布流、搜索、Shorts、设置与事件接口
+^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config)(\?.*)?$ url script-response-body https://raw.githubusercontent.com/Maasea/sgmodule/65075cdb388fc5e3094afd7e7314c67b243f3525/Script/Youtube/youtube.response.js
+
+# 请求处理：播放初始化与事件接口
+^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback.+&ack.* url script-request-body https://raw.githubusercontent.com/Maasea/sgmodule/65075cdb388fc5e3094afd7e7314c67b243f3525/Script/Youtube/youtube.request.js
+^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/log_event(\?.*)?$ url script-request-body https://raw.githubusercontent.com/Maasea/sgmodule/65075cdb388fc5e3094afd7e7314c67b243f3525/Script/Youtube/youtube.request.js
+
+hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com
