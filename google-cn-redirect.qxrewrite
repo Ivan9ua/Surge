@@ -1,0 +1,8 @@
+#!name=Google CN Redirect for Quantumult X
+#!desc=将 g.cn 与 google.cn 的请求重定向至 www.google.com。
+#!source=https://ruleset.skk.moe/Modules/google_cn_307.sgmodule
+
+# 仅匹配 g.cn、google.cn 及其 www 子域，避免命中后缀相似的其他域名
+^https?://(?:www\.)?(?:g|google)\.cn(?=[:/?]|$) url 307 https://www.google.com
+
+hostname = %APPEND% g.cn, www.g.cn, google.cn, www.google.cn
