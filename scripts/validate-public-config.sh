@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite)
+required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite google-cn-redirect.qxrewrite)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -34,7 +34,7 @@ fail() {
 }
 
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared.dconf")
-all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite")
+all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/google-cn-redirect.qxrewrite")
 
 if grep -nE -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' "${all_public_files[@]}" >/dev/null; then
   fail "发现 PEM 私钥材料"
@@ -109,6 +109,11 @@ grep -Fq 'hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com' "$qx_y
 if grep -q 'raw.githubusercontent.com/Maasea/sgmodule/\(master\|refs/heads/master\)/' "$qx_youtube"; then
   fail "Quantumult X YouTube 可执行脚本仍跟随 master"
 fi
+
+qx_google_cn="$scan_root/google-cn-redirect.qxrewrite"
+grep -Fq '^https?://(?:www\.)?(?:g|google)\.cn(?=[:/?]|$) url 307 https://www.google.com' "$qx_google_cn" || fail "Quantumult X Google CN 307 重定向规则不完整"
+grep -Fq 'hostname = %APPEND% g.cn, www.g.cn, google.cn, www.google.cn' "$qx_google_cn" || fail "Quantumult X Google CN MITM 主机不完整"
+[[ $(grep -cE '^[^#[:space:]].* url 307 ' "$qx_google_cn" || true) -eq 1 ]] || fail "Quantumult X Google CN 必须且只能包含一条 307 重定向规则"
 
 script_manifest="$repo_root/scripts/remote-assets.sha256"
 while IFS= read -r script_url; do
