@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite bilibili-enhance.qxrewrite)
+required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite bilibili-enhance.qxrewrite wechat-direct.list wechat-ip.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -34,7 +34,7 @@ fail() {
 }
 
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared.dconf")
-all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/bilibili-enhance.qxrewrite")
+all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/bilibili-enhance.qxrewrite" "$scan_root/wechat-direct.list" "$scan_root/wechat-ip.list")
 
 if grep -nE -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' "${all_public_files[@]}" >/dev/null; then
   fail "发现 PEM 私钥材料"
@@ -46,6 +46,14 @@ fi
 
 if grep -nEi '^[[:space:]]*(ca-p12|ca-passphrase)[[:space:]]*=' "${config_files[@]}" >/dev/null; then
   fail "发现 MITM 私钥或口令字段"
+fi
+
+if grep -nEi '^[[:space:]]*(private-key|http-api|external-controller-access|wifi-access-password)[[:space:]]*=' "${config_files[@]}" >/dev/null; then
+  fail "发现私钥或远程访问凭据字段"
+fi
+
+if grep -nEi '^[[:space:]]*secret[[:space:]]*=' "${config_files[@]}" | grep -v 'secret = 00000000000000000000000000000000' >/dev/null; then
+  fail "发现非占位 MTProto secret"
 fi
 
 if grep -nE 'psk=' "${config_files[@]}" | grep -v 'psk=YOUR_SNELL_PSK' >/dev/null; then
@@ -74,8 +82,35 @@ fi
 
 grep -q 'psk=YOUR_SNELL_PSK' "$scan_root/Shared.dconf" || fail "缺少 Snell PSK 占位符"
 grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared.dconf" || fail "缺少订阅地址占位符"
+grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 MTProto secret 占位符"
+grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/iPhone.conf" || fail "iPhone 模板缺少 MTProto secret 占位符"
 grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared.dconf" || fail "共享规则缺少预期 FINAL 兜底"
-grep -q 'blackmatrix7/ios_rule_script@ccc2d6b711007324bacb55cdfbbf7e36ad48145a/' "$scan_root/Shared.dconf" || fail "微信规则未固定到审核过的上游提交"
+grep -Eq 'Ivan9ua/Surge@[0-9a-f]{40}/wechat-direct\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信域名规则未固定到审核提交"
+grep -Eq 'Ivan9ua/Surge@[0-9a-f]{40}/wechat-ip\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信 IP 规则未固定到审核提交"
+grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared.dconf" || fail "缺少 MTProto 入站分流"
+if grep -q 'telegram_asn\.conf' "$scan_root/Shared.dconf"; then
+  fail "仍在使用高风险 Telegram ASN 规则"
+fi
+grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT$' "$scan_root/Shared.dconf" || fail "中国 IPv6 规则未同时覆盖 Mac 与 iPhone"
+grep -q '^ipv6 = true$' "$scan_root/iPhone.conf" || fail "iPhone 模板未启用 IPv6"
+grep -q '^ipv6-vif = auto$' "$scan_root/iPhone.conf" || fail "iPhone 模板未使用自动 IPv6 VIF"
+
+line_of() {
+  grep -nF "$2" "$1" | head -1 | cut -d: -f1 || true
+}
+
+ad_domain_line="$(line_of "$scan_root/Shared.dconf" 'List/domainset/reject.conf')"
+wechat_domain_line="$(line_of "$scan_root/Shared.dconf" 'wechat-direct.list')"
+ad_ip_line="$(line_of "$scan_root/Shared.dconf" 'List/ip/reject.conf')"
+wechat_ip_line="$(line_of "$scan_root/Shared.dconf" 'wechat-ip.list')"
+[[ -n "$ad_domain_line" && -n "$wechat_domain_line" && "$ad_domain_line" -lt "$wechat_domain_line" ]] || fail "微信域名规则破坏广告优先级"
+[[ -n "$ad_ip_line" && -n "$wechat_ip_line" && "$ad_ip_line" -lt "$wechat_ip_line" ]] || fail "微信 IP 规则破坏广告优先级"
+
+grep -q '^DOMAIN,slife\.xy-asia\.com$' "$scan_root/wechat-direct.list" || fail "微信域名补充规则缺少精确 slife 域名"
+if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat-direct.list"; then
+  fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
+fi
+grep -q '^IP-ASN,132203,no-resolve$' "$scan_root/wechat-ip.list" || fail "微信 IP 规则缺少腾讯 ASN 132203"
 
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared\.dconf$' "$scan_root/$profile_name" || true)
@@ -163,6 +198,12 @@ if [[ "$scan_history" == true ]]; then
     fi
     if git -C "$repo_root" grep -I -E 'policy-path=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' | grep -q .; then
       fail "Git 历史提交 ${revision:0:12} 含非占位订阅地址"
+    fi
+    if git -C "$repo_root" grep -I -E '^[[:space:]]*secret[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'secret = 00000000000000000000000000000000' | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含非占位 MTProto secret"
+    fi
+    if git -C "$repo_root" grep -I -E '^[[:space:]]*(private-key|http-api|external-controller-access|wifi-access-password)[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含私钥或远程访问凭据"
     fi
   done < <(git -C "$repo_root" rev-list --all)
 fi
