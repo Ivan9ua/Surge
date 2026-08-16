@@ -19,7 +19,17 @@ cleanup() {
 }
 trap cleanup EXIT
 
-tracked_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule)
+tracked_files=(
+  Surge.conf
+  iPhone.conf
+  Shared.dconf
+  bilibili.sgmodule
+  youtube-enhance-bounded.sgmodule
+  youtube-enhance.qxrewrite
+  bilibili-enhance.qxrewrite
+  wechat-direct.list
+  wechat-ip.list
+)
 for tracked_file in "${tracked_files[@]}"; do
   cp "$repo_root/$tracked_file" "$staging_dir/$tracked_file"
 done
@@ -27,25 +37,34 @@ done
 sanitize_config() {
   input_file="$1"
   output_file="$2"
-  sed -E \
-    -e '/^[[:space:]]*(ca-p12|ca-passphrase)[[:space:]]*=/d' \
-    -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
-    -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
-    -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
-    "$input_file" > "$output_file"
+  template_name="$3"
+  {
+    printf '# %s\n' "$template_name"
+    printf '# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书。\n\n'
+    sed -E \
+      -e '/^[[:space:]]*(ca-p12|ca-passphrase)[[:space:]]*=/d' \
+      -e '/^[[:space:]]*(http-api|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
+      -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
+      -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
+      -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
+      -e 's/^[[:space:]]*secret[[:space:]]*=.*/secret = 00000000000000000000000000000000/' \
+      "$input_file"
+  } > "$output_file"
 }
 
 if [[ -f "$source_dir/Mac.conf" ]]; then
-  sanitize_config "$source_dir/Mac.conf" "$staging_dir/Surge.conf"
+  sanitize_config "$source_dir/Mac.conf" "$staging_dir/Surge.conf" 'Surge Mac 配置模板'
 elif [[ -f "$source_dir/Surge.conf" ]]; then
-  sanitize_config "$source_dir/Surge.conf" "$staging_dir/Surge.conf"
+  sanitize_config "$source_dir/Surge.conf" "$staging_dir/Surge.conf" 'Surge Mac 配置模板'
 fi
 
-for config_name in iPhone.conf Shared.dconf; do
-  if [[ -f "$source_dir/$config_name" ]]; then
-    sanitize_config "$source_dir/$config_name" "$staging_dir/$config_name"
-  fi
-done
+if [[ -f "$source_dir/iPhone.conf" ]]; then
+  sanitize_config "$source_dir/iPhone.conf" "$staging_dir/iPhone.conf" 'Surge iPhone 配置模板'
+fi
+
+if [[ -f "$source_dir/Shared.dconf" ]]; then
+  sanitize_config "$source_dir/Shared.dconf" "$staging_dir/Shared.dconf" 'Surge Mac / iPhone 共享配置模板'
+fi
 
 for module_name in bilibili.sgmodule youtube-enhance-bounded.sgmodule; do
   if [[ -f "$source_dir/$module_name" ]]; then
