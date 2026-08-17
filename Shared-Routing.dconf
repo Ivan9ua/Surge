@@ -61,9 +61,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
 # 国内与指定直连域名
 # 微信普通直连：广告规则之后，避免放宽广告拦截
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-direct.list,DIRECT
-# skip-proxy 补充直连：domestic.conf 未覆盖的银行域名
-DOMAIN-SUFFIX,abcchina.com,DIRECT
-DOMAIN-SUFFIX,abcchina.com.cn,DIRECT
+# 国内域名规则
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT
 # 其他海外域名：Proxy
