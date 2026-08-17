@@ -23,7 +23,7 @@ US = smart, US-Snell, include-other-group=Flower Cloud, no-alert=1, hidden=1, in
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, no-alert=0, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
-# 微信 DNS 例外：远程规则集优先于广告规则，避免误杀
+# 微信 DNS 例外：置于广告规则前，避免误杀
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-exception.list,DIRECT
 # iPhone 广告规则：预匹配并静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
@@ -40,7 +40,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
 # 流媒体
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/stream.conf,Stream
-# Telegram
+# Telegram：MTProto 与域名分流
 PROTOCOL,MTProto,Telegram
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/telegram.conf,Telegram
 # Apple：中国区与 CDN 直连，其余走 Apple
@@ -58,10 +58,10 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT
 # 通用 CDN：Proxy
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
-# 国内与指定直连域名
+# 国内及补充直连域名
 # 微信普通直连：广告规则之后，避免放宽广告拦截
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-direct.list,DIRECT
-# 国内域名规则
+# 国内域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT
 # 其他海外域名：Proxy
@@ -70,9 +70,9 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy
 # IP 规则
 # 广告 IP：静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/reject.conf,REJECT-DROP
-# 微信直连 IP：远程规则集仅保留当前观测网段
+# 微信 IP：仅放行当前观测网段
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-ip.list,DIRECT
-# AI IP
+# AI IP：Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/ai.conf,Intelligence
 # Telegram 官方 IP
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/telegram.conf,Telegram

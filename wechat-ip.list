@@ -3,6 +3,6 @@
 # UPDATED: 2026-08-18
 # IP-CIDR: 1
 # TOTAL: 1
-# NOTE: Current observed WeChat route; not a complete WeChat IP whitelist.
+# 说明：仅放行当前观测网段，不代表完整微信 IP 白名单。
 
 IP-CIDR,43.160.156.0/24,no-resolve
