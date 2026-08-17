@@ -58,7 +58,10 @@ DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
 # 国内与指定直连域名
 # 微信补充直连：domestic.conf 未覆盖的域名
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@a3c6179f8e6d009f688d120c8161e09f2bf93120/wechat-direct.list,DIRECT
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-direct.list,DIRECT
+# skip-proxy 补充直连：domestic.conf 未覆盖的银行域名
+DOMAIN-SUFFIX,abcchina.com,DIRECT
+DOMAIN-SUFFIX,abcchina.com.cn,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT
 # 其他海外域名：Proxy
@@ -68,7 +71,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy
 # 广告 IP：静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/reject.conf,REJECT-DROP
 # 微信直连 IP：腾讯 ASN 132203
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@9266347d814f4bb17195068ced91acd269088fef/wechat-ip.list,DIRECT
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-ip.list,DIRECT
 # AI IP
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/ai.conf,Intelligence
 # Telegram 官方 IP

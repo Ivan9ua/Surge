@@ -85,8 +85,8 @@ grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared.dconf" || f
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 MTProto secret 占位符"
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/iPhone.conf" || fail "iPhone 模板缺少 MTProto secret 占位符"
 grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared.dconf" || fail "共享规则缺少预期 FINAL 兜底"
-grep -Eq 'Ivan9ua/Surge@[0-9a-f]{40}/wechat-direct\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信域名规则未固定到审核提交"
-grep -Eq 'Ivan9ua/Surge@[0-9a-f]{40}/wechat-ip\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信 IP 规则未固定到审核提交"
+grep -Eq 'Ivan9ua/Surge@main/wechat-direct\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信域名规则未指向 Ivan9ua/Surge@main"
+grep -Eq 'Ivan9ua/Surge@main/wechat-ip\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信 IP 规则未指向 Ivan9ua/Surge@main"
 grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared.dconf" || fail "缺少 MTProto 入站分流"
 if grep -q 'telegram_asn\.conf' "$scan_root/Shared.dconf"; then
   fail "仍在使用高风险 Telegram ASN 规则"
