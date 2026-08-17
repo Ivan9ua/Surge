@@ -1,4 +1,4 @@
-# Surge 配置
+TerminalTerminal# Surge 配置
 
 个人 Surge 脱敏配置模板，基于 [SukkaW/Surge](https://github.com/SukkaW/Surge) 规则集，并维护微信域名与 IP 补充规则。
 
