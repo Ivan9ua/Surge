@@ -27,6 +27,7 @@ tracked_files=(
   bilibili.sgmodule
   youtube-enhance-bounded.sgmodule
   wechat-direct.list
+  wechat-exception.list
   wechat-ip.list
 )
 for tracked_file in "${tracked_files[@]}"; do
