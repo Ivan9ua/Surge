@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite bilibili-enhance.qxrewrite wechat-direct.list wechat-ip.list)
+required_files=(Surge.conf iPhone.conf Shared.dconf Shared-General.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite bilibili-enhance.qxrewrite wechat-direct.list wechat-ip.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -33,7 +33,7 @@ fail() {
   exit 1
 }
 
-config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared.dconf")
+config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared.dconf" "$scan_root/Shared-General.dconf")
 all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/bilibili-enhance.qxrewrite" "$scan_root/wechat-direct.list" "$scan_root/wechat-ip.list")
 
 if grep -nE -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' "${all_public_files[@]}" >/dev/null; then
@@ -92,8 +92,12 @@ if grep -q 'telegram_asn\.conf' "$scan_root/Shared.dconf"; then
   fail "仍在使用高风险 Telegram ASN 规则"
 fi
 grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT$' "$scan_root/Shared.dconf" || fail "中国 IPv6 规则未同时覆盖 Mac 与 iPhone"
-grep -q '^ipv6 = true$' "$scan_root/iPhone.conf" || fail "iPhone 模板未启用 IPv6"
-grep -q '^ipv6-vif = auto$' "$scan_root/iPhone.conf" || fail "iPhone 模板未使用自动 IPv6 VIF"
+grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf" || fail "共享 General 未启用 IPv6"
+grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "共享 General 未使用自动 IPv6 VIF"
+grep -q '^icmp-forwarding = true #!MACOS-ONLY$' "$scan_root/Shared-General.dconf" || fail "共享 General 缺少仅 macOS 的 ICMP 转发"
+if grep -q '^icmp-forwarding' "$scan_root/Surge.conf" "$scan_root/iPhone.conf"; then
+  fail "主配置不应直接包含 icmp-forwarding，应统一放在 Shared-General.dconf"
+fi
 
 line_of() {
   grep -nF "$2" "$1" | head -1 | cut -d: -f1 || true
@@ -115,6 +119,8 @@ grep -q '^IP-ASN,132203,no-resolve$' "$scan_root/wechat-ip.list" || fail "微信
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared\.dconf$' "$scan_root/$profile_name" || true)
   [[ "$include_count" -eq 3 ]] || fail "$profile_name 必须在 Proxy、Proxy Group、Rule 各包含一次 Shared.dconf"
+  general_include_count=$(grep -c '^#!include Shared-General\.dconf$' "$scan_root/$profile_name" || true)
+  [[ "$general_include_count" -eq 1 ]] || fail "$profile_name 必须在 General 包含一次 Shared-General.dconf"
 done
 
 for module_name in bilibili.sgmodule youtube-enhance-bounded.sgmodule; do

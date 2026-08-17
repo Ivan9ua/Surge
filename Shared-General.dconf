@@ -1,0 +1,35 @@
+# Surge Mac / iPhone 共享 General 配置模板
+# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书。
+
+[General]
+# 日志级别
+loglevel = notify
+# 显示错误页面
+show-error-page-for-reject = true
+# QUIC
+block-quic = all-proxy
+# ICMP 转发（仅 macOS）
+icmp-forwarding = true #!MACOS-ONLY
+# IPv6
+ipv6 = true
+ipv6-vif = auto
+# 简单主机名直连
+exclude-simple-hostnames = true
+# 网络与策略测试
+test-timeout = 5
+internet-test-url = http://connectivitycheck.platform.hicloud.com/generate_204
+proxy-test-url = http://cp.cloudflare.com/generate_204
+proxy-test-udp = www.apple.com@64.6.64.6
+# DNS 与本地主机解析
+dns-server = system, 223.5.5.5, 119.29.29.29
+encrypted-dns-server = quic://223.5.5.5, https://1.12.12.12/dns-query
+read-etc-hosts = true
+# VIF：对列出主机返回真实 IP
+always-real-ip = *.msftncsi.com, *.msftconnecttest.com, *.srv.nintendo.net, *.stun.playstation.net, xbox.*.microsoft.com, *.xboxlive.com, *.battlenet.com.cn, *.battlenet.com, *.blzstatic.cn, *.battle.net, *.turn.twilio.com, *.stun.twilio.com, stun.syncthing.net, stun.*, 127.*.*.*.sslip.io, 127-*-*-*.sslip.io, *.127.*.*.*.sslip.io, *-127-*-*-*.sslip.io, 127.*.*.*.nip.io, 127-*-*-*.nip.io, *.127.*.*.*.nip.io, *-127-*-*-*.nip.io
+# 系统代理绕过列表
+skip-proxy = 127.0.0.0/8, 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, 162.14.0.0/16, 211.99.96.0/19, 162.159.192.0/24, 162.159.193.0/24, 162.159.195.0/24, fc00::/7, fe80::/10, localhost, *.local, captive.apple.com, passenger.t3go.cn, *.ccb.com, wxh.wo.cn, *.abcchina.com, *.abcchina.com.cn
+# 不支持 UDP 的策略：拒绝
+udp-policy-not-supported-behaviour = reject
+# 停止自动更新 GeoIP 数据库
+disable-geoip-db-auto-update = true
+
