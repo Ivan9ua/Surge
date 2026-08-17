@@ -8,7 +8,8 @@
 |------|------|
 | `Surge.conf` | Mac 配置模板 |
 | `iPhone.conf` | iPhone 配置模板 |
-| `Shared.dconf` | 共享规则（代理节点 + 策略组 + 分流规则） |
+| `Shared-Routing.dconf` | 共享路由（代理节点 + 策略组 + 分流规则） |
+| `Shared-General.dconf` | 共享 General（Mac / iPhone 公共设置） |
 | `wechat-direct.list` | 微信补充域名直连规则 |
 | `wechat-ip.list` | 微信腾讯海外 ASN 直连规则 |
 | `bilibili.sgmodule` | Bilibili 去广告模块（无伪造会员） |
@@ -33,8 +34,8 @@
 ## 使用方法
 
 1. Mac 导入 `Surge.conf`，iPhone 导入 `iPhone.conf`。
-2. 将 `Shared.dconf` 放入 iCloud Drive 的 Surge 目录，确保与设备配置同目录。
-3. 将 `Shared.dconf` 中的 `example.com`、`YOUR_SNELL_PSK` 和 `YOUR_SURGE_SUBSCRIPTION_URL` 替换为自己的值。
+2. 将 `Shared-Routing.dconf` 与 `Shared-General.dconf` 放入 iCloud Drive 的 Surge 目录，确保与设备配置同目录。
+3. 将 `Shared-Routing.dconf` 中的 `example.com`、`YOUR_SNELL_PSK` 和 `YOUR_SURGE_SUBSCRIPTION_URL` 替换为自己的值。
 4. 将 Mac/iPhone 模板中的全零 MTProto `secret` 替换为设备自己的 32 位十六进制密钥。
 5. 在 Surge UI 中生成并配置设备自己的 MITM 证书。
 

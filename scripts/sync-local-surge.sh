@@ -22,7 +22,7 @@ trap cleanup EXIT
 tracked_files=(
   Surge.conf
   iPhone.conf
-  Shared.dconf
+  Shared-Routing.dconf
   Shared-General.dconf
   bilibili.sgmodule
   youtube-enhance-bounded.sgmodule
@@ -65,8 +65,8 @@ if [[ -f "$source_dir/iPhone.conf" ]]; then
   sanitize_config "$source_dir/iPhone.conf" "$staging_dir/iPhone.conf" 'Surge iPhone 配置模板'
 fi
 
-if [[ -f "$source_dir/Shared.dconf" ]]; then
-  sanitize_config "$source_dir/Shared.dconf" "$staging_dir/Shared.dconf" 'Surge Mac / iPhone 共享配置模板'
+if [[ -f "$source_dir/Shared-Routing.dconf" ]]; then
+  sanitize_config "$source_dir/Shared-Routing.dconf" "$staging_dir/Shared-Routing.dconf" 'Surge Mac / iPhone 共享配置模板'
 fi
 
 if [[ -f "$source_dir/Shared-General.dconf" ]]; then
