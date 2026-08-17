@@ -30,6 +30,8 @@ always-real-ip = *.msftncsi.com, *.msftconnecttest.com, *.srv.nintendo.net, *.st
 skip-proxy = 127.0.0.0/8, 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, 162.14.0.0/16, 211.99.96.0/19, 162.159.192.0/24, 162.159.193.0/24, 162.159.195.0/24, fc00::/7, fe80::/10, localhost, *.local, captive.apple.com, passenger.t3go.cn, *.ccb.com, wxh.wo.cn, *.abcchina.com, *.abcchina.com.cn
 # 不支持 UDP 的策略：拒绝
 udp-policy-not-supported-behaviour = reject
+# 游戏模式
+udp-priority = false
 # 停止自动更新 GeoIP 数据库
 disable-geoip-db-auto-update = true
 

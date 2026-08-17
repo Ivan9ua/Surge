@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared.dconf Shared-General.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite bilibili-enhance.qxrewrite wechat-direct.list wechat-ip.list)
+required_files=(Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite bilibili-enhance.qxrewrite wechat-direct.list wechat-ip.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -33,7 +33,7 @@ fail() {
   exit 1
 }
 
-config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared.dconf" "$scan_root/Shared-General.dconf")
+config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared-Routing.dconf" "$scan_root/Shared-General.dconf")
 all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/bilibili-enhance.qxrewrite" "$scan_root/wechat-direct.list" "$scan_root/wechat-ip.list")
 
 if grep -nE -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' "${all_public_files[@]}" >/dev/null; then
@@ -80,18 +80,18 @@ if ! awk '
   fail "[Proxy] 中存在未经脱敏或未纳入校验器的代理定义"
 fi
 
-grep -q 'psk=YOUR_SNELL_PSK' "$scan_root/Shared.dconf" || fail "缺少 Snell PSK 占位符"
-grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared.dconf" || fail "缺少订阅地址占位符"
+grep -q 'psk=YOUR_SNELL_PSK' "$scan_root/Shared-Routing.dconf" || fail "缺少 Snell PSK 占位符"
+grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared-Routing.dconf" || fail "缺少订阅地址占位符"
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 MTProto secret 占位符"
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/iPhone.conf" || fail "iPhone 模板缺少 MTProto secret 占位符"
-grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared.dconf" || fail "共享规则缺少预期 FINAL 兜底"
-grep -Eq 'Ivan9ua/Surge@main/wechat-direct\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信域名规则未指向 Ivan9ua/Surge@main"
-grep -Eq 'Ivan9ua/Surge@main/wechat-ip\.list,DIRECT$' "$scan_root/Shared.dconf" || fail "微信 IP 规则未指向 Ivan9ua/Surge@main"
-grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared.dconf" || fail "缺少 MTProto 入站分流"
-if grep -q 'telegram_asn\.conf' "$scan_root/Shared.dconf"; then
+grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared-Routing.dconf" || fail "共享规则缺少预期 FINAL 兜底"
+grep -Eq 'Ivan9ua/Surge@main/wechat-direct\.list,DIRECT$' "$scan_root/Shared-Routing.dconf" || fail "微信域名规则未指向 Ivan9ua/Surge@main"
+grep -Eq 'Ivan9ua/Surge@main/wechat-ip\.list,DIRECT$' "$scan_root/Shared-Routing.dconf" || fail "微信 IP 规则未指向 Ivan9ua/Surge@main"
+grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared-Routing.dconf" || fail "缺少 MTProto 入站分流"
+if grep -q 'telegram_asn\.conf' "$scan_root/Shared-Routing.dconf"; then
   fail "仍在使用高风险 Telegram ASN 规则"
 fi
-grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT$' "$scan_root/Shared.dconf" || fail "中国 IPv6 规则未同时覆盖 Mac 与 iPhone"
+grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未同时覆盖 Mac 与 iPhone"
 grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf" || fail "共享 General 未启用 IPv6"
 grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "共享 General 未使用自动 IPv6 VIF"
 grep -q '^icmp-forwarding = true #!MACOS-ONLY$' "$scan_root/Shared-General.dconf" || fail "共享 General 缺少仅 macOS 的 ICMP 转发"
@@ -103,10 +103,10 @@ line_of() {
   grep -nF "$2" "$1" | head -1 | cut -d: -f1 || true
 }
 
-ad_domain_line="$(line_of "$scan_root/Shared.dconf" 'List/domainset/reject.conf')"
-wechat_domain_line="$(line_of "$scan_root/Shared.dconf" 'wechat-direct.list')"
-ad_ip_line="$(line_of "$scan_root/Shared.dconf" 'List/ip/reject.conf')"
-wechat_ip_line="$(line_of "$scan_root/Shared.dconf" 'wechat-ip.list')"
+ad_domain_line="$(line_of "$scan_root/Shared-Routing.dconf" 'List/domainset/reject.conf')"
+wechat_domain_line="$(line_of "$scan_root/Shared-Routing.dconf" 'wechat-direct.list')"
+ad_ip_line="$(line_of "$scan_root/Shared-Routing.dconf" 'List/ip/reject.conf')"
+wechat_ip_line="$(line_of "$scan_root/Shared-Routing.dconf" 'wechat-ip.list')"
 [[ -n "$ad_domain_line" && -n "$wechat_domain_line" && "$ad_domain_line" -lt "$wechat_domain_line" ]] || fail "微信域名规则破坏广告优先级"
 [[ -n "$ad_ip_line" && -n "$wechat_ip_line" && "$ad_ip_line" -lt "$wechat_ip_line" ]] || fail "微信 IP 规则破坏广告优先级"
 
@@ -117,8 +117,8 @@ fi
 grep -q '^IP-ASN,132203,no-resolve$' "$scan_root/wechat-ip.list" || fail "微信 IP 规则缺少腾讯 ASN 132203"
 
 for profile_name in Surge.conf iPhone.conf; do
-  include_count=$(grep -c '^#!include Shared\.dconf$' "$scan_root/$profile_name" || true)
-  [[ "$include_count" -eq 3 ]] || fail "$profile_name 必须在 Proxy、Proxy Group、Rule 各包含一次 Shared.dconf"
+  include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)
+  [[ "$include_count" -eq 3 ]] || fail "$profile_name 必须在 Proxy、Proxy Group、Rule 各包含一次 Shared-Routing.dconf"
   general_include_count=$(grep -c '^#!include Shared-General\.dconf$' "$scan_root/$profile_name" || true)
   [[ "$general_include_count" -eq 1 ]] || fail "$profile_name 必须在 General 包含一次 Shared-General.dconf"
 done
