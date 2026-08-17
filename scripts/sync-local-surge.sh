@@ -26,8 +26,6 @@ tracked_files=(
   Shared-General.dconf
   bilibili.sgmodule
   youtube-enhance-bounded.sgmodule
-  youtube-enhance.qxrewrite
-  bilibili-enhance.qxrewrite
   wechat-direct.list
   wechat-ip.list
 )
