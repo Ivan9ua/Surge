@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule youtube-enhance.qxrewrite bilibili-enhance.qxrewrite wechat-direct.list wechat-ip.list)
+required_files=(Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule wechat-direct.list wechat-ip.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -34,7 +34,12 @@ fail() {
 }
 
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared-Routing.dconf" "$scan_root/Shared-General.dconf")
-all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/youtube-enhance.qxrewrite" "$scan_root/bilibili-enhance.qxrewrite" "$scan_root/wechat-direct.list" "$scan_root/wechat-ip.list")
+all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/wechat-direct.list" "$scan_root/wechat-ip.list")
+
+forbidden_extension='.'q'xrewrite'
+if find "$scan_root" -maxdepth 1 -type f -name "*$forbidden_extension" -print -quit | grep -q .; then
+  fail "发现不应发布的 $forbidden_extension 文件"
+fi
 
 if grep -nE -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----' "${all_public_files[@]}" >/dev/null; then
   fail "发现 PEM 私钥材料"
@@ -142,23 +147,6 @@ if grep -q 'script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master
   fail "YouTube 可执行脚本仍跟随 master"
 fi
 
-qx_youtube="$scan_root/youtube-enhance.qxrewrite"
-grep -Fq 'youtubei\.googleapis\.com\/youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config)' "$qx_youtube" || fail "Quantumult X YouTube 响应规则不完整"
-grep -Fq 'googlevideo\.com\/initplayback.+&ack.* url script-request-body' "$qx_youtube" || fail "Quantumult X YouTube 缺少 initplayback 请求规则"
-grep -Fq 'youtubei\.googleapis\.com\/youtubei\/v1\/log_event' "$qx_youtube" || fail "Quantumult X YouTube 缺少 log_event 请求规则"
-grep -Fq 'hostname = %APPEND% *.googlevideo.com, youtubei.googleapis.com' "$qx_youtube" || fail "Quantumult X YouTube MITM 主机不完整"
-if grep -q 'raw.githubusercontent.com/Maasea/sgmodule/\(master\|refs/heads/master\)/' "$qx_youtube"; then
-  fail "Quantumult X YouTube 可执行脚本仍跟随 master"
-fi
-
-qx_bilibili="$scan_root/bilibili-enhance.qxrewrite"
-grep -Fq 'app2smile/rules/5380447220ea3df4abee8b77dd118de9165631fa/js/bilibili-json.js' "$qx_bilibili" || fail "Quantumult X Bilibili JSON 脚本未固定到审核提交"
-grep -Fq 'app2smile/rules/5890c30ff94aa619ed06ec4f343c609acb6bd461/js/bilibili-proto.js' "$qx_bilibili" || fail "Quantumult X Bilibili ProtoBuf 脚本未固定到审核提交"
-grep -Fq 'hostname = %APPEND% grpc.biliapi.net, app.bilibili.com, api.bilibili.com, api.live.bilibili.com, line3-h5-mobile-api.biligame.com' "$qx_bilibili" || fail "Quantumult X Bilibili MITM 主机不完整"
-if grep -Eqi 'github\.com/BiliUniverse|BiliUniverse/ADBlock|ADBlock/releases' "$qx_bilibili"; then
-  fail "Quantumult X Bilibili 模块仍依赖 BiliUniverse"
-fi
-
 script_manifest="$repo_root/scripts/remote-assets.sha256"
 while IFS= read -r script_url; do
   case "$script_url" in
@@ -176,7 +164,6 @@ while IFS= read -r script_url; do
 done < <(
   {
     grep -hEo 'script-path=https://[^,[:space:]]+' "$scan_root"/*.sgmodule | sed 's/^script-path=//'
-    grep -hEo 'url script-(request|response)-body https://[^[:space:]]+' "$scan_root"/*.qxrewrite | awk '{print $NF}'
   } | sort -u
 )
 
