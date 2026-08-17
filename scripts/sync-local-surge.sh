@@ -23,6 +23,7 @@ tracked_files=(
   Surge.conf
   iPhone.conf
   Shared.dconf
+  Shared-General.dconf
   bilibili.sgmodule
   youtube-enhance-bounded.sgmodule
   youtube-enhance.qxrewrite
@@ -31,7 +32,9 @@ tracked_files=(
   wechat-ip.list
 )
 for tracked_file in "${tracked_files[@]}"; do
-  cp "$repo_root/$tracked_file" "$staging_dir/$tracked_file"
+  if [[ -f "$repo_root/$tracked_file" ]]; then
+    cp "$repo_root/$tracked_file" "$staging_dir/$tracked_file"
+  fi
 done
 
 sanitize_config() {
@@ -64,6 +67,10 @@ fi
 
 if [[ -f "$source_dir/Shared.dconf" ]]; then
   sanitize_config "$source_dir/Shared.dconf" "$staging_dir/Shared.dconf" 'Surge Mac / iPhone 共享配置模板'
+fi
+
+if [[ -f "$source_dir/Shared-General.dconf" ]]; then
+  sanitize_config "$source_dir/Shared-General.dconf" "$staging_dir/Shared-General.dconf" 'Surge Mac / iPhone 共享 General 配置模板'
 fi
 
 for module_name in bilibili.sgmodule youtube-enhance-bounded.sgmodule; do
