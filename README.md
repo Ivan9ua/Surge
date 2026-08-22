@@ -39,7 +39,7 @@
 
 ### 微信规则收录范围
 
-`wechat-direct.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，补入核心登录、媒体/上传、HTTP DNS、小程序、微信支付和定位相关域名；共享规则中已经将它放在广告规则之后、通用 CDN 之前。
+`wechat-direct.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，补入核心登录、媒体/上传、小程序、微信支付和定位相关域名；共享规则中已经将它放在广告规则之后、通用 CDN 之前。`dns.wechat.com` 作为必要 DNS 例外单独置于广告规则之前；会被当前广告规则优先遮蔽的 `wup.imtt.qq.com`、`dns.weixin.qq.com` 和 `dns.weixin.qq.com.cn` 不重复收录。
 
 `wechat-ip.list` 收录现有观测网段、Blackmatrix7/NobyDa 交叉出现的 IPv4/IPv6 网段，以及 ACL4SSR 的精确 IPv4 端点，全部使用 `no-resolve`。当前不使用 `IP-ASN,132203`，也不使用 233 条数字 IP 的 `DOMAIN-KEYWORD`：这两类规则会把非微信腾讯流量一并直连，且不利于广告规则优先级。
 

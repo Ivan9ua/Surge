@@ -126,7 +126,6 @@ required_wechat_direct_rules=(
   'DOMAIN,dldir1.qq.com'
   'DOMAIN,soup.v.qq.com'
   'DOMAIN,weixin110.qq.com'
-  'DOMAIN,wup.imtt.qq.com'
   'DOMAIN-SUFFIX,weixin.com'
   'DOMAIN-SUFFIX,weixinbridge.com'
   'DOMAIN-SUFFIX,wxapp.tc.qq.com'
@@ -134,6 +133,16 @@ required_wechat_direct_rules=(
 )
 for required_rule in "${required_wechat_direct_rules[@]}"; do
   grep -qF -- "$required_rule" "$scan_root/wechat-direct.list" || fail "微信域名补充规则缺少: $required_rule"
+done
+masked_wechat_direct_rules=(
+  'DOMAIN,wup.imtt.qq.com'
+  'DOMAIN,dns.weixin.qq.com'
+  'DOMAIN,dns.weixin.qq.com.cn'
+)
+for masked_rule in "${masked_wechat_direct_rules[@]}"; do
+  if grep -qF -- "$masked_rule" "$scan_root/wechat-direct.list"; then
+    fail "微信域名规则包含会被广告规则优先遮蔽的无效项: $masked_rule"
+  fi
 done
 if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat-direct.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
