@@ -1,10 +1,10 @@
 # NAME: WeChat Direct
 # AUTHOR: Ivan9ua
-# UPDATED: 2026-08-21
+# UPDATED: 2026-08-22
 # REPO-SOURCES: blackmatrix7/ios_rule_script · ACL4SSR/ACL4SSR · NobyDa/Script
-# DOMAIN: 10
+# DOMAIN: 7
 # DOMAIN-SUFFIX: 24
-# TOTAL: 34
+# TOTAL: 31
 # 顺序：置于广告规则之后、通用 CDN 之前；例外见 wechat-exception.list。
 # 仅收录路由域名；广告拦截、DOMAIN-KEYWORD、ASN、脚本与 MITM 不并入本规则集。
 
@@ -15,9 +15,6 @@ DOMAIN,dldir1.qq.com
 DOMAIN,soup.v.qq.com
 DOMAIN,vweixinf.tc.qq.com
 DOMAIN,weixin110.qq.com
-DOMAIN,wup.imtt.qq.com
-DOMAIN,dns.weixin.qq.com
-DOMAIN,dns.weixin.qq.com.cn
 DOMAIN,vweixinthumb.tc.qq.com
 
 # 微信媒体 CDN、头像、图片与基础服务

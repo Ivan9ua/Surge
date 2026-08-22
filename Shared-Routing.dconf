@@ -55,8 +55,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 下载直连
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/download.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT
-# 微信及国内补充直连域名
-# 微信普通直连：广告规则之后、通用 CDN 之前
+# 微信补充域名：广告规则之后、通用 CDN 之前
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-direct.list,DIRECT
 # 通用 CDN：Proxy
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
@@ -70,7 +69,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy
 # IP 规则
 # 广告 IP：静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/reject.conf,REJECT-DROP
-# 微信 IP：仅放行当前观测网段
+# 微信 IP：精确 IPv4/IPv6 网段直连，不使用 ASN
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-ip.list,DIRECT
 # AI IP：Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/ai.conf,Intelligence
