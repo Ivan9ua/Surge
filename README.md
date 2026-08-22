@@ -20,7 +20,7 @@
 按“广告优先、专用规则早于通用规则、域名规则早于 IP 规则”排序：
 
 ```
-广告域名 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 网易云 → 下载 → CDN → 微信补充/国内 → 海外 → 广告 IP → 微信 ASN → AI/Telegram/流媒体 IP → 国内 IPv4/IPv6 → FINAL
+广告域名 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 网易云 → 下载 → 微信补充 → CDN → 国内 → 海外 → 广告 IP → 微信 ASN → AI/Telegram/流媒体 IP → 国内 IPv4/IPv6 → FINAL
 ```
 
 ## 规则源
