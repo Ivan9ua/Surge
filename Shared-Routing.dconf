@@ -13,14 +13,14 @@ Apple = select, DIRECT, HK, TW, JP, SG, US, icon-url=https://raw.githubuserconte
 Microsoft = select, DIRECT, HK, TW, JP, SG, US, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
 
 # 地区智能选优
-HK = smart, include-other-group="Flower Cloud", no-alert=1, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰)|(香港)|(Hong)|(HK), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-TW = smart, include-other-group=Flower Cloud, no-alert=1, hidden=1, include-all-proxies=0, policy-regex-filter=(台湾)|(Taiwan)|(^TW$), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-JP = smart, include-other-group=Flower Cloud, no-alert=1, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵)|(日本)|(Japan)|(JP), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-SG = smart, include-other-group=Flower Cloud, no-alert=1, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬)|(新加)|(Singapore)|(SG), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-US = smart, US-Snell, include-other-group=Flower Cloud, no-alert=1, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸)|(美国)|(States)|(US), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=US-Snell:0.98; 高级:0.95; 标准:1; 实验性:1.05
+HK = smart, include-other-group="Flower Cloud", hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰)|(香港)|(Hong)|(HK), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(台湾)|(Taiwan)|(^TW$), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵)|(日本)|(Japan)|(JP), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬)|(新加)|(Singapore)|(SG), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+US = smart, US-Snell, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸)|(美国)|(States)|(US), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=US-Snell:0.98; 高级:0.95; 标准:1; 实验性:1.05
 
 # 订阅节点
-Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, no-alert=0, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
+Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
 # 微信 DNS 例外：置于广告规则前，避免误杀

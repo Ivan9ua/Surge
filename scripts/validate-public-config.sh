@@ -105,6 +105,31 @@ if grep -q '^icmp-forwarding' "$scan_root/Surge.conf" "$scan_root/iPhone.conf"; 
   fail "主配置不应直接包含 icmp-forwarding，应统一放在 Shared-General.dconf"
 fi
 
+if grep -q 'abcchina\.com' "$scan_root/Shared-General.dconf"; then
+  fail "共享 General 仍含已移除的农行 skip-proxy 项"
+fi
+
+if awk '
+  BEGIN { in_group=0; bad=0 }
+  /^\[Proxy Group\][[:space:]]*$/ { in_group=1; next }
+  /^\[/ { in_group=0 }
+  in_group && /^[[:space:]]*[^#;]/ && /= *(smart|select),/ && /(^|,[[:space:]]*)no-alert=/ { bad=1 }
+  END { exit bad ? 0 : 1 }
+' "$scan_root/Shared-Routing.dconf"; then
+  fail "Smart/select 策略组仍含无效 no-alert 参数"
+fi
+
+required_platform_ad_rules=(
+  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY'
+  'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY'
+  'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
+)
+for required_rule in "${required_platform_ad_rules[@]}"; do
+  grep -qFx -- "$required_rule" "$scan_root/Shared-Routing.dconf" || fail "平台广告规则缺失或条件异常: $required_rule"
+done
+
 line_of() {
   grep -nF "$2" "$1" | head -1 | cut -d: -f1 || true
 }
