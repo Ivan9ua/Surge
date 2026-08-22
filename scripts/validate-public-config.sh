@@ -120,14 +120,41 @@ wechat_ip_line="$(line_of "$scan_root/Shared-Routing.dconf" 'wechat-ip.list')"
 [[ -n "$cdn_domain_line" && "$wechat_domain_line" -lt "$cdn_domain_line" ]] || fail "微信普通域名规则必须置于通用 CDN 规则之前"
 [[ -n "$ad_ip_line" && -n "$wechat_ip_line" && "$ad_ip_line" -lt "$wechat_ip_line" ]] || fail "微信 IP 规则破坏广告优先级"
 
-grep -q '^DOMAIN,slife\.xy-asia\.com$' "$scan_root/wechat-direct.list" || fail "微信域名补充规则缺少精确 slife 域名"
-if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat-direct.list"; then
+required_wechat_direct_rules=(
+  'DOMAIN,slife.xy-asia.com'
+  'DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net'
+  'DOMAIN,dldir1.qq.com'
+  'DOMAIN,soup.v.qq.com'
+  'DOMAIN,weixin110.qq.com'
+  'DOMAIN,wup.imtt.qq.com'
+  'DOMAIN-SUFFIX,weixin.com'
+  'DOMAIN-SUFFIX,weixinbridge.com'
+  'DOMAIN-SUFFIX,wxapp.tc.qq.com'
+  'DOMAIN-SUFFIX,map.qq.com'
+)
+for required_rule in "${required_wechat_direct_rules[@]}"; do
+  grep -qF -- "$required_rule" "$scan_root/wechat-direct.list" || fail "微信域名补充规则缺少: $required_rule"
+done
+if grep -q '^DOMAIN-SUFFIX,xy-asia\\.com$' "$scan_root/wechat-direct.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
 fi
-grep -q '^DOMAIN,dns\.wechat\.com$' "$scan_root/wechat-exception.list" || fail "微信例外规则缺少 dns.wechat.com"
-grep -q '^IP-CIDR,43\.160\.156\.0/24,no-resolve$' "$scan_root/wechat-ip.list" || fail "微信 IP 规则缺少收窄后的当前网段"
-if grep -q '^IP-ASN,' "$scan_root/wechat-ip.list"; then
-  fail "微信 IP 规则不应使用 ASN 级直连"
+if grep -q '^DOMAIN-KEYWORD,' "$scan_root/wechat-direct.list"; then
+  fail "微信域名规则不应使用数字 IP 的 DOMAIN-KEYWORD"
+fi
+grep -q '^DOMAIN,dns\\.wechat\\.com$' "$scan_root/wechat-exception.list" || fail "微信例外规则缺少 dns.wechat.com"
+required_wechat_ip_rules=(
+  'IP-CIDR,43.160.156.0/24,no-resolve'
+  'IP-CIDR,111.30.160.0/20,no-resolve'
+  'IP-CIDR,112.53.11.0/24,no-resolve'
+  'IP-CIDR,112.53.20.0/24,no-resolve'
+  'IP-CIDR,101.32.104.4/32,no-resolve'
+  'IP-CIDR6,2408:80f1:21::/48,no-resolve'
+)
+for required_rule in "${required_wechat_ip_rules[@]}"; do
+  grep -qF -- "$required_rule" "$scan_root/wechat-ip.list" || fail "微信 IP 规则缺少: $required_rule"
+done
+if grep -qE '^(IP-ASN|DOMAIN-KEYWORD),' "$scan_root/wechat-ip.list"; then
+  fail "微信 IP 规则不应使用 ASN 或数字 IP 的 DOMAIN-KEYWORD"
 fi
 
 for profile_name in Surge.conf iPhone.conf; do
