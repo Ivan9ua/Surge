@@ -55,12 +55,12 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 下载直连
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/download.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT
+# 微信及国内补充直连域名
+# 微信普通直连：广告规则之后、通用 CDN 之前
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-direct.list,DIRECT
 # 通用 CDN：Proxy
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
-# 国内及补充直连域名
-# 微信普通直连：广告规则之后，避免放宽广告拦截
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-direct.list,DIRECT
 # 国内域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT

@@ -112,10 +112,12 @@ line_of() {
 ad_domain_line="$(line_of "$scan_root/Shared-Routing.dconf" 'List/domainset/reject.conf')"
 wechat_exception_line="$(line_of "$scan_root/Shared-Routing.dconf" 'wechat-exception.list')"
 wechat_domain_line="$(line_of "$scan_root/Shared-Routing.dconf" 'wechat-direct.list')"
+cdn_domain_line="$(line_of "$scan_root/Shared-Routing.dconf" 'List/domainset/cdn.conf')"
 ad_ip_line="$(line_of "$scan_root/Shared-Routing.dconf" 'List/ip/reject.conf')"
 wechat_ip_line="$(line_of "$scan_root/Shared-Routing.dconf" 'wechat-ip.list')"
 [[ -n "$ad_domain_line" && -n "$wechat_exception_line" && "$wechat_exception_line" -lt "$ad_domain_line" ]] || fail "微信 DNS 例外未置于广告规则之前"
 [[ -n "$wechat_domain_line" && "$ad_domain_line" -lt "$wechat_domain_line" ]] || fail "微信普通域名规则破坏广告优先级"
+[[ -n "$cdn_domain_line" && "$wechat_domain_line" -lt "$cdn_domain_line" ]] || fail "微信普通域名规则必须置于通用 CDN 规则之前"
 [[ -n "$ad_ip_line" && -n "$wechat_ip_line" && "$ad_ip_line" -lt "$wechat_ip_line" ]] || fail "微信 IP 规则破坏广告优先级"
 
 grep -q '^DOMAIN,slife\.xy-asia\.com$' "$scan_root/wechat-direct.list" || fail "微信域名补充规则缺少精确 slife 域名"
