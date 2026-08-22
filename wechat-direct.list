@@ -1,10 +1,10 @@
 # NAME: WeChat Direct
 # AUTHOR: Ivan9ua
-# UPDATED: 2026-08-18
-# DOMAIN: 1
-# DOMAIN-SUFFIX: 8
-# TOTAL: 9
-# 顺序：置于广告规则之后；例外见 wechat-exception.list。
+# UPDATED: 2026-08-21
+# DOMAIN: 5
+# DOMAIN-SUFFIX: 20
+# TOTAL: 25
+# 顺序：置于广告规则之后、通用 CDN 之前；例外见 wechat-exception.list。
 
 DOMAIN,slife.xy-asia.com
 DOMAIN-SUFFIX,iot-tencent.com
@@ -15,3 +15,19 @@ DOMAIN-SUFFIX,wechatlegal.net
 DOMAIN-SUFFIX,wechatos.net
 DOMAIN-SUFFIX,wechatpay.com
 DOMAIN-SUFFIX,weixinsxy.com
+DOMAIN,dns.weixin.qq.com
+DOMAIN,dns.weixin.qq.com.cn
+DOMAIN,vweixinf.tc.qq.com
+DOMAIN,vweixinthumb.tc.qq.com
+DOMAIN-SUFFIX,qpic.cn
+DOMAIN-SUFFIX,qlogo.cn
+DOMAIN-SUFFIX,wx.gtimg.com
+DOMAIN-SUFFIX,wximg.qq.com
+DOMAIN-SUFFIX,lbs.gtimg.com
+DOMAIN-SUFFIX,wx.qq.com
+DOMAIN-SUFFIX,wx2.qq.com
+DOMAIN-SUFFIX,wxs.qq.com
+DOMAIN-SUFFIX,weixin.qq.com
+DOMAIN-SUFFIX,weixin.qq.com.cn
+DOMAIN-SUFFIX,up-hl.3g.qq.com
+DOMAIN-SUFFIX,yun-hl.3g.qq.com
