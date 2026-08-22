@@ -135,13 +135,13 @@ required_wechat_direct_rules=(
 for required_rule in "${required_wechat_direct_rules[@]}"; do
   grep -qF -- "$required_rule" "$scan_root/wechat-direct.list" || fail "微信域名补充规则缺少: $required_rule"
 done
-if grep -q '^DOMAIN-SUFFIX,xy-asia\\.com$' "$scan_root/wechat-direct.list"; then
+if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat-direct.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
 fi
 if grep -q '^DOMAIN-KEYWORD,' "$scan_root/wechat-direct.list"; then
   fail "微信域名规则不应使用数字 IP 的 DOMAIN-KEYWORD"
 fi
-grep -q '^DOMAIN,dns\\.wechat\\.com$' "$scan_root/wechat-exception.list" || fail "微信例外规则缺少 dns.wechat.com"
+grep -q '^DOMAIN,dns\.wechat\.com$' "$scan_root/wechat-exception.list" || fail "微信例外规则缺少 dns.wechat.com"
 required_wechat_ip_rules=(
   'IP-CIDR,43.160.156.0/24,no-resolve'
   'IP-CIDR,111.30.160.0/20,no-resolve'
