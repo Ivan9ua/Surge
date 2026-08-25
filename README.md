@@ -38,7 +38,7 @@
 
 ### 微信规则收录范围
 
-`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付、定位域名及精确 IPv4/IPv6 网段。共享配置只引用一次并使用 `no-resolve`；`dns.wechat.com` 保持直连，`dns.weixin.qq.com`、`udns.weixin.qq.com`、`aedns.weixin.qq.com` 与 `dns.weixin.qq.com.cn` 通过逻辑排除继续交由 Sukka 广告规则处理。
+`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付、定位域名及精确 IPv4/IPv6 网段。共享配置只引用一次并使用 `no-resolve`；`dns.wechat.com` 保持直连，四个应用内 DNS 端点和 `wxsnsdy` 朋友圈广告端点通过逻辑排除继续交由 Sukka 广告规则处理。
 
 当前不使用 `extended-matching`、`IP-ASN,132203` 或 233 条 `DOMAIN-KEYWORD`：这些宽泛匹配可能把非微信腾讯流量一并直连，并扩大广告绕过范围。
 
