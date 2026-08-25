@@ -10,7 +10,7 @@
 | `iPhone.conf` | iPhone 配置模板 |
 | `Shared-Routing.dconf` | 共享路由（代理节点 + 策略组 + 分流规则） |
 | `Shared-General.dconf` | 共享 General（Mac / iPhone 公共设置） |
-| `wechat.list` | 微信域名与精确 IPv4/IPv6 统一直连规则 |
+| `wechat.list` | 微信域名与可见 SNI 统一直连规则 |
 | `bilibili.sgmodule` | Bilibili 去广告模块（无伪造会员） |
 | `youtube-enhance-bounded.sgmodule` | YouTube 增强模块（正文上限 2 MiB） |
 
@@ -38,9 +38,9 @@
 
 ### 微信规则收录范围
 
-`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付、定位域名及精确 IPv4/IPv6 网段。共享配置只引用一次并使用 `no-resolve`；`dns.wechat.com` 保持直连，四个应用内 DNS 端点和 `wxsnsdy` 朋友圈广告端点通过逻辑排除继续交由 Sukka 广告规则处理。
+`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付与定位域名。共享配置只引用一次并使用 `no-resolve,extended-matching`：域名及可见 SNI 直连，国内 IP 由后续中国 IP 规则直连，海外 IP 交由最终代理策略；`dns.wechat.com` 保持直连，四个应用内 DNS 端点和 `wxsnsdy` 朋友圈广告端点通过逻辑排除继续交由 Sukka 广告规则处理。
 
-当前不使用 `extended-matching`、`IP-ASN,132203` 或 233 条 `DOMAIN-KEYWORD`：这些宽泛匹配可能把非微信腾讯流量一并直连，并扩大广告绕过范围。
+当前使用 `extended-matching` 识别直接连接 IP 时暴露的 TLS/QUIC SNI；不使用静态 IP、`IP-ASN,132203` 或顶层 `DOMAIN-KEYWORD`，避免将非微信腾讯流量一并直连。
 
 以下内容明确不并入微信直连规则：`trace.qq.com`、`beacon.qq.com`、`btrace.qq.com` 等追踪/广告端点；小程序去广告的 URL Rewrite、Body Rewrite、Map Local、Script、MITM 模块；以及 Blackmatrix7 的通用 Tencent 大清单。它们分别属于拦截、内容改写或广义腾讯业务，不是媒体上传的必要路由。
 ### IPv6 与 MTProto
