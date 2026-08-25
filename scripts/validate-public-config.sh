@@ -157,9 +157,10 @@ done
 required_wechat_exclusions=(
   'AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))'
   'AND,((DOMAIN-SUFFIX,weixin.qq.com.cn),(NOT,((DOMAIN,dns.weixin.qq.com.cn))))'
+  'AND,((DOMAIN-SUFFIX,wxs.qq.com),(NOT,((DOMAIN-KEYWORD,wxsnsdy))))'
 )
 for required_rule in "${required_wechat_exclusions[@]}"; do
-  grep -qFx -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少广告 DNS 排除: $required_rule"
+  grep -qFx -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少广告或 DNS 排除: $required_rule"
 done
 if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
@@ -179,6 +180,39 @@ done
 if grep -qE '^(IP-ASN|DOMAIN-KEYWORD),' "$scan_root/wechat.list"; then
   fail "微信统一规则不应使用 ASN 或 DOMAIN-KEYWORD"
 fi
+wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
+[[ "$wechat_rule_count" -eq 110 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 110）"
+python3 - "$scan_root/wechat.list" <<'PY' || fail "微信统一规则含非标准或被其他网段覆盖的 CIDR"
+import ipaddress
+import pathlib
+import sys
+
+networks = []
+for line_number, line in enumerate(pathlib.Path(sys.argv[1]).read_text().splitlines(), 1):
+    parts = line.split(",")
+    if parts[0] not in ("IP-CIDR", "IP-CIDR6"):
+        continue
+    try:
+        network = ipaddress.ip_network(parts[1], strict=True)
+    except ValueError as error:
+        print(f"非标准 CIDR（第 {line_number} 行）: {error}", file=sys.stderr)
+        raise SystemExit(1)
+    if parts[1] != network.with_prefixlen:
+        print(f"CIDR 未规范化（第 {line_number} 行）: {parts[1]}", file=sys.stderr)
+        raise SystemExit(1)
+    networks.append((network, line_number))
+
+for network, line_number in networks:
+    for other, other_line_number in networks:
+        if network == other or network.version != other.version:
+            continue
+        if network.subnet_of(other):
+            print(
+                f"冗余 CIDR（第 {line_number} 行）: {network} 已被第 {other_line_number} 行 {other} 覆盖",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
+PY
 
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)
