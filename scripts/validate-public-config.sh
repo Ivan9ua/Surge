@@ -90,7 +90,7 @@ grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared-Routing.dco
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 MTProto secret 占位符"
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/iPhone.conf" || fail "iPhone 模板缺少 MTProto secret 占位符"
 grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared-Routing.dconf" || fail "共享规则缺少预期 FINAL 兜底"
-grep -Eq 'Ivan9ua/Surge@main/wechat\.list,DIRECT,no-resolve,extended-matching$' "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未指向 Ivan9ua/Surge@main 或缺少 no-resolve,extended-matching"
+grep -Eq 'Ivan9ua/Surge@main/wechat\.list\?v=[0-9-]+,DIRECT,no-resolve,extended-matching$' "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未指向带版本参数的 Ivan9ua/Surge@main 或缺少 no-resolve,extended-matching"
 [[ "$(grep -c 'Ivan9ua/Surge@main/wechat\.list' "$scan_root/Shared-Routing.dconf")" -eq 1 ]] || fail "微信统一规则必须且只能引用一次"
 if grep -Eq 'wechat-(direct|exception|ip)\.list' "$scan_root/Shared-Routing.dconf"; then
   fail "共享规则仍引用旧版微信拆分规则"
