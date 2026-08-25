@@ -26,9 +26,7 @@ tracked_files=(
   Shared-General.dconf
   bilibili.sgmodule
   youtube-enhance-bounded.sgmodule
-  wechat-direct.list
-  wechat-exception.list
-  wechat-ip.list
+  wechat.list
 )
 for tracked_file in "${tracked_files[@]}"; do
   if [[ -f "$repo_root/$tracked_file" ]]; then

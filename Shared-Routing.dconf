@@ -23,8 +23,8 @@ US = smart, US-Snell, include-other-group=Flower Cloud, hidden=1, include-all-pr
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
-# 微信 DNS 例外：置于广告规则前，避免误杀
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-exception.list,DIRECT
+# 微信直连：域名与精确 IP；保留必要 DNS 例外
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat.list,DIRECT,no-resolve
 # iPhone 广告规则：预匹配并静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
@@ -55,8 +55,6 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 下载直连
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/download.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT
-# 微信补充域名：广告规则之后、通用 CDN 之前
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-direct.list,DIRECT
 # 通用 CDN：Proxy
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
@@ -69,8 +67,6 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy
 # IP 规则
 # 广告 IP：静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/reject.conf,REJECT-DROP
-# 微信 IP：精确 IPv4/IPv6 网段直连，不使用 ASN
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat-ip.list,DIRECT
 # AI IP：Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/ai.conf,Intelligence
 # Telegram 官方 IP
