@@ -90,7 +90,7 @@ grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared-Routing.dco
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 MTProto secret 占位符"
 grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/iPhone.conf" || fail "iPhone 模板缺少 MTProto secret 占位符"
 grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared-Routing.dconf" || fail "共享规则缺少预期 FINAL 兜底"
-grep -Eq 'Ivan9ua/Surge@main/wechat\.list,DIRECT,no-resolve$' "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未指向 Ivan9ua/Surge@main 或缺少 no-resolve"
+grep -Eq 'Ivan9ua/Surge@main/wechat\.list,DIRECT,no-resolve,extended-matching$' "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未指向 Ivan9ua/Surge@main 或缺少 no-resolve,extended-matching"
 [[ "$(grep -c 'Ivan9ua/Surge@main/wechat\.list' "$scan_root/Shared-Routing.dconf")" -eq 1 ]] || fail "微信统一规则必须且只能引用一次"
 if grep -Eq 'wechat-(direct|exception|ip)\.list' "$scan_root/Shared-Routing.dconf"; then
   fail "共享规则仍引用旧版微信拆分规则"
@@ -166,53 +166,11 @@ if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
 fi
 grep -q '^DOMAIN-SUFFIX,wechat\.com$' "$scan_root/wechat.list" || fail "微信统一规则缺少 dns.wechat.com 所需的 wechat.com 例外"
-required_wechat_ip_rules=(
-  'IP-CIDR,43.160.156.0/24,no-resolve'
-  'IP-CIDR,111.30.160.0/20,no-resolve'
-  'IP-CIDR,112.53.11.0/24,no-resolve'
-  'IP-CIDR,112.53.20.0/24,no-resolve'
-  'IP-CIDR,101.32.104.4/32,no-resolve'
-  'IP-CIDR6,2408:80f1:21::/48,no-resolve'
-)
-for required_rule in "${required_wechat_ip_rules[@]}"; do
-  grep -qF -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少 IP: $required_rule"
-done
-if grep -qE '^(IP-ASN|DOMAIN-KEYWORD),' "$scan_root/wechat.list"; then
-  fail "微信统一规则不应使用 ASN 或 DOMAIN-KEYWORD"
+if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD),' "$scan_root/wechat.list"; then
+  fail "微信统一规则不应使用静态 IP、ASN 或顶层 DOMAIN-KEYWORD"
 fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
-[[ "$wechat_rule_count" -eq 110 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 110）"
-python3 - "$scan_root/wechat.list" <<'PY' || fail "微信统一规则含非标准或被其他网段覆盖的 CIDR"
-import ipaddress
-import pathlib
-import sys
-
-networks = []
-for line_number, line in enumerate(pathlib.Path(sys.argv[1]).read_text().splitlines(), 1):
-    parts = line.split(",")
-    if parts[0] not in ("IP-CIDR", "IP-CIDR6"):
-        continue
-    try:
-        network = ipaddress.ip_network(parts[1], strict=True)
-    except ValueError as error:
-        print(f"非标准 CIDR（第 {line_number} 行）: {error}", file=sys.stderr)
-        raise SystemExit(1)
-    if parts[1] != network.with_prefixlen:
-        print(f"CIDR 未规范化（第 {line_number} 行）: {parts[1]}", file=sys.stderr)
-        raise SystemExit(1)
-    networks.append((network, line_number))
-
-for network, line_number in networks:
-    for other, other_line_number in networks:
-        if network == other or network.version != other.version:
-            continue
-        if network.subnet_of(other):
-            print(
-                f"冗余 CIDR（第 {line_number} 行）: {network} 已被第 {other_line_number} 行 {other} 覆盖",
-                file=sys.stderr,
-            )
-            raise SystemExit(1)
-PY
+[[ "$wechat_rule_count" -eq 31 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 31）"
 
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)

@@ -23,8 +23,8 @@ US = smart, US-Snell, include-other-group=Flower Cloud, hidden=1, include-all-pr
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
-# 微信直连：域名与精确 IP；保留必要 DNS 例外
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat.list,DIRECT,no-resolve
+# 微信域名与可见 SNI 直连；IP 由后续地域规则分流
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat.list,DIRECT,no-resolve,extended-matching
 # iPhone 广告规则：预匹配并静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
