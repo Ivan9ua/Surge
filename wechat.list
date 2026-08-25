@@ -3,8 +3,8 @@
 # UPDATED: 2026-08-25
 # REPO-SOURCES: blackmatrix7/ios_rule_script · ACL4SSR/ACL4SSR · NobyDa/Script
 # DOMAIN: 7
-# DOMAIN-SUFFIX: 21
-# LOGICAL: 3
+# DOMAIN-SUFFIX: 20
+# LOGICAL: 4
 # IP-CIDR: 0
 # IP-CIDR6: 0
 # TOTAL: 31
@@ -20,11 +20,10 @@ DOMAIN,vweixinf.tc.qq.com
 DOMAIN,weixin110.qq.com
 DOMAIN,vweixinthumb.tc.qq.com
 
-# 微信媒体 CDN、头像、图片与基础服务；wechat.com 同时保留 dns.wechat.com 直连例外
+# 微信媒体 CDN、头像、图片与基础服务
 DOMAIN-SUFFIX,iot-tencent.com
 DOMAIN-SUFFIX,servicewechat.com
 DOMAIN-SUFFIX,tenpay.com
-DOMAIN-SUFFIX,wechat.com
 DOMAIN-SUFFIX,wechatlegal.net
 DOMAIN-SUFFIX,wechatos.net
 DOMAIN-SUFFIX,wechatpay.com
@@ -43,7 +42,8 @@ DOMAIN-SUFFIX,map.qq.com
 DOMAIN-SUFFIX,up-hl.3g.qq.com
 DOMAIN-SUFFIX,yun-hl.3g.qq.com
 
-# 微信域名直连，但保留 Sukka 对应用内 DNS 和广告端点的拦截
+# 微信域名直连，但排除实测应走代理的海外控制端点，并保留 Sukka 广告与应用内 DNS 拦截
+AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))))
 AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))
 AND,((DOMAIN-SUFFIX,weixin.qq.com.cn),(NOT,((DOMAIN,dns.weixin.qq.com.cn))))
 AND,((DOMAIN-SUFFIX,wxs.qq.com),(NOT,((DOMAIN-KEYWORD,wxsnsdy))))
