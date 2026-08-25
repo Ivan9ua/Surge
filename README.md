@@ -10,8 +10,7 @@
 | `iPhone.conf` | iPhone 配置模板 |
 | `Shared-Routing.dconf` | 共享路由（代理节点 + 策略组 + 分流规则） |
 | `Shared-General.dconf` | 共享 General（Mac / iPhone 公共设置） |
-| `wechat-direct.list` | 微信补充域名直连规则 |
-| `wechat-ip.list` | 微信精确 IPv4/IPv6 直连规则（不使用 ASN） |
+| `wechat.list` | 微信域名与精确 IPv4/IPv6 统一直连规则 |
 | `bilibili.sgmodule` | Bilibili 去广告模块（无伪造会员） |
 | `youtube-enhance-bounded.sgmodule` | YouTube 增强模块（正文上限 2 MiB） |
 
@@ -20,13 +19,13 @@
 按“广告优先、专用规则早于通用规则、域名规则早于 IP 规则”排序：
 
 ```
-广告域名 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 网易云 → 下载 → 微信补充 → CDN → 国内 → 海外 → 广告 IP → 微信精确 IP → AI/Telegram/流媒体 IP → 国内 IPv4/IPv6 → FINAL
+微信统一直连 → 广告域名 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4/IPv6 → FINAL
 ```
 
 ## 规则源
 
 - [SukkaW/Surge](https://github.com/SukkaW/Surge) — 域名规则 + IP 规则
-- `wechat-direct.list` / `wechat-ip.list` — 基于实际连接审计与公开微信规则集交叉核对维护的补充规则
+- `wechat.list` — 基于实际连接审计与公开微信规则集交叉核对维护的单一远程规则
 - 策略组 Smart 自动选优
 
 ## 使用方法
@@ -39,9 +38,9 @@
 
 ### 微信规则收录范围
 
-`wechat-direct.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，补入核心登录、媒体/上传、小程序、微信支付和定位相关域名；共享规则中已经将它放在广告规则之后、通用 CDN 之前。`dns.wechat.com` 作为必要 DNS 例外单独置于广告规则之前；会被当前广告规则优先遮蔽的 `wup.imtt.qq.com`、`dns.weixin.qq.com` 和 `dns.weixin.qq.com.cn` 不重复收录。
+`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付、定位域名及精确 IPv4/IPv6 网段。共享配置只引用一次并使用 `no-resolve`；`dns.wechat.com` 保持直连，`dns.weixin.qq.com`、`udns.weixin.qq.com`、`aedns.weixin.qq.com` 与 `dns.weixin.qq.com.cn` 通过逻辑排除继续交由 Sukka 广告规则处理。
 
-`wechat-ip.list` 收录现有观测网段、Blackmatrix7/NobyDa 交叉出现的 IPv4/IPv6 网段，以及 ACL4SSR 的精确 IPv4 端点，全部使用 `no-resolve`。当前不使用 `IP-ASN,132203`，也不使用 233 条数字 IP 的 `DOMAIN-KEYWORD`：这两类规则会把非微信腾讯流量一并直连，且不利于广告规则优先级。
+当前不使用 `extended-matching`、`IP-ASN,132203` 或 233 条 `DOMAIN-KEYWORD`：这些宽泛匹配可能把非微信腾讯流量一并直连，并扩大广告绕过范围。
 
 以下内容明确不并入微信直连规则：`trace.qq.com`、`beacon.qq.com`、`btrace.qq.com` 等追踪/广告端点；小程序去广告的 URL Rewrite、Body Rewrite、Map Local、Script、MITM 模块；以及 Blackmatrix7 的通用 Tencent 大清单。它们分别属于拦截、内容改写或广义腾讯业务，不是媒体上传的必要路由。
 ### IPv6 与 MTProto
@@ -56,8 +55,7 @@ Mac 以 `[Sukka] Always Real IP Plus` 为主要 Host Lists 模块。为避免重
 
 ## 在线规则与模块
 
-- [微信补充域名规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat-direct.list)
-- [微信精确 IP 规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat-ip.list)
+- [微信统一直连规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list)
 - [安装 Bilibili 去广告模块](https://raw.githubusercontent.com/Ivan9ua/Surge/main/bilibili.sgmodule)
 - [安装 YouTube Enhance 受控版](https://raw.githubusercontent.com/Ivan9ua/Surge/main/youtube-enhance-bounded.sgmodule)
 
