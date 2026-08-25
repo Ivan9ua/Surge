@@ -24,7 +24,7 @@ Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, includ
 
 [Rule]
 # 微信域名与可见 SNI 直连；IP 由后续地域规则分流
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat.list,DIRECT,no-resolve,extended-matching
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@main/wechat.list?v=20260825-2,DIRECT,no-resolve,extended-matching
 # iPhone 广告规则：预匹配并静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
