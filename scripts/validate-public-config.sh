@@ -155,7 +155,7 @@ for required_rule in "${required_wechat_direct_rules[@]}"; do
   grep -qF -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少域名: $required_rule"
 done
 required_wechat_exclusions=(
-  'AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))))'
+  'AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))),(NOT,((DOMAIN,sgshort.wechat.com))))'
   'AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))'
   'AND,((DOMAIN-SUFFIX,weixin.qq.com.cn),(NOT,((DOMAIN,dns.weixin.qq.com.cn))))'
   'AND,((DOMAIN-SUFFIX,wxs.qq.com),(NOT,((DOMAIN-KEYWORD,wxsnsdy))))'
@@ -166,7 +166,7 @@ done
 if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
 fi
-grep -qFx 'AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))))' "$scan_root/wechat.list" || fail "微信统一规则未精确排除海外控制域名"
+grep -qFx 'AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))),(NOT,((DOMAIN,sgshort.wechat.com))))' "$scan_root/wechat.list" || fail "微信统一规则未精确排除海外控制域名"
 if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD),' "$scan_root/wechat.list"; then
   fail "微信统一规则不应使用静态 IP、ASN 或顶层 DOMAIN-KEYWORD"
 fi
