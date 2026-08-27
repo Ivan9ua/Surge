@@ -2,7 +2,7 @@
 # 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书。
 
 [Proxy]
-US-Snell = snell, example.com, 8388, psk=YOUR_SNELL_PSK, version=6, mode=unshaped
+US-Snell = snell, example.com, 8388, psk=YOUR_SNELL_PSK, version=6, mode=unshaped, tfo=true
 
 [Proxy Group]
 Proxy = select, HK, TW, JP, SG, US, US-Snell, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0
@@ -80,5 +80,8 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT
+# 微信裸 IP 兜底：无 SNI 连接无法按域名/网段识别，按进程直连（实测微信连腾讯 SG 动态 IP 落 FINAL 走代理）
+PROCESS-NAME,WeChat,DIRECT
+PROCESS-NAME,WeChatAppEx,DIRECT
 # 未匹配及 DNS 失败：Proxy
 FINAL,Proxy,dns-failed
