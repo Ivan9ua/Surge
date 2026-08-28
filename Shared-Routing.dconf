@@ -23,8 +23,6 @@ US = smart, US-Snell, include-other-group=Flower Cloud, hidden=1, include-all-pr
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
-# 微信域名与可见 SNI 直连；IP 由后续地域规则分流
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@f92da7b16c7761ec5f48945832b8bdc2301bc672/wechat.list,DIRECT,no-resolve,extended-matching
 # iPhone 广告规则：预匹配并静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
@@ -33,6 +31,8 @@ DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,exte
 # Mac 广告规则：扩展匹配
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
+# 微信域名与可见 SNI：广告规则优先，未拦截流量直连
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@f92da7b16c7761ec5f48945832b8bdc2301bc672/wechat.list,DIRECT,no-resolve,extended-matching
 # 内网域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
 # AI 与 Apple Intelligence
