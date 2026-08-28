@@ -2,7 +2,7 @@
 # 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书。
 
 [Proxy]
-US-Snell = snell, example.com, 8388, psk=YOUR_SNELL_PSK, version=6, mode=unshaped, tfo=true
+US-Snell = snell, example.com, 8388, psk=YOUR_SNELL_PSK, version=6, mode=default, tfo=true
 
 [Proxy Group]
 Proxy = select, HK, TW, JP, SG, US, US-Snell, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0
@@ -13,7 +13,7 @@ Apple = select, DIRECT, HK, TW, JP, SG, US, icon-url=https://raw.githubuserconte
 Microsoft = select, DIRECT, HK, TW, JP, SG, US, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
 
 # 地区智能选优
-HK = smart, include-other-group="Flower Cloud", hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰)|(香港)|(Hong)|(HK), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰)|(香港)|(Hong)|(HK), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(台湾)|(Taiwan)|(^TW$), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵)|(日本)|(Japan)|(JP), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬)|(新加)|(Singapore)|(SG), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
@@ -29,10 +29,8 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 # Mac 广告规则：扩展匹配
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
-# 微信域名与可见 SNI：广告规则优先，未拦截流量直连
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@ea9741c0903b2a05c68858fc6617ce73601b205e/wechat.list,DIRECT,no-resolve,extended-matching
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 # 内网域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
 # AI 与 Apple Intelligence
@@ -50,6 +48,8 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple
 # Microsoft：中国 CDN 直连，其余走 Microsoft
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
+# 微信域名与可见 SNI：广告规则优先，未拦截流量直连
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@ea9741c0903b2a05c68858fc6617ce73601b205e/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 下载直连
@@ -80,7 +80,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT
-# 微信裸 IP 兜底：无 SNI 连接无法按域名/网段识别，按进程直连（实测微信连腾讯 SG 动态 IP 落 FINAL 走代理）
+# 微信裸 IP 兜底：无 SNI 连接无法按域名/IP 网段识别，按进程直连（置于广告规则后不破坏拦截）
 PROCESS-NAME,WeChat,DIRECT
 PROCESS-NAME,WeChatAppEx,DIRECT
 # 未匹配及 DNS 失败：Proxy
