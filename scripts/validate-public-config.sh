@@ -149,7 +149,6 @@ required_wechat_direct_rules=(
   'DOMAIN,slife.xy-asia.com'
   'DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net'
   'DOMAIN,dldir1.qq.com'
-  'DOMAIN,wup.imtt.qq.com'
   'DOMAIN,soup.v.qq.com'
   'DOMAIN,weixin110.qq.com'
   'DOMAIN-SUFFIX,weixin.com'
@@ -172,12 +171,15 @@ done
 if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
 fi
+if grep -qFx 'DOMAIN,wup.imtt.qq.com' "$scan_root/wechat.list"; then
+  fail "wup.imtt.qq.com 与广告规则冲突，不应加入微信直连"
+fi
 grep -qFx 'AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))),(NOT,((DOMAIN,sgshort.wechat.com))))' "$scan_root/wechat.list" || fail "微信统一规则未精确排除海外控制域名"
 if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT),' "$scan_root/wechat.list"; then
   fail "微信统一规则不应使用静态 IP、ASN、顶层 DOMAIN-KEYWORD 或 USER-AGENT"
 fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
-[[ "$wechat_rule_count" -eq 32 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 32）"
+[[ "$wechat_rule_count" -eq 31 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 31）"
 
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)
