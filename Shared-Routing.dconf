@@ -32,7 +32,7 @@ DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,exte
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 # 微信域名与可见 SNI：广告规则优先，未拦截流量直连
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@f92da7b16c7761ec5f48945832b8bdc2301bc672/wechat.list,DIRECT,no-resolve,extended-matching
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@15764a623c85ea2bfbb340f164951b98d846ebf8/wechat.list,DIRECT,no-resolve,extended-matching
 # 内网域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
 # AI 与 Apple Intelligence
