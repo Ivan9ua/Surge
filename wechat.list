@@ -1,20 +1,21 @@
 # NAME: WeChat Domain Direct
 # AUTHOR: Ivan9ua
-# UPDATED: 2026-08-25
+# UPDATED: 2026-08-28
 # REPO-SOURCES: blackmatrix7/ios_rule_script · ACL4SSR/ACL4SSR · NobyDa/Script
-# DOMAIN: 7
+# DOMAIN: 8
 # DOMAIN-SUFFIX: 20
 # LOGICAL: 4
 # IP-CIDR: 0
 # IP-CIDR6: 0
-# TOTAL: 31
+# TOTAL: 32
 # 说明：仅识别微信域名与可见 SNI；国内 IP 由后续中国 IP 规则直连，海外 IP 交由最终代理策略。
-# 外层引用必须使用 no-resolve,extended-matching；不使用顶层 DOMAIN-KEYWORD、IP-CIDR 或 IP-ASN。
+# 外层引用必须使用 no-resolve,extended-matching；不使用顶层 DOMAIN-KEYWORD、静态 IP、ASN 或 USER-AGENT。
 
 # 微信核心、登录、媒体与上传服务
 DOMAIN,slife.xy-asia.com
 DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net
 DOMAIN,dldir1.qq.com
+DOMAIN,wup.imtt.qq.com
 DOMAIN,soup.v.qq.com
 DOMAIN,vweixinf.tc.qq.com
 DOMAIN,weixin110.qq.com
