@@ -34,18 +34,8 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 # 内网域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
-# 系统探测、公共 Wi-Fi 认证及已确认本地服务：必须早于业务规则
+# 系统规则：直连
 RULE-SET,SYSTEM,DIRECT
-DOMAIN,captive.apple.com,DIRECT
-DOMAIN,detectportal.firefox.com,DIRECT
-DOMAIN,connectivitycheck.platform.hicloud.com,DIRECT
-DOMAIN,passenger.t3go.cn,DIRECT
-DOMAIN-SUFFIX,ccb.com,DIRECT
-DOMAIN,wxh.wo.cn,DIRECT
-# 国内 AI API：域名级直连，避免依赖 IP 规则二次解析
-DOMAIN-SUFFIX,deepseek.com,DIRECT
-DOMAIN-SUFFIX,bigmodel.cn,DIRECT
-DOMAIN-SUFFIX,xiaomimimo.com,DIRECT
 # AI 与 Apple Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching

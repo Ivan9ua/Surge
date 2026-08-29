@@ -4,7 +4,7 @@
 [General]
 # 日志级别
 loglevel = notify
-# REJECT 的普通 HTTP 错误页：关闭
+# 公开模板安全默认：关闭 REJECT 普通 HTTP 错误页
 show-error-page-for-reject = false
 # IPv6 支持；VIF 按当前网络自动启用
 ipv6 = true
@@ -17,7 +17,7 @@ internet-test-url = http://connectivitycheck.platform.hicloud.com/generate_204
 proxy-test-url = http://cp.cloudflare.com/generate_204
 proxy-test-udp = www.apple.com@64.6.64.6
 # DNS 与本地解析
-dns-server = system, 223.5.5.5, 119.29.29.29
+dns-server = system, 223.5.5.5
 encrypted-dns-server = quic://223.5.5.5, https://1.12.12.12/dns-query
 # VIF 真实 IP 例外：自定义主机与已启用模块追加项
 always-real-ip = *.msftncsi.com, *.msftconnecttest.com, *.battlenet.com.cn, *.battlenet.com, *.blzstatic.cn, *.battle.net, 127.*.*.*.sslip.io, 127-*-*-*.sslip.io, *.127.*.*.*.sslip.io, *-127-*-*-*.sslip.io, 127.*.*.*.nip.io, 127-*-*-*.nip.io, *.127.*.*.*.nip.io, *-127-*-*-*.nip.io
