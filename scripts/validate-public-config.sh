@@ -103,9 +103,13 @@ fi
 grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未同时覆盖 Mac 与 iPhone"
 grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf" || fail "共享 General 未启用 IPv6"
 grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "共享 General 未使用自动 IPv6 VIF"
-grep -q '^icmp-forwarding = true #!MACOS-ONLY$' "$scan_root/Shared-General.dconf" || fail "共享 General 缺少仅 macOS 的 ICMP 转发"
-if grep -q '^icmp-forwarding' "$scan_root/Surge.conf" "$scan_root/iPhone.conf"; then
-  fail "主配置不应直接包含 icmp-forwarding，应统一放在 Shared-General.dconf"
+grep -q '^show-error-page-for-reject = false$' "$scan_root/Shared-General.dconf" || fail "共享 General 未关闭 REJECT 普通 HTTP 错误页"
+if grep -q '162\.14\.0\.0/16' "$scan_root/Shared-General.dconf"; then
+  fail "共享 General 仍含已移除的宽泛公网 skip-proxy 段"
+fi
+grep -q '^icmp-forwarding = true$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 macOS 专用 ICMP 转发"
+if grep -q '^icmp-forwarding' "$scan_root/iPhone.conf" "$scan_root/Shared-General.dconf"; then
+  fail "icmp-forwarding 不应进入 iPhone 或共享 General 配置"
 fi
 
 if grep -q 'abcchina\.com' "$scan_root/Shared-General.dconf"; then
@@ -124,6 +128,7 @@ fi
 
 required_platform_ad_rules=(
   'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY'
+  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY'
   'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY'
   'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
