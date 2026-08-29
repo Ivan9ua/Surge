@@ -23,16 +23,29 @@ US = smart, US-Snell, include-other-group=Flower Cloud, hidden=1, include-all-pr
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
-# iPhone 广告规则：预匹配并静默丢弃
+# 移动端与 macOS 广告：预匹配并静默丢弃
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 # Mac 广告规则：扩展匹配
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 # 内网域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
+# 系统探测、公共 Wi-Fi 认证及已确认本地服务：必须早于业务规则
+RULE-SET,SYSTEM,DIRECT
+DOMAIN,captive.apple.com,DIRECT
+DOMAIN,detectportal.firefox.com,DIRECT
+DOMAIN,connectivitycheck.platform.hicloud.com,DIRECT
+DOMAIN,passenger.t3go.cn,DIRECT
+DOMAIN-SUFFIX,ccb.com,DIRECT
+DOMAIN,wxh.wo.cn,DIRECT
+# 国内 AI API：域名级直连，避免依赖 IP 规则二次解析
+DOMAIN-SUFFIX,deepseek.com,DIRECT
+DOMAIN-SUFFIX,bigmodel.cn,DIRECT
+DOMAIN-SUFFIX,xiaomimimo.com,DIRECT
 # AI 与 Apple Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
@@ -48,7 +61,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple
 # Microsoft：中国 CDN 直连，其余走 Microsoft
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
-# 微信域名与可见 SNI：广告规则优先，未拦截流量直连
+# 微信域名/SNI 直连：广告优先，未确认海外地址不强制直连
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@ea9741c0903b2a05c68858fc6617ce73601b205e/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
@@ -80,8 +93,8 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT
-# 微信裸 IP 兜底：无 SNI 连接无法按域名/IP 网段识别，按进程直连（置于广告规则后不破坏拦截）
-PROCESS-NAME,WeChat,DIRECT
-PROCESS-NAME,WeChatAppEx,DIRECT
+# macOS 微信裸 IP 兜底：无 SNI 时按进程直连，仍低于广告规则
+PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY
+PROCESS-NAME,WeChatAppEx,DIRECT #!MACOS-ONLY
 # 未匹配及 DNS 失败：Proxy
 FINAL,Proxy,dns-failed
