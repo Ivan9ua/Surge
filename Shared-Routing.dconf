@@ -34,8 +34,6 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 # 内网域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
-# 系统规则：直连
-RULE-SET,SYSTEM,DIRECT
 # AI 与 Apple Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching

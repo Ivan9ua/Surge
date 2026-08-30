@@ -103,7 +103,9 @@ fi
 grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未同时覆盖 Mac 与 iPhone"
 grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf" || fail "共享 General 未启用 IPv6"
 grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "共享 General 未使用自动 IPv6 VIF"
-grep -q '^show-error-page-for-reject = false$' "$scan_root/Shared-General.dconf" || fail "共享 General 未关闭 REJECT 普通 HTTP 错误页"
+if grep -Eq '^[[:space:]]*show-error-page-for-reject[[:space:]]*=[[:space:]]*true[[:space:]]*$' "$scan_root/Shared-General.dconf"; then
+  fail "共享 General 显式启用了 REJECT 普通 HTTP 错误页"
+fi
 if grep -q '162\.14\.0\.0/16' "$scan_root/Shared-General.dconf"; then
   fail "共享 General 仍含已移除的宽泛公网 skip-proxy 段"
 fi
