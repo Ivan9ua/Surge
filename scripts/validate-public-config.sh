@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 scan_root="$repo_root"
 scan_history=false
+history_ref='--all'
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -15,6 +16,12 @@ while [[ $# -gt 0 ]]; do
     --history)
       scan_history=true
       shift
+      ;;
+    --history-ref)
+      [[ $# -ge 2 ]] || { echo "--history-ref 缺少 Git 引用" >&2; exit 2; }
+      scan_history=true
+      history_ref="$2"
+      shift 2
       ;;
     *)
       echo "未知参数: $1" >&2
@@ -49,9 +56,11 @@ if grep -nE '(gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-
   fail "发现疑似平台访问令牌"
 fi
 
-if grep -nEi '^[[:space:]]*(ca-p12|ca-passphrase)[[:space:]]*=' "${config_files[@]}" >/dev/null; then
-  fail "发现 MITM 私钥或口令字段"
-fi
+for config_file in "${config_files[@]}"; do
+  if grep -nEi '^[[:space:]]*(ca-p12|ca-passphrase|ca-keystore-name)[[:space:]]*=|^[[:space:]]*\[Keystore\][[:space:]]*$|type[[:space:]]*=[[:space:]]*p12.*base64[[:space:]]*=' "$config_file" >/dev/null; then
+    fail "$(basename "$config_file") 含 MITM Keystore、私钥或口令字段"
+  fi
+done
 
 if grep -nEi '^[[:space:]]*(private-key|http-api|external-controller-access|wifi-access-password)[[:space:]]*=' "${config_files[@]}" >/dev/null; then
   fail "发现私钥或远程访问凭据字段"
@@ -87,8 +96,6 @@ fi
 
 grep -q 'psk=YOUR_SNELL_PSK' "$scan_root/Shared-Routing.dconf" || fail "缺少 Snell PSK 占位符"
 grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared-Routing.dconf" || fail "缺少订阅地址占位符"
-grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 MTProto secret 占位符"
-grep -q '^secret = 00000000000000000000000000000000$' "$scan_root/iPhone.conf" || fail "iPhone 模板缺少 MTProto secret 占位符"
 grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared-Routing.dconf" || fail "共享规则缺少预期 FINAL 兜底"
 wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/[0-9a-f]{40}/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@[0-9a-f]{40}/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve)$'
 grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未固定到完整提交或缺少 no-resolve,extended-matching"
@@ -96,13 +103,20 @@ grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "�
 if grep -Eq 'wechat-(direct|exception|ip)\.list' "$scan_root/Shared-Routing.dconf"; then
   fail "共享规则仍引用旧版微信拆分规则"
 fi
-grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared-Routing.dconf" || fail "缺少 MTProto 入站分流"
+if grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared-Routing.dconf"; then
+  fail "共享规则仍含已删除的 MTProto 入站分流"
+fi
 if grep -q 'telegram_asn\.conf' "$scan_root/Shared-Routing.dconf"; then
   fail "仍在使用高风险 Telegram ASN 规则"
 fi
-grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未同时覆盖 Mac 与 iPhone"
-grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf" || fail "共享 General 未启用 IPv6"
-grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "共享 General 未使用自动 IPv6 VIF"
+grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT #!MACOS-ONLY$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未限定为 macOS"
+grep -q '^ipv6 = true$' "$scan_root/Surge.conf" || fail "Mac 模板未启用 IPv6"
+grep -q '^ipv6-vif = auto$' "$scan_root/Surge.conf" || fail "Mac 模板未使用自动 IPv6 VIF"
+grep -q '^ipv6 = false$' "$scan_root/iPhone.conf" || fail "iPhone 模板未关闭 IPv6"
+grep -q '^ipv6-vif = disabled$' "$scan_root/iPhone.conf" || fail "iPhone 模板未禁用 IPv6 VIF"
+if grep -qE '^ipv6(-vif)?[[:space:]]*=' "$scan_root/Shared-General.dconf"; then
+  fail "IPv6 设备差异不应写入共享 General"
+fi
 if grep -Eq '^[[:space:]]*show-error-page-for-reject[[:space:]]*=[[:space:]]*true[[:space:]]*$' "$scan_root/Shared-General.dconf"; then
   fail "共享 General 显式启用了 REJECT 普通 HTTP 错误页"
 fi
@@ -129,8 +143,7 @@ if awk '
 fi
 
 required_platform_ad_rules=(
-  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY'
-  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching'
   'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY'
   'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
@@ -248,8 +261,8 @@ fi
 if [[ "$scan_history" == true ]]; then
   git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null
   while IFS= read -r revision; do
-    if git -C "$repo_root" grep -I -E '^[[:space:]]*(ca-p12|ca-passphrase)[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -q .; then
-      fail "Git 历史提交 ${revision:0:12} 含 MITM 私钥材料"
+    if git -C "$repo_root" grep -I -E '^[[:space:]]*(ca-p12|ca-passphrase|ca-keystore-name)[[:space:]]*=|^[[:space:]]*\[Keystore\][[:space:]]*$|type[[:space:]]*=[[:space:]]*p12.*base64[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含 MITM Keystore 或私钥材料"
     fi
     if git -C "$repo_root" grep -I -E -- '-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}' "$revision" 2>/dev/null | grep -q .; then
       fail "Git 历史提交 ${revision:0:12} 含私钥或平台访问令牌"
@@ -266,7 +279,7 @@ if [[ "$scan_history" == true ]]; then
     if git -C "$repo_root" grep -I -E '^[[:space:]]*(private-key|http-api|external-controller-access|wifi-access-password)[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -q .; then
       fail "Git 历史提交 ${revision:0:12} 含私钥或远程访问凭据"
     fi
-  done < <(git -C "$repo_root" rev-list --all)
+  done < <(git -C "$repo_root" rev-list "$history_ref")
 fi
 
 echo "公开配置校验通过"
