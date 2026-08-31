@@ -40,15 +40,23 @@ sanitize_config() {
   template_name="$3"
   {
     printf '# %s\n' "$template_name"
-    printf '# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书。\n\n'
-    sed -E \
-      -e '/^[[:space:]]*(ca-p12|ca-passphrase)[[:space:]]*=/d' \
+    printf '# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书与 Keystore。\n\n'
+    awk '
+      BEGIN { in_keystore=0 }
+      /^[[:space:]]*\[Keystore\][[:space:]]*$/ { in_keystore=1; next }
+      in_keystore && /^[[:space:]]*\[/ { in_keystore=0 }
+      !in_keystore { print }
+    ' "$input_file" | sed -E \
+      -e '/^[[:space:]]*(ca-p12|ca-passphrase|ca-keystore-name)[[:space:]]*=/d' \
       -e '/^[[:space:]]*(http-api|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
       -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
       -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
       -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
-      -e 's/^[[:space:]]*secret[[:space:]]*=.*/secret = 00000000000000000000000000000000/' \
-      "$input_file"
+      -e 's/^[[:space:]]*secret[[:space:]]*=.*/secret = 00000000000000000000000000000000/' |
+      awk '
+        NF { while (blank_count > 0) { print ""; blank_count-- } print; next }
+        { blank_count++ }
+      '
   } > "$output_file"
 }
 

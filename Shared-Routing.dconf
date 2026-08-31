@@ -1,31 +1,30 @@
 # Surge Mac / iPhone 共享配置模板
-# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书。
+# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书与 Keystore。
 
 [Proxy]
 US-Snell = snell, example.com, 8388, psk=YOUR_SNELL_PSK, version=6, mode=default, tfo=true
 
 [Proxy Group]
-Proxy = select, HK, TW, JP, SG, US, US-Snell, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0
+Proxy = select, HK, TW, SG, US-Snell, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0
 Stream = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/HKMTMedia.png
-Intelligence = select, HK, TW, JP, SG, US, US-Snell, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0
-Telegram = select, HK, TW, SG, US, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png
-Apple = select, DIRECT, HK, TW, JP, SG, US, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png
-Microsoft = select, DIRECT, HK, TW, JP, SG, US, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
+Intelligence = select, US, US-Snell, SG, HK, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0
+Telegram = select, SG, HK, US, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png
+Apple = select, US, HK, JP, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png
+Microsoft = select, HK, US, SG, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
 
 # 地区智能选优
 HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰)|(香港)|(Hong)|(HK), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(台湾)|(Taiwan)|(^TW$), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵)|(日本)|(Japan)|(JP), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬)|(新加)|(Singapore)|(SG), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-US = smart, US-Snell, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸)|(美国)|(States)|(US), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=US-Snell:0.98; 高级:0.95; 标准:1; 实验性:1.05
+US = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸)|(美国)|(States)|(US), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 
 # 订阅节点
-Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
+Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong Kong|🇹🇼|台湾|Taiwan|🇸🇬|新加坡|Singapore|🇯🇵|日本|Japan|🇺🇸|美国|United States|(^|[^A-Za-z])(HK|TW|SG|JP|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
 # 移动端与 macOS 广告：预匹配并静默丢弃
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!IOS-ONLY
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
@@ -39,8 +38,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
 # 流媒体
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/stream.conf,Stream
-# Telegram：MTProto 与域名分流
-PROTOCOL,MTProto,Telegram
+# Telegram：域名分流
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/telegram.conf,Telegram
 # Apple：中国区与 CDN 直连，其余走 Apple
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_cn.conf,DIRECT
@@ -80,7 +78,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/ip/neteasemusic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip.conf,DIRECT
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT
+RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT #!MACOS-ONLY
 # macOS 微信裸 IP 兜底：无 SNI 时按进程直连，仍低于广告规则
 PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY
 PROCESS-NAME,WeChatAppEx,DIRECT #!MACOS-ONLY
