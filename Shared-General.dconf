@@ -1,12 +1,9 @@
 # Surge Mac / iPhone 共享 General 配置模板
-# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书。
+# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书与 Keystore。
 
 [General]
 # 日志级别
 loglevel = notify
-# IPv6 支持；VIF 按当前网络自动启用
-ipv6 = true
-ipv6-vif = auto
 # 简单主机名：交由 Surge VIF 处理
 exclude-simple-hostnames = true
 # 网络与策略测试

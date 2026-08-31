@@ -1,6 +1,6 @@
 # Surge 配置
 
-个人 Surge 脱敏配置模板，基于 [SukkaW/Surge](https://github.com/SukkaW/Surge) 规则集，并维护微信域名与 IP 补充规则。
+个人 Surge 脱敏配置模板，基于 [SukkaW/Surge](https://github.com/SukkaW/Surge) 规则集，并维护微信域名与可见 SNI 补充规则。
 
 ## 文件说明
 
@@ -19,7 +19,7 @@
 按“广告优先、专用规则早于通用规则、域名规则早于 IP 规则”排序：
 
 ```
-广告域名 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 微信统一直连 → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4/IPv6 → 微信进程兜底 → FINAL
+广告域名 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 微信统一直连 → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4 → Mac 国内 IPv6 → 微信进程兜底 → FINAL
 ```
 
 ## 规则源
@@ -33,8 +33,7 @@
 1. Mac 导入 `Surge.conf`，iPhone 导入 `iPhone.conf`。
 2. 将 `Shared-Routing.dconf` 与 `Shared-General.dconf` 放入 iCloud Drive 的 Surge 目录，确保与设备配置同目录。
 3. 将 `Shared-Routing.dconf` 中的 `example.com`、`YOUR_SNELL_PSK` 和 `YOUR_SURGE_SUBSCRIPTION_URL` 替换为自己的值。
-4. 将 Mac/iPhone 模板中的全零 MTProto `secret` 替换为设备自己的 32 位十六进制密钥。
-5. 在 Surge UI 中生成并配置设备自己的 MITM 证书。
+4. 在 Surge UI 中为 Mac 与 iPhone 分别生成并配置自己的 MITM 证书和 Keystore；公开模板不会保存该部分。
 
 ### 微信规则收录范围
 
@@ -43,11 +42,11 @@
 当前使用 `extended-matching` 识别直接连接 IP 时暴露的 TLS/QUIC SNI；不使用静态 IP、`IP-ASN,132203` 或顶层 `DOMAIN-KEYWORD`，避免将非微信腾讯流量一并直连。
 
 以下内容明确不并入微信直连规则：`trace.qq.com`、`beacon.qq.com`、`btrace.qq.com` 等追踪/广告端点；小程序去广告的 URL Rewrite、Body Rewrite、Map Local、Script、MITM 模块；以及 Blackmatrix7 的通用 Tencent 大清单。它们分别属于拦截、内容改写或广义腾讯业务，不是媒体上传的必要路由。
-### IPv6 与 MTProto
+### IPv6 与 Telegram
 
-- Mac 与 iPhone 均使用 `ipv6 = true`、`ipv6-vif = auto`。
-- 中国 IPv6 由 Sukka `china_ip_ipv6.conf` 直连。
-- `[MTProto]` 使用 Sukka 每日更新的数据中心映射；其独立 `ipv6 = false` 不受主网络 IPv6 设置影响。
+- Mac 使用 `ipv6 = true`、`ipv6-vif = auto`，中国 IPv6 由 Sukka `china_ip_ipv6.conf` 直连。
+- iPhone 使用 `ipv6 = false`、`ipv6-vif = disabled`，不加载中国 IPv6 规则。
+- Telegram 仅保留域名与官方 IP 出站分流；不配置 `PROTOCOL,MTProto,Telegram` 入站规则。
 
 ### Mac 模块兼容说明
 
@@ -69,7 +68,7 @@ Mac 以 `[Sukka] Always Real IP Plus` 为主要 Host Lists 模块。为避免重
 scripts/sync-local-surge.sh "/path/to/Surge" --apply
 ```
 
-脚本会先在临时目录删除 MITM 与远程控制凭据，并将 Snell 地址、PSK、订阅地址及 MTProto secret 替换为占位符；只有完整校验通过后才会更新仓库文件。提交前可再次运行：
+脚本会先在临时目录删除 MITM Keystore、证书引用与远程控制凭据，并将 Snell 地址、PSK、订阅地址及可能存在的 MTProto secret 替换为占位符；只有完整校验通过后才会更新仓库文件。提交前可再次运行：
 
 ```bash
 scripts/validate-public-config.sh

@@ -1,6 +1,6 @@
 # 安全策略
 
-本仓库是公开的 Surge 脱敏模板仓库。任何代理地址、订阅链接、PSK、MTProto secret、远程控制密码、令牌、MITM 证书或私钥材料都不得提交。
+本仓库是公开的 Surge 脱敏模板仓库。任何代理地址、订阅链接、PSK、MTProto secret、远程控制密码、令牌、MITM 证书、Keystore Base64、Keystore 密码或私钥材料都不得提交。
 
 ## 提交前检查
 
