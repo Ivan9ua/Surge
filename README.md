@@ -11,8 +11,6 @@
 | `Shared-Routing.dconf` | 共享路由（代理节点 + 策略组 + 分流规则） |
 | `Shared-General.dconf` | 共享 General（Mac / iPhone 公共设置） |
 | `wechat.list` | 微信域名与可见 SNI 统一直连规则 |
-| `bilibili.sgmodule` | Bilibili 去广告模块（无伪造会员） |
-| `youtube-enhance-bounded.sgmodule` | YouTube 增强模块（正文上限 2 MiB） |
 
 ## 规则排序逻辑
 
@@ -52,11 +50,11 @@
 
 Mac 以 `[Sukka] Always Real IP Plus` 为主要 Host Lists 模块。为避免重复追加，请启用该模块，并停用 `Fix Windows No Network Alert` 与 `HTTP Download Optimization`；`Surge.conf` 只保留 Sukka 模块未覆盖的基础项和 `*.windowsupdate.com`。
 
-## 在线规则与模块
+## 在线规则
 
 - [微信统一直连规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list)
-- [安装 Bilibili 去广告模块](https://raw.githubusercontent.com/Ivan9ua/Surge/main/bilibili.sgmodule)
-- [安装 YouTube Enhance 受控版](https://raw.githubusercontent.com/Ivan9ua/Surge/main/youtube-enhance-bounded.sgmodule)
+
+> 本仓库不再维护 Bilibili 与 YouTube Surge 模块；已安装的设备模块不会因远程文件删除自动卸载，请在 Surge 模块列表中手动移除。
 
 > 本仓库只保存脱敏模板；请勿提交节点地址、订阅链接、密钥或 MITM 证书。
 
@@ -72,9 +70,8 @@ scripts/sync-local-surge.sh "/path/to/Surge" --apply
 
 ```bash
 scripts/validate-public-config.sh
-scripts/verify-remote-integrity.sh
 ```
 
-CI 会检查整个 Git 历史，阻止凭据重新进入公开提交。可执行远程脚本尽量固定到上游提交；无法固定的 Bilibili 脚本使用 SHA-256 清单监控内容变化。
+CI 会检查整个 Git 历史，阻止凭据重新进入公开提交。
 
 发现真实凭据进入 Git 历史时，删除当前文件并不足够：必须先轮换凭据，再重写历史并清理所有可达分支。详见 `SECURITY.md`。
