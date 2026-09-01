@@ -11,6 +11,8 @@ scripts/verify-remote-integrity.sh
 
 本地真实配置仅能通过 `scripts/sync-local-surge.sh <目录> --apply` 同步。该脚本先在临时目录脱敏并校验，校验失败时不会覆盖仓库文件。
 
+历史重写或分支清理后，检查所有固定版本的远程规则 URL；它们必须指向 `main` 或受保护发布分支中仍可达的提交，不能继续依赖失去引用的旧对象。
+
 ## 泄露响应
 
 如果凭据曾进入任何 Git 提交：

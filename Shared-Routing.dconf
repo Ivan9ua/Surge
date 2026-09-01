@@ -48,7 +48,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
 # 微信域名/SNI 直连：广告优先，未确认海外地址不强制直连
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@ea9741c0903b2a05c68858fc6617ce73601b205e/wechat.list,DIRECT,extended-matching,no-resolve
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@e5fcff124e228889b73025caeeeeb1fceeb144fa/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 下载直连
