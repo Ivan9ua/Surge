@@ -24,8 +24,6 @@ tracked_files=(
   iPhone.conf
   Shared-Routing.dconf
   Shared-General.dconf
-  bilibili.sgmodule
-  youtube-enhance-bounded.sgmodule
   wechat.list
 )
 for tracked_file in "${tracked_files[@]}"; do
@@ -77,12 +75,6 @@ fi
 if [[ -f "$source_dir/Shared-General.dconf" ]]; then
   sanitize_config "$source_dir/Shared-General.dconf" "$staging_dir/Shared-General.dconf" 'Surge Mac / iPhone 共享 General 配置模板'
 fi
-
-for module_name in bilibili.sgmodule youtube-enhance-bounded.sgmodule; do
-  if [[ -f "$source_dir/$module_name" ]]; then
-    cp "$source_dir/$module_name" "$staging_dir/$module_name"
-  fi
-done
 
 "$repo_root/scripts/validate-public-config.sh" --root "$staging_dir"
 

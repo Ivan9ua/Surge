@@ -30,7 +30,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf bilibili.sgmodule youtube-enhance-bounded.sgmodule wechat.list)
+required_files=(Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf wechat.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -41,7 +41,7 @@ fail() {
 }
 
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared-Routing.dconf" "$scan_root/Shared-General.dconf")
-all_public_files=("${config_files[@]}" "$scan_root/bilibili.sgmodule" "$scan_root/youtube-enhance-bounded.sgmodule" "$scan_root/wechat.list")
+all_public_files=("${config_files[@]}" "$scan_root/wechat.list")
 
 forbidden_extension='.'q'xrewrite'
 if find "$scan_root" -maxdepth 1 -type f -name "*$forbidden_extension" -print -quit | grep -q .; then
@@ -208,45 +208,6 @@ for profile_name in Surge.conf iPhone.conf; do
   general_include_count=$(grep -c '^#!include Shared-General\.dconf$' "$scan_root/$profile_name" || true)
   [[ "$general_include_count" -eq 1 ]] || fail "$profile_name 必须在 General 包含一次 Shared-General.dconf"
 done
-
-for module_name in bilibili.sgmodule youtube-enhance-bounded.sgmodule; do
-  if ! awk -v limit=2097152 '
-    /^[[:space:]]*#/ { next }
-    /requires-body=(true|1)/ {
-      value=$0
-      if (value !~ /max-size=[0-9]+/) exit 1
-      sub(/^.*max-size=/, "", value)
-      sub(/,.*/, "", value)
-      if ((value + 0) > limit) exit 1
-    }
-  ' "$scan_root/$module_name"; then
-    fail "$module_name 存在无正文上限或超过 2 MiB 的脚本"
-  fi
-done
-
-if grep -q 'script-path=https://raw.githubusercontent.com/Maasea/sgmodule/master/' "$scan_root/youtube-enhance-bounded.sgmodule"; then
-  fail "YouTube 可执行脚本仍跟随 master"
-fi
-
-script_manifest="$repo_root/scripts/remote-assets.sha256"
-while IFS= read -r script_url; do
-  case "$script_url" in
-    https://raw.githubusercontent.com/Maasea/sgmodule/65075cdb388fc5e3094afd7e7314c67b243f3525/*)
-      ;;
-    https://raw.githubusercontent.com/app2smile/rules/5380447220ea3df4abee8b77dd118de9165631fa/js/bilibili-json.js|https://raw.githubusercontent.com/app2smile/rules/5890c30ff94aa619ed06ec4f343c609acb6bd461/js/bilibili-proto.js)
-      ;;
-    https://kelee.one/*)
-      grep -Fq "  $script_url" "$script_manifest" || fail "Bilibili 远程脚本缺少完整性清单: $script_url"
-      ;;
-    *)
-      fail "发现未固定或未监控的可执行脚本: $script_url"
-      ;;
-  esac
-done < <(
-  {
-    grep -hEo 'script-path=https://[^,[:space:]]+' "$scan_root"/*.sgmodule | sed 's/^script-path=//'
-  } | sort -u
-)
 
 if command -v surge-cli >/dev/null 2>&1; then
   surge-cli --check "$scan_root/Surge.conf" >/dev/null
