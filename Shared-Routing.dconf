@@ -13,11 +13,11 @@ Apple = select, US, HK, JP, DIRECT, icon-url=https://raw.githubusercontent.com/K
 Microsoft = select, HK, US, SG, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
 
 # 地区智能选优
-HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-US = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
+TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
+JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
+SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
+US = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
 
 # 订阅节点
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])(HK|TW|JP|SG|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
@@ -33,6 +33,10 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 # 内网域名直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
+# GitHub：主站、源码归档、Release 与静态资源优先代理
+DOMAIN-SUFFIX,github.com,Proxy
+DOMAIN-SUFFIX,githubusercontent.com,Proxy
+DOMAIN-SUFFIX,githubassets.com,Proxy
 # AI 与 Apple Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
@@ -47,7 +51,10 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple
 # Microsoft：中国 CDN 直连，其余走 Microsoft
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
-# 微信域名/SNI 直连：广告优先，未确认海外地址不强制直连
+# 微信海外控制端点：避免被 Mac 进程直连兜底覆盖
+DOMAIN,sgshort.wechat.com,Proxy,extended-matching
+DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
+# 微信域名/SNI 直连：广告优先
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@e5fcff124e228889b73025caeeeeb1fceeb144fa/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
