@@ -26,6 +26,8 @@
 - `wechat.list` — 基于实际连接审计与公开微信规则集交叉核对维护的单一远程规则
 - 策略组 Smart 自动选优
 
+规则地址、策略和扩展匹配的逐条核对记录见 [博客规则对照表](BLOG-RULE-AUDIT.md)。Sukka 规则统一使用 `ruleset.skk.moe`；Apple CDN 使用项目现行的 DOMAIN-SET 地址。
+
 ## 使用方法
 
 1. Mac 导入 `Surge.conf`，iPhone 导入 `iPhone.conf`。
@@ -58,7 +60,7 @@ Mac 使用 `[Sukka] Always Real IP Plus`，基础真实 IP 例外位于 `Shared-
 
 共享 General 使用 AliDNS DoH，公开模板将个人专属地址替换为 `https://dns.alidns.com/dns-query`；使用个人服务时自行填写地址。当前本地还启用了 `[Sukka] Local DNS Mapping`，其 `[Host]` 规则可覆盖部分域名的解析器，模块启用状态需在设备上单独核验。
 
-业务域名规则已补齐扩展匹配，Apple 与微软国内 CDN 规则配套增强，以保持可见 SNI 场景下的直连优先级。`skip-proxy` 按当前本地选择补充 Sukka 建议网段，仍排除农行域名；代理测速使用 `http://latency-test.skk.moe/endpoint`，不支持 UDP 的策略使用 `REJECT`。
+业务域名规则按博客补齐扩展匹配。最新本地保留 Apple 中国区/CDN、微软 CDN 的普通匹配；仅有 SNI 时可能由后续服务规则代理，详见对照表。通用下载两条规则使用 Proxy，前序国内 Apple/微软 CDN 仍按域名直连。`skip-proxy` 按当前本地选择补充 Sukka 建议网段，仍排除农行域名；代理测速使用 `http://latency-test.skk.moe/endpoint`，不支持 UDP 的策略使用 `REJECT`。
 
 扩展匹配用于增强分流覆盖，不代表性能提升。本次 Mac 全规则扫描样本约为 4–6.9 毫秒，此前约 0.86 毫秒；结果受运行状态影响，不能据此推算 iPhone 耗电，后续以实际连接表现评估。
 
