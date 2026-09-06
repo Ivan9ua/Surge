@@ -37,7 +37,11 @@
 
 `sgshort.wechat.com` 与 `sgminorshort.wechat.com` 在共享路由中明确指定 `Proxy,extended-matching`，同时覆盖目标域名、可见 TLS SNI 和 HTTP Host，避免被 Mac 微信进程直连兜底覆盖。其余微信域名继续使用一条远程直连规则；完全没有域名信息的请求仍按后续 IP/进程规则处理。
 
-`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付与定位域名。共享配置只引用一次，固定到已验证且仍可由仓库 `main` 历史访问的提交，并使用 `no-resolve,extended-matching`：域名及可见 SNI 直连，国内 IP 由后续中国 IP 规则直连，海外 IP 交由最终代理策略；实测直连延迟较高的 `sgminorshort.wechat.com` 与 `sgshort.wechat.com` 被精确排除并交由代理，四个应用内 DNS 端点和 `wxsnsdy` 朋友圈广告端点通过逻辑排除继续交由 Sukka 广告规则处理。
+`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付与定位域名。共享配置只引用一次，固定到已验证且仍可由仓库 `main` 历史访问的提交，并使用 `no-resolve,extended-matching`，覆盖目标域名、可见 SNI 与 HTTP Host。实测直连延迟较高的 `sgminorshort.wechat.com` 与 `sgshort.wechat.com` 被精确排除并交由代理，四个应用内 DNS 端点和 `wxsnsdy` 朋友圈广告端点通过逻辑排除继续交由 Sukka 广告规则处理。
+
+未命中微信规则的请求继续按主配置处理：国内 IP 可由后续中国 IP 规则直连；Mac 的 `WeChat`、`WeChatAppEx` 进程在此前规则未命中时还可兜底直连，该兜底不限于裸 IP 或无 SNI 请求。iPhone 没有这两条进程兜底，其余未命中请求使用 `FINAL,Proxy,dns-failed`。如果规则匹配期间 DNS 解析失败，则直接使用 FINAL 策略，不再继续匹配 Mac 微信进程兜底。
+
+仅更新注释或说明时可保留原固定提交：新旧版本的有效规则相同，固定版本中的旧注释可能尚未同步，以本说明为准。
 
 当前使用 `extended-matching` 识别直接连接 IP 时暴露的 TLS/QUIC SNI；不使用静态 IP、`IP-ASN,132203` 或顶层 `DOMAIN-KEYWORD`，避免将非微信腾讯流量一并直连。
 

@@ -86,7 +86,7 @@ RULE-SET,https://ruleset-mirror.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip.conf,DIRECT
 RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT #!MACOS-ONLY
-# macOS 微信裸 IP 兜底：无 SNI 时按进程直连，仍低于广告规则
+# Mac 微信进程兜底：此前规则未命中时直连；DNS 失败由 FINAL 处理
 PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY
 PROCESS-NAME,WeChatAppEx,DIRECT #!MACOS-ONLY
 # 未匹配及 DNS 失败：Proxy
