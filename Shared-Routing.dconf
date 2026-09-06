@@ -13,79 +13,79 @@ Apple = select, US, HK, JP, DIRECT, icon-url=https://raw.githubusercontent.com/K
 Microsoft = select, HK, US, SG, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
 
 # 地区智能选优
-HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
-TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
-JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
-SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
-US = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority="高级:0.95; 标准:1; 实验性:1.05"
+HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+US = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 
 # 订阅节点
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])(HK|TW|JP|SG|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
 # 移动端与 macOS 广告：预匹配并静默丢弃
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 # Mac 广告规则：扩展匹配
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 # 内网域名直连
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/lan.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/lan.conf,DIRECT
 # GitHub：主站、源码归档、Release 与静态资源优先代理
 DOMAIN-SUFFIX,github.com,Proxy
 DOMAIN-SUFFIX,githubusercontent.com,Proxy
 DOMAIN-SUFFIX,githubassets.com,Proxy
 # AI 与 Apple Intelligence
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
 # 流媒体
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/stream.conf,Stream,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream,extended-matching
 # Telegram：域名分流
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/telegram.conf,Telegram,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram,extended-matching
 # Apple：中国区与 CDN 直连，其余走 Apple
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_cn.conf,DIRECT,extended-matching
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/apple_cdn.conf,DIRECT,extended-matching
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple,extended-matching
 # Microsoft：中国 CDN 直连，其余走 Microsoft
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT,extended-matching
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
 # 微信海外控制端点：避免被 Mac 进程直连兜底覆盖
 DOMAIN,sgshort.wechat.com,Proxy,extended-matching
 DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
 # 微信域名/SNI 直连：广告优先
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@e5fcff124e228889b73025caeeeeb1fceeb144fa/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT,extended-matching
-# 下载直连
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/download.conf,DIRECT,extended-matching
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT,extended-matching
+# 通用下载：Proxy；Apple 与微软国内 CDN 已在前序直连
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,Proxy,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,Proxy,extended-matching
 # 通用 CDN：Proxy
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy,extended-matching
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy,extended-matching
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy,extended-matching
 # 国内域名直连
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching
 # 其他海外域名：Proxy
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy,extended-matching
 
 # IP 规则
 # 广告 IP：静默丢弃
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/reject.conf,REJECT-DROP
+RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 # AI IP：Intelligence
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/ai.conf,Intelligence
+RULE-SET,https://ruleset.skk.moe/List/ip/ai.conf,Intelligence
 # Telegram 官方 IP
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/telegram.conf,Telegram
+RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram
 # 流媒体 IP
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/stream.conf,Stream
+RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,Stream
 # 网易云音乐 IP 直连
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/neteasemusic.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,DIRECT
 # 内网与国内 IP 直连
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/lan.conf,DIRECT
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/domestic.conf,DIRECT
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip.conf,DIRECT
-RULE-SET,https://ruleset-mirror.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT #!MACOS-ONLY
+RULE-SET,https://ruleset.skk.moe/List/ip/lan.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT #!MACOS-ONLY
 # Mac 微信进程兜底：此前规则未命中时直连；DNS 失败由 FINAL 处理
 PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY
 PROCESS-NAME,WeChatAppEx,DIRECT #!MACOS-ONLY

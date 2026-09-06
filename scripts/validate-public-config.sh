@@ -97,6 +97,13 @@ fi
 grep -q 'psk=YOUR_SNELL_PSK' "$scan_root/Shared-Routing.dconf" || fail "缺少 Snell PSK 占位符"
 grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared-Routing.dconf" || fail "缺少订阅地址占位符"
 grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared-Routing.dconf" || fail "共享规则缺少预期 FINAL 兜底"
+if grep -qE 'ruleset-mirror\.skk\.moe|List/non_ip/apple_cdn\.conf' "$scan_root/Shared-Routing.dconf"; then
+  fail "规则地址仍使用旧镜像或已废弃的 Apple CDN 路径"
+fi
+grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT' "$scan_root/Shared-Routing.dconf" || fail "Apple CDN 地址或匹配方式与本地决定不一致"
+for download_type in domainset non_ip; do
+  grep -qF "https://ruleset.skk.moe/List/$download_type/download.conf,Proxy,extended-matching" "$scan_root/Shared-Routing.dconf" || fail "通用下载未按博客映射到 Proxy"
+done
 wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/[0-9a-f]{40}/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@[0-9a-f]{40}/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve)$'
 grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未固定到完整提交或缺少 no-resolve,extended-matching"
 [[ "$(grep -cE 'Ivan9ua/Surge@[0-9a-f]{40}/wechat\.list' "$scan_root/Shared-Routing.dconf")" -eq 1 ]] || fail "微信统一规则必须且只能引用一次"
@@ -109,7 +116,7 @@ fi
 if grep -q 'telegram_asn\.conf' "$scan_root/Shared-Routing.dconf"; then
   fail "仍在使用高风险 Telegram ASN 规则"
 fi
-grep -q '^RULE-SET,https://ruleset-mirror\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT #!MACOS-ONLY$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未限定为 macOS"
+grep -q '^RULE-SET,https://ruleset\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT #!MACOS-ONLY$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未限定为 macOS"
 grep -q '^ipv6 = true$' "$scan_root/Surge.conf" || fail "Mac 模板未启用 IPv6"
 grep -q '^ipv6-vif = auto$' "$scan_root/Surge.conf" || fail "Mac 模板未使用自动 IPv6 VIF"
 grep -q '^ipv6 = false$' "$scan_root/iPhone.conf" || fail "iPhone 模板未关闭 IPv6"
@@ -143,11 +150,11 @@ if awk '
 fi
 
 required_platform_ad_rules=(
-  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching'
-  'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY'
-  'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
-  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
-  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching'
+  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY'
+  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
 )
 for required_rule in "${required_platform_ad_rules[@]}"; do
   grep -qFx -- "$required_rule" "$scan_root/Shared-Routing.dconf" || fail "平台广告规则缺失或条件异常: $required_rule"
