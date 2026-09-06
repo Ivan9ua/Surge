@@ -24,7 +24,7 @@ Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, includ
 
 [Rule]
 # 移动端与 macOS 广告：预匹配并静默丢弃
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching
 # 广告域名：iPhone 普通匹配，Mac 扩展匹配
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY
 DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
@@ -38,18 +38,18 @@ DOMAIN-SUFFIX,github.com,Proxy
 DOMAIN-SUFFIX,githubusercontent.com,Proxy
 DOMAIN-SUFFIX,githubassets.com,Proxy
 # AI 与 Apple Intelligence
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
 # 流媒体
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/stream.conf,Stream
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/stream.conf,Stream,extended-matching
 # Telegram：域名分流
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/telegram.conf,Telegram
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/telegram.conf,Telegram,extended-matching
 # Apple：中国区与 CDN 直连，其余走 Apple
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_cn.conf,DIRECT
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/apple_cdn.conf,DIRECT
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_cn.conf,DIRECT,extended-matching
+DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/apple_cdn.conf,DIRECT,extended-matching
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/apple_services.conf,Apple,extended-matching
 # Microsoft：中国 CDN 直连，其余走 Microsoft
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT,extended-matching
 RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
 # 微信海外控制端点：避免被 Mac 进程直连兜底覆盖
 DOMAIN,sgshort.wechat.com,Proxy,extended-matching
@@ -57,18 +57,18 @@ DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
 # 微信域名/SNI 直连：广告优先
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@e5fcff124e228889b73025caeeeeb1fceeb144fa/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/neteasemusic.conf,DIRECT,extended-matching
 # 下载直连
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/download.conf,DIRECT
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT
+DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/download.conf,DIRECT,extended-matching
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/download.conf,DIRECT,extended-matching
 # 通用 CDN：Proxy
-DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy
+DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/cdn.conf,Proxy,extended-matching
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/cdn.conf,Proxy,extended-matching
 # 国内域名直连
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching
 # 其他海外域名：Proxy
-RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy
+RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/global.conf,Proxy,extended-matching
 
 # IP 规则
 # 广告 IP：静默丢弃

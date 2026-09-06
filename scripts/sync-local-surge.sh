@@ -49,6 +49,7 @@ sanitize_config() {
       -e '/^[[:space:]]*(http-api|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
       -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
       -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
+      -e 's#https://[A-Za-z0-9.-]+\.alidns\.com/dns-query#https://dns.alidns.com/dns-query#g' \
       -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
       -e 's/^[[:space:]]*secret[[:space:]]*=.*/secret = 00000000000000000000000000000000/' |
       awk '

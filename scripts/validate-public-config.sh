@@ -120,8 +120,8 @@ fi
 if grep -Eq '^[[:space:]]*show-error-page-for-reject[[:space:]]*=[[:space:]]*true[[:space:]]*$' "$scan_root/Shared-General.dconf"; then
   fail "共享 General 显式启用了 REJECT 普通 HTTP 错误页"
 fi
-if grep -q '162\.14\.0\.0/16' "$scan_root/Shared-General.dconf"; then
-  fail "共享 General 仍含已移除的宽泛公网 skip-proxy 段"
+if grep -Eio 'https://[a-z0-9.-]+\.alidns\.com' "${all_public_files[@]}" | grep -Eiv 'https://dns\.alidns\.com$' >/dev/null; then
+  fail "发现未脱敏的个人 AliDNS 地址"
 fi
 grep -q '^icmp-forwarding = true$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 macOS 专用 ICMP 转发"
 if grep -q '^icmp-forwarding' "$scan_root/iPhone.conf" "$scan_root/Shared-General.dconf"; then
@@ -143,7 +143,7 @@ if awk '
 fi
 
 required_platform_ad_rules=(
-  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching'
+  'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching'
   'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT #!IOS-ONLY'
   'DOMAIN-SET,https://ruleset-mirror.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset-mirror.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'

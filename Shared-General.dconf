@@ -9,16 +9,18 @@ exclude-simple-hostnames = true
 # 网络与策略测试
 test-timeout = 5
 internet-test-url = http://connectivitycheck.platform.hicloud.com/generate_204
-proxy-test-url = http://cp.cloudflare.com/generate_204
+proxy-test-url = http://latency-test.skk.moe/endpoint
 proxy-test-udp = www.apple.com@64.6.64.6
-# DNS 与本地解析
+# 传统 DNS：网络检测与加密 DNS 服务器域名解析
 dns-server = system, 223.5.5.5, 119.29.29.29
+# 主加密 DNS：AliDNS DoH，默认直连
+encrypted-dns-server = https://dns.alidns.com/dns-query
 # VIF 真实 IP 例外：自定义主机与已启用模块追加项
 always-real-ip = *.msftncsi.com, *.msftconnecttest.com, *.battlenet.com.cn, *.battlenet.com, *.blzstatic.cn, *.battle.net, 127.*.*.*.sslip.io, 127-*-*-*.sslip.io, *.127.*.*.*.sslip.io, *-127-*-*-*.sslip.io, 127.*.*.*.nip.io, 127-*-*-*.nip.io, *.127.*.*.*.nip.io, *-127-*-*-*.nip.io
-# 系统代理兼容绕过；仅保留局域网和已确认主机
-skip-proxy = 127.0.0.0/8, 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, fc00::/7, fe80::/10, localhost, *.local, captive.apple.com, passenger.t3go.cn, *.ccb.com, wxh.wo.cn
-# 不支持 UDP 的策略：拒绝但不静默丢包
-udp-policy-not-supported-behaviour = REJECT-NO-DROP
+# 系统代理兼容绕过：局域网、Sukka 建议网段与已确认主机
+skip-proxy = 127.0.0.0/8, 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10, 162.14.0.0/16, 211.99.96.0/19, 162.159.192.0/24, 162.159.193.0/24, 162.159.195.0/24, fc00::/7, fe80::/10, localhost, *.local, captive.apple.com, passenger.t3go.cn, *.ccb.com, wxh.wo.cn
+# 策略不支持 UDP 时拒绝，避免转为直连
+udp-policy-not-supported-behaviour = REJECT
 # UDP 优先级（游戏模式）：关闭
 udp-priority = false
 # 关闭 GeoIP 自动更新；当前不使用 GEOIP 规则

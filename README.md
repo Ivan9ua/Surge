@@ -56,7 +56,11 @@
 
 Mac 使用 `[Sukka] Always Real IP Plus`，基础真实 IP 例外位于 `Shared-General.dconf`；当前不包含 `*.windowsupdate.com`。`Fix Windows No Network Alert` 与 `HTTP Download Optimization` 保持停用。
 
-当前本地还启用了 `[Sukka] Local DNS Mapping`。共享 General 不配置全局加密 DNS，但该模块会在 `[Host]` 中为部分国内域名指定 DoH，因此不应将生效配置描述为完全不使用加密 DNS。模块启用状态需在设备上单独核验。
+共享 General 使用 AliDNS DoH，公开模板将个人专属地址替换为 `https://dns.alidns.com/dns-query`；使用个人服务时自行填写地址。当前本地还启用了 `[Sukka] Local DNS Mapping`，其 `[Host]` 规则可覆盖部分域名的解析器，模块启用状态需在设备上单独核验。
+
+业务域名规则已补齐扩展匹配，Apple 与微软国内 CDN 规则配套增强，以保持可见 SNI 场景下的直连优先级。`skip-proxy` 按当前本地选择补充 Sukka 建议网段，仍排除农行域名；代理测速使用 `http://latency-test.skk.moe/endpoint`，不支持 UDP 的策略使用 `REJECT`。
+
+扩展匹配用于增强分流覆盖，不代表性能提升。本次 Mac 全规则扫描样本约为 4–6.9 毫秒，此前约 0.86 毫秒；结果受运行状态影响，不能据此推算 iPhone 耗电，后续以实际连接表现评估。
 
 ## 在线规则
 
