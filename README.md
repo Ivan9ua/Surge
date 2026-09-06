@@ -17,7 +17,7 @@
 按“广告优先、专用规则早于通用规则、域名规则早于 IP 规则”排序：
 
 ```
-广告域名 → 内网 → GitHub → AI → 流媒体 → Telegram → Apple → Microsoft → 微信海外例外与统一直连 → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4 → Mac 国内 IPv6 → 微信进程兜底 → FINAL
+广告域名 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 微信海外例外与统一直连 → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4 → Mac 国内 IPv6 → 微信进程兜底 → FINAL
 ```
 
 ## 规则源
@@ -26,7 +26,7 @@
 - `wechat.list` — 基于实际连接审计与公开微信规则集交叉核对维护的单一远程规则
 - 策略组 Smart 自动选优
 
-规则地址、策略和扩展匹配的逐条核对记录见 [博客规则对照表](BLOG-RULE-AUDIT.md)。Sukka 规则统一使用 `ruleset.skk.moe`；Apple CDN 使用项目现行的 DOMAIN-SET 地址。
+规则地址、策略和扩展匹配的逐条核对记录见 [当前项目规则对照表](BLOG-RULE-AUDIT.md)。Sukka 规则统一使用 `ruleset.skk.moe`；Apple CDN 使用项目现行的 DOMAIN-SET 地址。
 
 ## 使用方法
 
@@ -52,7 +52,7 @@
 
 - Mac 使用 `ipv6 = true`、`ipv6-vif = auto`，中国 IPv6 由 Sukka `china_ip_ipv6.conf` 直连。
 - iPhone 使用 `ipv6 = false`、`ipv6-vif = disabled`，不加载中国 IPv6 规则。
-- Telegram 仅保留域名与官方 IP 出站分流；不配置 `PROTOCOL,MTProto,Telegram` 入站规则。
+- Telegram 使用域名、官方 CIDR 与其后的 ASN 补充出站分流；不配置 `PROTOCOL,MTProto,Telegram` 入站规则。
 
 ### Mac 模块兼容说明
 
@@ -60,9 +60,11 @@ Mac 使用 `[Sukka] Always Real IP Plus`，基础真实 IP 例外位于 `Shared-
 
 共享 General 使用 AliDNS DoH，公开模板将个人专属地址替换为 `https://dns.alidns.com/dns-query`；使用个人服务时自行填写地址。当前本地还启用了 `[Sukka] Local DNS Mapping`，其 `[Host]` 规则可覆盖部分域名的解析器，模块启用状态需在设备上单独核验。
 
-业务域名规则按博客补齐扩展匹配。最新本地保留 Apple 中国区/CDN、微软 CDN 的普通匹配；仅有 SNI 时可能由后续服务规则代理，详见对照表。通用下载两条规则使用 Proxy，前序国内 Apple/微软 CDN 仍按域名直连。`skip-proxy` 按当前本地选择补充 Sukka 建议网段，仍排除农行域名；代理测速使用 `http://latency-test.skk.moe/endpoint`，不支持 UDP 的策略使用 `REJECT`。
+业务规则的扩展匹配参数按当前 Sukka GitHub 示例及最新本地选择配置：广告基础域名双端开启扩展匹配，Apple Intelligence 与微信例外/直连保留扩展匹配；AI、流媒体、Telegram、Apple/Microsoft 服务、网易云、下载/CDN 与国内/海外通用规则使用普通匹配。仅有 IP＋SNI 的请求可能改走后续 IP 或 FINAL；例如本次模拟 `1.1.1.1` 携带 `api.openai.com` SNI 时走 Proxy，而非 Intelligence。此变化不等于语法错误，也不保证与此前覆盖完全相同。
 
-扩展匹配用于增强分流覆盖，不代表性能提升。本次 Mac 全规则扫描样本约为 4–6.9 毫秒，此前约 0.86 毫秒；结果受运行状态影响，不能据此推算 iPhone 耗电，后续以实际连接表现评估。
+Telegram ASN 是用户选择的补充，放在官方 CIDR 之后，不能代替实际媒体下载测试。[上游项目](https://github.com/SukkaW/Surge#telegram) 推荐优先使用官方 CIDR。[Surge 官方文档](https://manual.nssurge.com/rules/ip.html) 明确 ASN 数据库随应用更新，独立于 GeoIP 国家库，因此保留 `disable-geoip-db-auto-update = true` 不会停用 ASN 匹配。
+
+通用下载继续走 Proxy；前序国内 Apple/微软 CDN 按域名直连。删除 GitHub 显式规则后，已抽样确认 GitHub 主站由 global、静态资源由 cdn 接管，仍走 Proxy。`skip-proxy`、DNS、测速地址、UDP REJECT 与双端 IPv6 设置保持本地现状。此前广泛扩展匹配的耗时样本不再代表当前配置；本次未测量 iPhone 耗电。
 
 ## 在线规则
 
