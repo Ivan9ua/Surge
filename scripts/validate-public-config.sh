@@ -74,6 +74,10 @@ if grep -nE 'psk=' "${config_files[@]}" | grep -v 'psk=YOUR_SNELL_PSK' >/dev/nul
   fail "发现非占位 Snell PSK"
 fi
 
+if grep -nE 'password=' "${config_files[@]}" | grep -v 'password=YOUR_PROXY_PASSWORD' >/dev/null; then
+  fail "发现非占位代理密码"
+fi
+
 if grep -nE 'policy-path=' "${config_files[@]}" | grep -v 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' >/dev/null; then
   fail "发现非占位订阅地址"
 fi
@@ -87,14 +91,26 @@ if ! awk '
   /^\[Proxy\][[:space:]]*$/ { in_proxy=1; next }
   /^\[/ { in_proxy=0 }
   in_proxy && /^[[:space:]]*[^#;[:space:]][^=]*=/ {
-    if ($0 !~ /= *snell, *example\.com, *8388, *psk=YOUR_SNELL_PSK,/) bad=1
+    if ($0 !~ /= *snell, *example\.com, *8388, *psk=YOUR_SNELL_PSK,/ &&
+        $0 !~ /= *hysteria2, *example\.com, *443, *password=YOUR_PROXY_PASSWORD,.*sni=example\.com/) bad=1
   }
   END { exit bad }
 ' "${config_files[@]}"; then
   fail "[Proxy] 中存在未经脱敏或未纳入校验器的代理定义"
 fi
 
-grep -q 'psk=YOUR_SNELL_PSK' "$scan_root/Shared-Routing.dconf" || fail "缺少 Snell PSK 占位符"
+if ! grep -qE '(psk=YOUR_SNELL_PSK|password=YOUR_PROXY_PASSWORD)' "$scan_root/Shared-Routing.dconf"; then
+  fail "缺少受支持的代理凭据占位符"
+fi
+if ! awk '
+  /= *(snell|hysteria2|anytls),/ {
+    if ($0 ~ /= *snell,/ && $0 !~ /= *snell, *example\.com, *8388, *psk=YOUR_SNELL_PSK,/) bad=1
+    if ($0 ~ /= *(hysteria2|anytls),/ && $0 !~ /= *(hysteria2|anytls), *example\.com, *443, *password=YOUR_PROXY_PASSWORD,/) bad=1
+  }
+  END { exit bad }
+' "$scan_root/Shared-Routing.dconf"; then
+  fail "代理定义或注释示例仍含真实地址或凭据"
+fi
 grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$scan_root/Shared-Routing.dconf" || fail "缺少订阅地址占位符"
 grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Shared-Routing.dconf" || fail "共享规则缺少预期 FINAL 兜底"
 if grep -qE 'List/non_ip/apple_cdn\.conf' "$scan_root/Shared-Routing.dconf"; then
@@ -113,9 +129,12 @@ fi
 if grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared-Routing.dconf"; then
   fail "共享规则仍含已删除的 MTProto 入站分流"
 fi
-telegram_cidr_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram' "$scan_root/Shared-Routing.dconf" | cut -d: -f1)
-telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,Telegram' "$scan_root/Shared-Routing.dconf" | cut -d: -f1)
-[[ -n "$telegram_cidr_line" && -n "$telegram_asn_line" && "$telegram_cidr_line" -lt "$telegram_asn_line" ]] || fail "Telegram ASN 补充须位于官方 CIDR 之后并使用同一策略"
+telegram_cidr_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram' "$scan_root/Shared-Routing.dconf" | cut -d: -f1 || true)
+telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,Telegram' "$scan_root/Shared-Routing.dconf" | cut -d: -f1 || true)
+[[ -n "$telegram_cidr_line" ]] || fail "缺少 Telegram 官方 CIDR 规则"
+if [[ -n "$telegram_asn_line" && "$telegram_cidr_line" -ge "$telegram_asn_line" ]]; then
+  fail "Telegram ASN 补充须位于官方 CIDR 之后并使用同一策略"
+fi
 grep -q '^RULE-SET,https://ruleset\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT #!MACOS-ONLY$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未限定为 macOS"
 grep -q '^ipv6 = true$' "$scan_root/Surge.conf" || fail "Mac 模板未启用 IPv6"
 grep -q '^ipv6-vif = auto$' "$scan_root/Surge.conf" || fail "Mac 模板未使用自动 IPv6 VIF"
@@ -151,8 +170,7 @@ fi
 
 required_platform_ad_rules=(
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching'
-  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!IOS-ONLY'
-  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
+  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
 )
@@ -237,6 +255,9 @@ if [[ "$scan_history" == true ]]; then
     fi
     if git -C "$repo_root" grep -I -E 'psk=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'psk=YOUR_SNELL_PSK' | grep -q .; then
       fail "Git 历史提交 ${revision:0:12} 含非占位 PSK"
+    fi
+    if git -C "$repo_root" grep -I -E 'password=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'password=YOUR_PROXY_PASSWORD' | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含非占位代理密码"
     fi
     if git -C "$repo_root" grep -I -E 'policy-path=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' | grep -q .; then
       fail "Git 历史提交 ${revision:0:12} 含非占位订阅地址"
