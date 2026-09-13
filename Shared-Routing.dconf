@@ -2,32 +2,42 @@
 # 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书与 Keystore。
 
 [Proxy]
-US-Snell = snell, example.com, 8388, psk=YOUR_SNELL_PSK, version=6, mode=default, tfo=true
+#US-AnyTLS = anytls, example.com, 443, password=YOUR_PROXY_PASSWORD, skip-cert-verify=true, reuse=true
+
+Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD, download-bandwidth=50, sni=example.com
 
 [Proxy Group]
-Proxy = select, HK, TW, SG, US-Snell, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0
+Proxy = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0
 Stream = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/HKMTMedia.png
-Intelligence = select, US, US-Snell, SG, HK, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0
-Telegram = select, SG, HK, US, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png
-Apple = select, US, HK, JP, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png
-Microsoft = select, HK, US, SG, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
+Intelligence = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0
+Telegram = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png
+Apple = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png
+Microsoft = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
 
 # 地区智能选优
 HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
 SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-US = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
+US = smart, include-other-group=Flower Cloud, Hysteria, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; ^US-AnyTLS$:1.05; 实验性:1.10; ^Hysteria$:1.15
 
 # 订阅节点
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])(HK|TW|JP|SG|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
 
 [Rule]
-# 移动端与 macOS 广告：预匹配并静默丢弃
+# 广告预匹配：按 Sukka 官方要求保留在常规 Domain Set 之前
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching
-# 广告域名：双端扩展匹配
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!IOS-ONLY
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
+
+# Domain Set：全部位于常规 Non-IP 和 IP 规则之前
+# 广告域名：基础库双端启用并进行扩展匹配
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching
+# Apple 中国 CDN 直连
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
+# 通用下载与 CDN：Proxy
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,Proxy
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy
+
+# Non-IP：专项服务优先，宽泛国内与海外规则后置
 # Mac 广告规则：扩展匹配
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
@@ -40,25 +50,22 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,Intelligenc
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream
 # Telegram：域名分流
 RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram
-# Apple：中国区与 CDN 直连，其余走 Apple
+# Apple：中国区直连，其余走 Apple
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple
 # Microsoft：中国 CDN 直连，其余走 Microsoft
 RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft
 # 微信海外控制端点：避免被 Mac 进程直连兜底覆盖
-DOMAIN,sgshort.wechat.com,Proxy,extended-matching
-DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
+# DOMAIN,sgshort.wechat.com,Proxy,extended-matching
+# DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
 # 微信域名/SNI 直连：广告优先
 RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@e5fcff124e228889b73025caeeeeb1fceeb144fa/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 通用下载：Proxy；Apple 与微软国内 CDN 已在前序直连
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,Proxy
 RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,Proxy
 # 通用 CDN：Proxy
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy
 RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy
 # 国内域名直连
 RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT
@@ -73,7 +80,6 @@ RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
 RULE-SET,https://ruleset.skk.moe/List/ip/ai.conf,Intelligence
 # Telegram：官方 CIDR 与 ASN 补充
 RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram
-RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,Telegram
 # 流媒体 IP
 RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,Stream
 # 网易云音乐 IP 直连

@@ -48,9 +48,13 @@ sanitize_config() {
       -e '/^[[:space:]]*(ca-p12|ca-passphrase|ca-keystore-name)[[:space:]]*=/d' \
       -e '/^[[:space:]]*(http-api|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
       -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
+      -e 's/(password=)[^,]*/\1YOUR_PROXY_PASSWORD/g' \
       -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
       -e 's#https://[A-Za-z0-9.-]+\.alidns\.com/dns-query#https://dns.alidns.com/dns-query#g' \
       -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
+      -e 's/(= *hysteria2, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
+      -e 's/(= *anytls, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
+      -e 's/(sni=)[^,]*/\1example.com/g' \
       -e 's/^[[:space:]]*secret[[:space:]]*=.*/secret = 00000000000000000000000000000000/' |
       awk '
         NF { while (blank_count > 0) { print ""; blank_count-- } print; next }

@@ -23,4 +23,20 @@ grep -q '^encrypted-dns-server = https://dns.alidns.com/dns-query$' "$fixture_di
 if grep -q 'test-account.alidns.com' "$fixture_dir/Shared-General.dconf"; then
   exit 1
 fi
-echo 'DNS 脱敏回归检查通过'
+
+sed -E \
+  -e 's#Hysteria = hysteria2, example\.com, 443, password=YOUR_PROXY_PASSWORD#Hysteria = hysteria2, private-proxy.invalid, 8443, password=synthetic-secret#' \
+  -e 's#sni=example\.com#sni=private-sni.invalid#' \
+  -e 's#anytls, example\.com, 443, password=YOUR_PROXY_PASSWORD#anytls, private-anytls.invalid, 8443, password=synthetic-secret#' \
+  "$repo_root/Shared-Routing.dconf" > "$fixture_dir/Shared-Routing.dconf"
+if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.log" 2>&1; then
+  echo '错误：代理地址或凭据未被拒绝' >&2
+  exit 1
+fi
+bash "$fixture_dir/scripts/sync-local-surge.sh" "$fixture_dir" --apply
+grep -q 'Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD.*sni=example.com' "$fixture_dir/Shared-Routing.dconf"
+if grep -qE 'private-(proxy|sni|anytls)\.invalid|synthetic-secret' "$fixture_dir/Shared-Routing.dconf"; then
+  exit 1
+fi
+
+echo 'DNS 与代理脱敏回归检查通过'
