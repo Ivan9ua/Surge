@@ -11,6 +11,14 @@ for name in Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf wec
 done
 
 # 使用合成账号验证拒绝发布及同步脱敏，不读取个人配置。
+cp "$repo_root/Surge.conf" "$fixture_dir/Mac.conf"
+if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.log" 2>&1; then
+  echo '错误：未纳入脱敏流程的配置文件未被拒绝' >&2
+  exit 1
+fi
+grep -q '未纳入脱敏流程' "$fixture_dir/result.log"
+mv "$fixture_dir/Mac.conf" "$fixture_dir/Mac.conf.fixture"
+
 sed 's#https://dns.alidns.com/dns-query#https://test-account.alidns.com/dns-query#g' \
   "$repo_root/Shared-General.dconf" > "$fixture_dir/Shared-General.dconf"
 if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.log" 2>&1; then
@@ -19,7 +27,7 @@ if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.
 fi
 grep -q '个人 AliDNS 地址' "$fixture_dir/result.log"
 bash "$fixture_dir/scripts/sync-local-surge.sh" "$fixture_dir" --apply
-grep -q '^encrypted-dns-server = https://dns.alidns.com/dns-query$' "$fixture_dir/Shared-General.dconf"
+grep -q '^encrypted-dns-server = https://dns.alidns.com/dns-query' "$fixture_dir/Shared-General.dconf"
 if grep -q 'test-account.alidns.com' "$fixture_dir/Shared-General.dconf"; then
   exit 1
 fi
@@ -39,4 +47,16 @@ if grep -qE 'private-(proxy|sni|anytls)\.invalid|synthetic-secret' "$fixture_dir
   exit 1
 fi
 
-echo 'DNS 与代理脱敏回归检查通过'
+sed 's#policy-path=YOUR_SURGE_SUBSCRIPTION_URL#policy-path=https://converter.invalid/sub?url=https%3A%2F%2Fprovider.invalid%2Fapi%3Ftoken2%3Dsynthetic-token#' \
+  "$repo_root/Shared-Routing.dconf" > "$fixture_dir/Shared-Routing.dconf"
+if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.log" 2>&1; then
+  echo '错误：带令牌的订阅地址未被拒绝' >&2
+  exit 1
+fi
+bash "$fixture_dir/scripts/sync-local-surge.sh" "$fixture_dir" --apply
+grep -q 'policy-path=YOUR_SURGE_SUBSCRIPTION_URL' "$fixture_dir/Shared-Routing.dconf"
+if grep -q 'synthetic-token' "$fixture_dir/Shared-Routing.dconf"; then
+  exit 1
+fi
+
+echo 'DNS、代理与订阅地址脱敏回归检查通过'

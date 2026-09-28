@@ -4,25 +4,25 @@
 [Proxy]
 #US-AnyTLS = anytls, example.com, 443, password=YOUR_PROXY_PASSWORD, skip-cert-verify=true, reuse=true
 
-Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD, download-bandwidth=50, sni=example.com
+Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD, download-bandwidth=70, sni=example.com, test-url=https://latency-test.skk.moe/endpoint
 
 [Proxy Group]
-Proxy = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0
-Stream = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/HKMTMedia.png
-Intelligence = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0
-Telegram = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png
-Apple = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png
-Microsoft = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png
+Proxy = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0, category=常用策略
+Stream = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/HKMTMedia.png, category=常用策略
+Intelligence = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0, category=常用策略
+Telegram = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png, category=常用策略
+Apple = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png, category=系统服务
+Microsoft = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png, category=系统服务
 
 # 地区智能选优
-HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05
-US = smart, include-other-group=Flower Cloud, Hysteria, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; ^US-AnyTLS$:1.05; 实验性:1.10; ^Hysteria$:1.15
+HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+US = smart, include-other-group=Flower Cloud, Hysteria, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; ^US-AnyTLS$:1.05; 实验性:1.10; ^Hysteria$:1.15, category=节点选择
 
 # 订阅节点
-Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])(HK|TW|JP|SG|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png
+Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])(HK|TW|JP|SG|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png, category=节点选择
 
 [Rule]
 # 广告预匹配：按 Sukka 官方要求保留在常规 Domain Set 之前
@@ -34,7 +34,7 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-ma
 # Apple 中国 CDN 直连
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
 # 通用下载与 CDN：Proxy
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,Proxy
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,Proxy,extended-matching
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy
 
 # Non-IP：专项服务优先，宽泛国内与海外规则后置
@@ -44,18 +44,18 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,
 # 内网域名直连
 RULE-SET,https://ruleset.skk.moe/List/non_ip/lan.conf,DIRECT
 # AI 与 Apple Intelligence
-RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence
+RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
 # 流媒体
-RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream,extended-matching
 # Telegram：域名分流
-RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram
+RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram,extended-matching
 # Apple：中国区直连，其余走 Apple
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT
-RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple,extended-matching
 # Microsoft：中国 CDN 直连，其余走 Microsoft
 RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
-RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
 # 微信海外控制端点：避免被 Mac 进程直连兜底覆盖
 # DOMAIN,sgshort.wechat.com,Proxy,extended-matching
 # DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
@@ -64,14 +64,14 @@ RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@e5fcff124e228889b73025caeeeeb
 # 网易云音乐直连
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 通用下载：Proxy；Apple 与微软国内 CDN 已在前序直连
-RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,Proxy
+RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,Proxy,extended-matching
 # 通用 CDN：Proxy
 RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy
 # 国内域名直连
-RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT
-RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching
+RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching
 # 其他海外域名：Proxy
-RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy
+RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy,extended-matching
 
 # IP 规则
 # 广告 IP：静默丢弃
