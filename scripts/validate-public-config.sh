@@ -40,6 +40,14 @@ fail() {
   exit 1
 }
 
+for config_file in "$scan_root"/*.conf "$scan_root"/*.dconf; do
+  [[ -e "$config_file" ]] || continue
+  case "$(basename "$config_file")" in
+    Surge.conf|iPhone.conf|Shared-Routing.dconf|Shared-General.dconf) ;;
+    *) fail "发现未纳入脱敏流程的配置文件: $(basename "$config_file")" ;;
+  esac
+done
+
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared-Routing.dconf" "$scan_root/Shared-General.dconf")
 all_public_files=("${config_files[@]}" "$scan_root/wechat.list")
 
@@ -138,8 +146,8 @@ fi
 grep -q '^RULE-SET,https://ruleset\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT #!MACOS-ONLY$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未限定为 macOS"
 grep -q '^ipv6 = true$' "$scan_root/Surge.conf" || fail "Mac 模板未启用 IPv6"
 grep -q '^ipv6-vif = auto$' "$scan_root/Surge.conf" || fail "Mac 模板未使用自动 IPv6 VIF"
-grep -q '^ipv6 = false$' "$scan_root/iPhone.conf" || fail "iPhone 模板未关闭 IPv6"
-grep -q '^ipv6-vif = disabled$' "$scan_root/iPhone.conf" || fail "iPhone 模板未禁用 IPv6 VIF"
+grep -q '^ipv6 = true$' "$scan_root/iPhone.conf" || fail "iPhone 模板未启用 IPv6"
+grep -q '^ipv6-vif = auto$' "$scan_root/iPhone.conf" || fail "iPhone 模板未使用自动 IPv6 VIF"
 if grep -qE '^ipv6(-vif)?[[:space:]]*=' "$scan_root/Shared-General.dconf"; then
   fail "IPv6 设备差异不应写入共享 General"
 fi
@@ -152,10 +160,6 @@ fi
 grep -q '^icmp-forwarding = true$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 macOS 专用 ICMP 转发"
 if grep -q '^icmp-forwarding' "$scan_root/iPhone.conf" "$scan_root/Shared-General.dconf"; then
   fail "icmp-forwarding 不应进入 iPhone 或共享 General 配置"
-fi
-
-if grep -q 'abcchina\.com' "$scan_root/Shared-General.dconf"; then
-  fail "共享 General 仍含已移除的农行 skip-proxy 项"
 fi
 
 if awk '

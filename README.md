@@ -51,7 +51,7 @@
 ### IPv6 与 Telegram
 
 - Mac 使用 `ipv6 = true`、`ipv6-vif = auto`，中国 IPv6 由 Sukka `china_ip_ipv6.conf` 直连。
-- iPhone 使用 `ipv6 = false`、`ipv6-vif = disabled`，不加载中国 IPv6 规则。
+- iPhone 使用 `ipv6 = true`、`ipv6-vif = auto`；中国 IPv6 规则目前仍限定在 Mac。
 - Telegram 使用域名与官方 CIDR 出站分流；不配置 `PROTOCOL,MTProto,Telegram` 入站规则。
 
 ### Mac 模块兼容说明
@@ -64,7 +64,7 @@ Mac 使用 `[Sukka] Always Real IP Plus`，基础真实 IP 例外位于 `Shared-
 
 [上游项目](https://github.com/SukkaW/Surge#telegram) 推荐优先使用 Telegram 官方 CIDR；当前配置未再叠加 ASN 规则。
 
-通用下载继续走 Proxy；前序国内 Apple/微软 CDN 按域名直连。删除 GitHub 显式规则后，已抽样确认 GitHub 主站由 global、静态资源由 cdn 接管，仍走 Proxy。`skip-proxy`、DNS、测速地址、UDP REJECT 与双端 IPv6 设置保持本地现状。此前广泛扩展匹配的耗时样本不再代表当前配置；本次未测量 iPhone 耗电。
+通用下载继续走 Proxy；前序国内 Apple/微软 CDN 按域名直连。删除 GitHub 显式规则后，已抽样确认 GitHub 主站由 global、静态资源由 cdn 接管，仍走 Proxy。Hysteria 单独使用 HTTPS 测速，其余代理沿用全局 HTTP 测速；iPhone 也已启用 IPv6。此前广泛扩展匹配的耗时样本不再代表当前配置；本次未测量 iPhone 耗电。
 
 ## 在线规则
 
@@ -88,6 +88,6 @@ scripts/sync-local-surge.sh "/path/to/Surge" --apply
 scripts/validate-public-config.sh
 ```
 
-CI 会检查整个 Git 历史，阻止凭据重新进入公开提交。
+CI 会检查当前分支可达的 Git 历史与脱敏回归用例，阻止凭据重新进入公开提交；GitHub 保留的旧 PR 引用还需单独检查。
 
 发现真实凭据进入 Git 历史时，删除当前文件并不足够：必须先轮换凭据，再重写历史并清理所有可达分支。详见 `SECURITY.md`。

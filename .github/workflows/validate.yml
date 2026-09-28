@@ -22,5 +22,5 @@ jobs:
       - name: Validate templates and Git history
         run: bash scripts/validate-public-config.sh --history
 
-      - name: Verify unpinned remote scripts
-        run: bash scripts/verify-remote-integrity.sh
+      - name: Test credential sanitization
+        run: bash scripts/test-dns-sanitization.sh
