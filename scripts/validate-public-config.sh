@@ -143,7 +143,7 @@ telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram
 if [[ -n "$telegram_asn_line" && "$telegram_cidr_line" -ge "$telegram_asn_line" ]]; then
   fail "Telegram ASN 补充须位于官方 CIDR 之后并使用同一策略"
 fi
-grep -q '^RULE-SET,https://ruleset\.skk\.moe/List/ip/china_ip_ipv6\.conf,DIRECT #!MACOS-ONLY$' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未限定为 macOS"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT,no-resolve' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未双端共享或缺少 no-resolve"
 grep -q '^ipv6 = true$' "$scan_root/Surge.conf" || fail "Mac 模板未启用 IPv6"
 grep -q '^ipv6-vif = auto$' "$scan_root/Surge.conf" || fail "Mac 模板未使用自动 IPv6 VIF"
 grep -q '^ipv6 = true$' "$scan_root/iPhone.conf" || fail "iPhone 模板未启用 IPv6"
@@ -189,6 +189,20 @@ line_of() {
 ad_domain_line="$(line_of "$scan_root/Shared-Routing.dconf" 'List/domainset/reject.conf')"
 wechat_line="$(line_of "$scan_root/Shared-Routing.dconf" 'wechat.list')"
 [[ -n "$ad_domain_line" && -n "$wechat_line" && "$ad_domain_line" -lt "$wechat_line" ]] || fail "微信统一规则未置于广告规则之后"
+for ad_rule in 'List/non_ip/reject.conf' 'List/non_ip/reject-no-drop.conf'; do
+  ad_line="$(line_of "$scan_root/Shared-Routing.dconf" "$ad_rule")"
+  [[ -n "$ad_line" && "$ad_line" -lt "$wechat_line" ]] || fail "微信统一规则须保留广告优先: $ad_rule"
+done
+for generic_rule in 'List/domainset/cdn.conf' 'List/non_ip/cdn.conf' 'List/domainset/download.conf' 'List/non_ip/download.conf' 'List/non_ip/stream.conf'; do
+  generic_line="$(line_of "$scan_root/Shared-Routing.dconf" "$generic_rule")"
+  [[ -n "$generic_line" && "$wechat_line" -lt "$generic_line" ]] || fail "微信统一规则须先于通用规则: $generic_rule"
+done
+for overseas_host in sgshort.wechat.com sgminorshort.wechat.com; do
+  exception_rule="DOMAIN,$overseas_host,Proxy,extended-matching"
+  grep -qFx "$exception_rule" "$scan_root/Shared-Routing.dconf" || fail "微信海外代理例外未启用: $overseas_host"
+  exception_line="$(line_of "$scan_root/Shared-Routing.dconf" "$exception_rule")"
+  [[ "$exception_line" -lt "$wechat_line" ]] || fail "微信海外代理例外须先于直连规则"
+done
 wechat_ref_count="$(grep -c 'wechat\.list' "$scan_root/Shared-Routing.dconf" || true)"
 [[ "$wechat_ref_count" -eq 1 ]] || fail "微信统一规则必须仅保留一条远程引用"
 if grep -qE 'WeChat_Resolve\.list|blackmatrix7/.*/WeChat' "$scan_root/Shared-Routing.dconf"; then
