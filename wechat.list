@@ -3,8 +3,8 @@
 # UPDATED: 2026-09-30
 # REPO-SOURCES: blackmatrix7/ios_rule_script · ACL4SSR/ACL4SSR · NobyDa/Script
 # DOMAIN: 7
-# DOMAIN-SUFFIX: 21
-# LOGICAL: 4
+# DOMAIN-SUFFIX: 22
+# LOGICAL: 3
 # IP-CIDR: 0
 # IP-CIDR6: 0
 # TOTAL: 32
@@ -46,8 +46,8 @@ DOMAIN-SUFFIX,map.qq.com
 DOMAIN-SUFFIX,up-hl.3g.qq.com
 DOMAIN-SUFFIX,yun-hl.3g.qq.com
 
-# 微信域名直连，但排除实测应走代理的海外控制端点，并保留 Sukka 广告与应用内 DNS 拦截
-AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))),(NOT,((DOMAIN,sgshort.wechat.com))))
+# 微信域名统一直连：包含 sgshort 与 sgminorshort；保留广告与应用内 DNS 排除
+DOMAIN-SUFFIX,wechat.com
 AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))
 AND,((DOMAIN-SUFFIX,weixin.qq.com.cn),(NOT,((DOMAIN,dns.weixin.qq.com.cn))))
 AND,((DOMAIN-SUFFIX,wxs.qq.com),(NOT,((DOMAIN-KEYWORD,wxsnsdy))))
