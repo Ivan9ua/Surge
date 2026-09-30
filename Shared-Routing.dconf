@@ -33,11 +33,8 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-ma
 # Mac 广告规则：扩展匹配，先于微信专用规则
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
-# 微信海外控制端点：保留代理例外，先于微信直连规则
-DOMAIN,sgshort.wechat.com,Proxy,extended-matching
-DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
 # 微信域名/SNI 直连：广告优先，先于通用 CDN、流媒体和下载
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@02ea31f2bd3f7c85e6489e19a7560faa915ad489/wechat.list,DIRECT,extended-matching,no-resolve
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@c3534e5117a64204431104887437ab02ea742131/wechat.list,DIRECT,extended-matching,no-resolve
 # Apple 中国 CDN 直连
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
 # 通用下载与 CDN：Proxy
