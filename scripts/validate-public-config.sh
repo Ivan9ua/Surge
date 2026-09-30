@@ -203,6 +203,7 @@ required_wechat_direct_rules=(
   'DOMAIN,weixin110.qq.com'
   'DOMAIN-SUFFIX,weixin.com'
   'DOMAIN-SUFFIX,weixinbridge.com'
+  'DOMAIN-SUFFIX,wechatpay.cn'
   'DOMAIN-SUFFIX,wxapp.tc.qq.com'
   'DOMAIN-SUFFIX,map.qq.com'
 )
@@ -229,7 +230,7 @@ if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT),' "$scan_root/
   fail "微信统一规则不应使用静态 IP、ASN、顶层 DOMAIN-KEYWORD 或 USER-AGENT"
 fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
-[[ "$wechat_rule_count" -eq 31 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 31）"
+[[ "$wechat_rule_count" -eq 32 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 32）"
 
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)
