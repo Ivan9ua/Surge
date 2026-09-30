@@ -17,7 +17,7 @@
 按“广告优先、专用规则早于通用规则、域名规则早于 IP 规则”排序：
 
 ```
-广告预匹配与域名 → 微信统一直连 → Apple CDN → 通用下载/CDN 域名集 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4 → 双端国内 IPv6 → Mac 微信进程兜底 → FINAL
+广告 → 内网与精确直连例外 → 微信 → AI/Apple Intelligence → 流媒体 → Telegram → Apple 国内 CDN/国内服务 → Apple 其他服务 → Microsoft 国内 CDN → Microsoft 其他服务 → 网易云 → 通用下载 DIRECT → 通用 CDN Proxy → 国内/通用直连 → 海外 → 广告 IP → 流媒体/AI/Telegram IP → 网易云 IP → 内网与国内 IPv4/IPv6 → Mac 微信进程兜底 → FINAL
 ```
 
 ## 规则源
@@ -64,7 +64,7 @@ Mac 使用 `[Sukka] Always Real IP Plus`，基础真实 IP 例外位于 `Shared-
 
 [上游项目](https://github.com/SukkaW/Surge#telegram) 推荐优先使用 Telegram 官方 CIDR；当前配置未再叠加 ASN 规则。
 
-通用下载继续走 Proxy；前序国内 Apple/微软 CDN 按域名直连。删除 GitHub 显式规则后，已抽样确认 GitHub 主站由 global、静态资源由 cdn 接管，仍走 Proxy。Hysteria 单独使用 HTTPS 测速，其余代理沿用全局 HTTP 测速；iPhone 也已启用 IPv6。此前广泛扩展匹配的耗时样本不再代表当前配置；本次未测量 iPhone 耗电。
+通用下载保留本机的 DIRECT 选择，并置于通用 CDN 前；前序专项服务仍优先。实测 codeload.github.com、registry-1.docker.io、objects.githubusercontent.com 按下载规则直连，GitHub 主站由 global 代理；未命中下载规则的通用静态资源仍由 CDN 代理。这不是所有下载都会更快或可达的保证。captive.apple.com、lcdn-locator.apple.com、cdnstatic.tencentcs.com、mirrorlist.cdn.skk.moe 使用前置精确直连例外。公开模板与本机同步了本轮排序和策略改动，未全量统一此前不同的扩展匹配、IP no-resolve 或平台广告参数。Hysteria 单独使用 HTTPS 测速，其余代理沿用全局 HTTP 测速；iPhone 也已启用 IPv6。本次未测量 iPhone 耗电。
 
 ## 在线规则
 
