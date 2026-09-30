@@ -210,6 +210,7 @@ if grep -qE 'WeChat_Resolve\.list|blackmatrix7/.*/WeChat' "$scan_root/Shared-Rou
 fi
 
 required_wechat_direct_rules=(
+  'DOMAIN-SUFFIX,wechat.com'
   'DOMAIN,slife.xy-asia.com'
   'DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net'
   'DOMAIN,dldir1.qq.com'
@@ -225,7 +226,6 @@ for required_rule in "${required_wechat_direct_rules[@]}"; do
   grep -qF -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少域名: $required_rule"
 done
 required_wechat_exclusions=(
-  'AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))),(NOT,((DOMAIN,sgshort.wechat.com))))'
   'AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))'
   'AND,((DOMAIN-SUFFIX,weixin.qq.com.cn),(NOT,((DOMAIN,dns.weixin.qq.com.cn))))'
   'AND,((DOMAIN-SUFFIX,wxs.qq.com),(NOT,((DOMAIN-KEYWORD,wxsnsdy))))'
@@ -239,7 +239,9 @@ fi
 if grep -qFx 'DOMAIN,wup.imtt.qq.com' "$scan_root/wechat.list"; then
   fail "wup.imtt.qq.com 与广告规则冲突，不应加入微信直连"
 fi
-grep -qFx 'AND,((DOMAIN-SUFFIX,wechat.com),(NOT,((DOMAIN,sgminorshort.wechat.com))),(NOT,((DOMAIN,sgshort.wechat.com))))' "$scan_root/wechat.list" || fail "微信统一规则未精确排除海外控制域名"
+if grep -qE 'sg(minor)?short\.wechat\.com' "$scan_root/wechat.list"; then
+  fail "微信统一规则仍含过时的海外端点排除或重复精确条目"
+fi
 if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT),' "$scan_root/wechat.list"; then
   fail "微信统一规则不应使用静态 IP、ASN、顶层 DOMAIN-KEYWORD 或 USER-AGENT"
 fi
