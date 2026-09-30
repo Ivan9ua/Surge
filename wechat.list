@@ -1,13 +1,13 @@
 # NAME: WeChat Domain Direct
 # AUTHOR: Ivan9ua
-# UPDATED: 2026-09-06
+# UPDATED: 2026-09-30
 # REPO-SOURCES: blackmatrix7/ios_rule_script · ACL4SSR/ACL4SSR · NobyDa/Script
 # DOMAIN: 7
-# DOMAIN-SUFFIX: 20
+# DOMAIN-SUFFIX: 21
 # LOGICAL: 4
 # IP-CIDR: 0
 # IP-CIDR6: 0
-# TOTAL: 31
+# TOTAL: 32
 # 说明：匹配微信域名、可见 SNI 与 HTTP Host；未命中请求继续按主配置分流。
 # 主配置：国内 IP 由后续 IP 规则直连；Mac 微信进程可兜底直连，其余未命中请求走 FINAL。
 # DNS 失败时主配置直接使用 FINAL 策略，不再继续匹配微信进程兜底。
@@ -30,6 +30,7 @@ DOMAIN-SUFFIX,tenpay.com
 DOMAIN-SUFFIX,wechatlegal.net
 DOMAIN-SUFFIX,wechatos.net
 DOMAIN-SUFFIX,wechatpay.com
+DOMAIN-SUFFIX,wechatpay.cn
 DOMAIN-SUFFIX,weixinsxy.com
 DOMAIN-SUFFIX,qpic.cn
 DOMAIN-SUFFIX,qlogo.cn
