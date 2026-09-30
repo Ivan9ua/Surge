@@ -60,7 +60,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-m
 # DOMAIN,sgshort.wechat.com,Proxy,extended-matching
 # DOMAIN,sgminorshort.wechat.com,Proxy,extended-matching
 # 微信域名/SNI 直连：广告优先
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@6dc3497042e20eef64f177e0861059f9db1f9597/wechat.list,DIRECT,extended-matching,no-resolve
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@02ea31f2bd3f7c85e6489e19a7560faa915ad489/wechat.list,DIRECT,extended-matching,no-resolve
 # 网易云音乐直连
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 通用下载：Proxy；Apple 与微软国内 CDN 已在前序直连
