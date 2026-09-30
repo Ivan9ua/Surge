@@ -126,7 +126,7 @@ if grep -qE 'List/non_ip/apple_cdn\.conf' "$scan_root/Shared-Routing.dconf"; the
 fi
 grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT' "$scan_root/Shared-Routing.dconf" || fail "Apple CDN 地址或匹配方式与本地决定不一致"
 for download_type in domainset non_ip; do
-  grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy(,extended-matching)?$" "$scan_root/Shared-Routing.dconf" || fail "通用下载未映射到 Proxy"
+  grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,DIRECT(,extended-matching)?$" "$scan_root/Shared-Routing.dconf" || fail "通用下载未映射到 DIRECT"
 done
 wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/[0-9a-f]{40}/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@[0-9a-f]{40}/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve)$'
 grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未固定到完整提交或缺少 no-resolve,extended-matching"
@@ -200,6 +200,31 @@ done
 if grep -qE '^DOMAIN,sg(minor)?short\.wechat\.com,' "$scan_root/Shared-Routing.dconf"; then
   fail "微信端点已并入统一规则集，不应保留独立规则"
 fi
+ordered_routes=(
+  'List/non_ip/lan.conf' 'wechat.list'
+  'List/non_ip/ai.conf' 'List/non_ip/apple_intelligence.conf'
+  'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
+  'List/domainset/apple_cdn.conf' 'List/non_ip/apple_cn.conf' 'List/non_ip/apple_services.conf'
+  'List/non_ip/microsoft_cdn.conf' 'List/non_ip/microsoft.conf' 'List/non_ip/neteasemusic.conf'
+  'List/domainset/download.conf' 'List/non_ip/download.conf'
+  'List/domainset/cdn.conf' 'List/non_ip/cdn.conf'
+  'List/non_ip/domestic.conf' 'List/non_ip/direct.conf' 'List/non_ip/global.conf'
+  'List/ip/reject.conf' 'List/ip/stream.conf' 'List/ip/ai.conf' 'List/ip/telegram.conf'
+  'List/ip/neteasemusic.conf' 'List/ip/lan.conf' 'List/ip/domestic.conf'
+  'List/ip/china_ip.conf' 'List/ip/china_ip_ipv6.conf' 'PROCESS-NAME,WeChat,' 'FINAL,Proxy,dns-failed'
+)
+previous_route_line=0
+for route in "${ordered_routes[@]}"; do
+  route_line="$(line_of "$scan_root/Shared-Routing.dconf" "$route")"
+  [[ -n "$route_line" && "$route_line" -gt "$previous_route_line" ]] || fail "规则排序异常: $route"
+  previous_route_line="$route_line"
+done
+for direct_host in captive.apple.com lcdn-locator.apple.com cdnstatic.tencentcs.com mirrorlist.cdn.skk.moe; do
+  direct_rule="DOMAIN,$direct_host,DIRECT,extended-matching"
+  grep -qFx "$direct_rule" "$scan_root/Shared-Routing.dconf" || fail "缺少精确直连例外: $direct_host"
+  direct_line="$(line_of "$scan_root/Shared-Routing.dconf" "$direct_rule")"
+  [[ "$direct_line" -lt "$wechat_line" ]] || fail "精确直连例外须位于专项服务之前"
+done
 wechat_ref_count="$(grep -c 'wechat\.list' "$scan_root/Shared-Routing.dconf" || true)"
 [[ "$wechat_ref_count" -eq 1 ]] || fail "微信统一规则必须仅保留一条远程引用"
 if grep -qE 'WeChat_Resolve\.list|blackmatrix7/.*/WeChat' "$scan_root/Shared-Routing.dconf"; then
