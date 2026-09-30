@@ -197,12 +197,9 @@ for generic_rule in 'List/domainset/cdn.conf' 'List/non_ip/cdn.conf' 'List/domai
   generic_line="$(line_of "$scan_root/Shared-Routing.dconf" "$generic_rule")"
   [[ -n "$generic_line" && "$wechat_line" -lt "$generic_line" ]] || fail "微信统一规则须先于通用规则: $generic_rule"
 done
-for overseas_host in sgshort.wechat.com sgminorshort.wechat.com; do
-  exception_rule="DOMAIN,$overseas_host,Proxy,extended-matching"
-  grep -qFx "$exception_rule" "$scan_root/Shared-Routing.dconf" || fail "微信海外代理例外未启用: $overseas_host"
-  exception_line="$(line_of "$scan_root/Shared-Routing.dconf" "$exception_rule")"
-  [[ "$exception_line" -lt "$wechat_line" ]] || fail "微信海外代理例外须先于直连规则"
-done
+if grep -qE '^DOMAIN,sg(minor)?short\.wechat\.com,' "$scan_root/Shared-Routing.dconf"; then
+  fail "微信端点已并入统一规则集，不应保留独立规则"
+fi
 wechat_ref_count="$(grep -c 'wechat\.list' "$scan_root/Shared-Routing.dconf" || true)"
 [[ "$wechat_ref_count" -eq 1 ]] || fail "微信统一规则必须仅保留一条远程引用"
 if grep -qE 'WeChat_Resolve\.list|blackmatrix7/.*/WeChat' "$scan_root/Shared-Routing.dconf"; then

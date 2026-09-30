@@ -17,7 +17,7 @@
 按“广告优先、专用规则早于通用规则、域名规则早于 IP 规则”排序：
 
 ```
-广告预匹配与域名 → 微信海外例外与统一直连 → Apple CDN → 通用下载/CDN 域名集 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4 → 双端国内 IPv6 → Mac 微信进程兜底 → FINAL
+广告预匹配与域名 → 微信统一直连 → Apple CDN → 通用下载/CDN 域名集 → 内网 → AI → 流媒体 → Telegram → Apple → Microsoft → 网易云 → 下载 → CDN → 国内 → 海外 → 广告 IP → AI/Telegram/流媒体 IP → 国内 IPv4 → 双端国内 IPv6 → Mac 微信进程兜底 → FINAL
 ```
 
 ## 规则源
@@ -37,7 +37,7 @@
 
 ### 微信规则收录范围
 
-`sgshort.wechat.com` 与 `sgminorshort.wechat.com` 的代理例外已启用，并置于微信直连规则之前；微信域名继续使用一条远程直连规则，先于通用 CDN、流媒体和下载规则。广告优先保持不变，完全没有域名信息的请求仍按后续 IP/进程规则处理。
+`sgshort.wechat.com` 与 `sgminorshort.wechat.com` 已由规则集中的 `DOMAIN-SUFFIX,wechat.com` 统一覆盖，不再配置独立规则或代理例外。当前网络 HTTP 探测均能直连，未发现稳定的强制代理收益；这不是所有网络和微信协议的性能保证。微信域名继续使用一条远程直连规则，先于通用 CDN、流媒体和下载规则。广告优先保持不变，完全没有域名信息的请求仍按后续 IP/进程规则处理。
 
 `wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付与定位域名。共享配置只引用一次，固定到已验证且仍可由仓库 `main` 历史访问的提交，并使用 `no-resolve,extended-matching`，覆盖目标域名、可见 SNI 与 HTTP Host。四个应用内 DNS 端点和 `wxsnsdy` 朋友圈广告端点通过逻辑排除继续交由 Sukka 广告规则处理。
 
