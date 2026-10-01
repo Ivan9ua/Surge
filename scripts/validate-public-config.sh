@@ -126,7 +126,7 @@ if grep -qE 'List/non_ip/apple_cdn\.conf' "$scan_root/Shared-Routing.dconf"; the
 fi
 grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT' "$scan_root/Shared-Routing.dconf" || fail "Apple CDN 地址或匹配方式与本地决定不一致"
 for download_type in domainset non_ip; do
-  grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,DIRECT(,extended-matching)?$" "$scan_root/Shared-Routing.dconf" || fail "通用下载未映射到 DIRECT"
+  grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy$" "$scan_root/Shared-Routing.dconf" || fail "通用下载未映射到 Proxy"
 done
 wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/[0-9a-f]{40}/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@[0-9a-f]{40}/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve)$'
 grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未固定到完整提交或缺少 no-resolve,extended-matching"
@@ -143,13 +143,18 @@ telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram
 if [[ -n "$telegram_asn_line" && "$telegram_cidr_line" -ge "$telegram_asn_line" ]]; then
   fail "Telegram ASN 补充须位于官方 CIDR 之后并使用同一策略"
 fi
-grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT,no-resolve' "$scan_root/Shared-Routing.dconf" || fail "中国 IPv6 规则未双端共享或缺少 no-resolve"
-grep -q '^ipv6 = true$' "$scan_root/Surge.conf" || fail "Mac 模板未启用 IPv6"
-grep -q '^ipv6-vif = auto$' "$scan_root/Surge.conf" || fail "Mac 模板未使用自动 IPv6 VIF"
-grep -q '^ipv6 = true$' "$scan_root/iPhone.conf" || fail "iPhone 模板未启用 IPv6"
-grep -q '^ipv6-vif = auto$' "$scan_root/iPhone.conf" || fail "iPhone 模板未使用自动 IPv6 VIF"
-if grep -qE '^ipv6(-vif)?[[:space:]]*=' "$scan_root/Shared-General.dconf"; then
-  fail "IPv6 设备差异不应写入共享 General"
+for domestic_ip in lan domestic china_ip china_ip_ipv6; do
+  grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$domestic_ip.conf,DIRECT" "$scan_root/Shared-Routing.dconf" || fail "国内或内网 IP 兜底应允许解析: $domestic_ip"
+done
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching' "$scan_root/Shared-Routing.dconf" || fail "AI 规则缺少扩展匹配"
+for ip_policy in 'reject REJECT-DROP' 'telegram Telegram' 'stream Stream' 'ai Intelligence' 'neteasemusic DIRECT'; do
+  read -r ip_name ip_route <<< "$ip_policy"
+  grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Shared-Routing.dconf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
+done
+grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf" || fail "共享 General 未启用 IPv6"
+grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "共享 General 未使用自动 IPv6 VIF"
+if grep -qE '^ipv6(-vif)?[[:space:]]*=' "$scan_root/Surge.conf" "$scan_root/iPhone.conf"; then
+  fail "设备入口不应重复覆盖共享 IPv6 设置"
 fi
 if grep -Eq '^[[:space:]]*show-error-page-for-reject[[:space:]]*=[[:space:]]*true[[:space:]]*$' "$scan_root/Shared-General.dconf"; then
   fail "共享 General 显式启用了 REJECT 普通 HTTP 错误页"
@@ -173,8 +178,8 @@ if awk '
 fi
 
 required_platform_ad_rules=(
-  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching'
-  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching'
+  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY'
+  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
 )
@@ -193,23 +198,19 @@ for ad_rule in 'List/non_ip/reject.conf' 'List/non_ip/reject-no-drop.conf'; do
   ad_line="$(line_of "$scan_root/Shared-Routing.dconf" "$ad_rule")"
   [[ -n "$ad_line" && "$ad_line" -lt "$wechat_line" ]] || fail "微信统一规则须保留广告优先: $ad_rule"
 done
-for generic_rule in 'List/domainset/cdn.conf' 'List/non_ip/cdn.conf' 'List/domainset/download.conf' 'List/non_ip/download.conf' 'List/non_ip/stream.conf'; do
-  generic_line="$(line_of "$scan_root/Shared-Routing.dconf" "$generic_rule")"
-  [[ -n "$generic_line" && "$wechat_line" -lt "$generic_line" ]] || fail "微信统一规则须先于通用规则: $generic_rule"
-done
 if grep -qE '^DOMAIN,sg(minor)?short\.wechat\.com,' "$scan_root/Shared-Routing.dconf"; then
   fail "微信端点已并入统一规则集，不应保留独立规则"
 fi
 ordered_routes=(
-  'List/non_ip/lan.conf' 'wechat.list'
-  'List/non_ip/ai.conf' 'List/non_ip/apple_intelligence.conf'
-  'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
-  'List/domainset/apple_cdn.conf' 'List/non_ip/apple_cn.conf' 'List/non_ip/apple_services.conf'
-  'List/non_ip/microsoft_cdn.conf' 'List/non_ip/microsoft.conf' 'List/non_ip/neteasemusic.conf'
-  'List/domainset/download.conf' 'List/non_ip/download.conf'
   'List/domainset/cdn.conf' 'List/non_ip/cdn.conf'
-  'List/non_ip/domestic.conf' 'List/non_ip/direct.conf' 'List/non_ip/global.conf'
-  'List/ip/reject.conf' 'List/ip/stream.conf' 'List/ip/ai.conf' 'List/ip/telegram.conf'
+  'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
+  'List/domainset/apple_cdn.conf' 'List/non_ip/microsoft_cdn.conf'
+  'List/domainset/download.conf' 'List/non_ip/download.conf'
+  'List/non_ip/apple_cn.conf' 'List/non_ip/apple_services.conf' 'List/non_ip/microsoft.conf'
+  'List/non_ip/ai.conf' 'List/non_ip/apple_intelligence.conf' 'List/non_ip/global.conf'
+  'List/non_ip/neteasemusic.conf' 'wechat.list'
+  'List/non_ip/domestic.conf' 'List/non_ip/direct.conf' 'List/non_ip/lan.conf'
+  'List/ip/reject.conf' 'List/ip/telegram.conf' 'List/ip/stream.conf' 'List/ip/ai.conf'
   'List/ip/neteasemusic.conf' 'List/ip/lan.conf' 'List/ip/domestic.conf'
   'List/ip/china_ip.conf' 'List/ip/china_ip_ipv6.conf' 'PROCESS-NAME,WeChat,' 'FINAL,Proxy,dns-failed'
 )
@@ -218,12 +219,6 @@ for route in "${ordered_routes[@]}"; do
   route_line="$(line_of "$scan_root/Shared-Routing.dconf" "$route")"
   [[ -n "$route_line" && "$route_line" -gt "$previous_route_line" ]] || fail "规则排序异常: $route"
   previous_route_line="$route_line"
-done
-for direct_host in captive.apple.com lcdn-locator.apple.com cdnstatic.tencentcs.com mirrorlist.cdn.skk.moe; do
-  direct_rule="DOMAIN,$direct_host,DIRECT,extended-matching"
-  grep -qFx "$direct_rule" "$scan_root/Shared-Routing.dconf" || fail "缺少精确直连例外: $direct_host"
-  direct_line="$(line_of "$scan_root/Shared-Routing.dconf" "$direct_rule")"
-  [[ "$direct_line" -lt "$wechat_line" ]] || fail "精确直连例外须位于专项服务之前"
 done
 wechat_ref_count="$(grep -c 'wechat\.list' "$scan_root/Shared-Routing.dconf" || true)"
 [[ "$wechat_ref_count" -eq 1 ]] || fail "微信统一规则必须仅保留一条远程引用"

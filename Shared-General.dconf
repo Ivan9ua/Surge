@@ -6,14 +6,18 @@
 loglevel = notify
 # 简单主机名：交由 Surge VIF 处理
 exclude-simple-hostnames = true
+# IPv6 保持开启
+ipv6 = true
+ipv6-vif = auto
 # 网络与策略测试
 test-timeout = 5
 internet-test-url = http://connectivitycheck.platform.hicloud.com/generate_204
 proxy-test-url = http://latency-test.skk.moe/endpoint
 proxy-test-udp = www.apple.com@64.6.64.6
 # 传统 DNS：网络检测与加密 DNS 服务器域名解析
-dns-server = system, 223.5.5.5, 119.29.29.29
+dns-server = system
 encrypted-dns-server = https://dns.alidns.com/dns-query, https://1.12.12.12/dns-query, https://120.53.53.53/dns-query
+encrypted-dns-follow-outbound-mode = false
 # VIF 真实 IP 例外：本行保留自定义主机，Sukka 模块另行追加
 always-real-ip = *.lan, *.direct, cable.auth.com, *.msftconnecttest.com, network-test.debian.org, detectportal.firefox.com, resolver1.opendns.com, app.yinxiang.com, localhost.*.qq.com, localhost.*.weixin.qq.com, *.logon.battlenet.com.cn, *.logon.battle.net, *.blzstatic.cn, music.163.com, *.music.163.com, *.126.net, musicapi.taihe.com, music.taihe.com, songsearch.kugou.com, trackercdn.kugou.com, *.kuwo.cn, api-jooxtt.sanook.com, api.joox.com, joox.com, y.qq.com, *.y.qq.com, streamoc.music.tc.qq.com, mobileoc.music.tc.qq.com, isure.stream.qqmusic.qq.com, dl.stream.qqmusic.qq.com, aqqmusic.tc.qq.com, amobile.music.tc.qq.com, *.music.migu.cn, music.migu.cn, proxy.golang.org, *.mcdn.bilivideo.cn, *.cmpassport.com, id6.me, open.e.189.cn, opencloud.wostore.cn, id.mail.wo.cn, mdn.open.wo.cn, hmrz.wo.cn, nishub1.10010.com, enrichgw.10010.com, *.wosms.cn, *.jegotrip.com.cn, *.icitymobile.mobi, *.pingan.com.cn, *.cmbchina.com, *.10099.com.cn, *.microdone.cn, pool.ntp.org, *.pool.ntp.org, ntp.*.com, time.*.com, ntp?.*.com, time?.*.com, time.*.gov, time.*.edu.cn, *.ntp.org.cn
 # 系统代理兼容绕过：本地/共享地址与已确认兼容主机
