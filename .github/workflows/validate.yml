@@ -22,5 +22,5 @@ jobs:
       - name: Validate templates and Git history
         run: bash scripts/validate-public-config.sh --history
 
-      - name: Test credential sanitization
+      - name: Test credential sanitization and routing guards
         run: bash scripts/test-dns-sanitization.sh

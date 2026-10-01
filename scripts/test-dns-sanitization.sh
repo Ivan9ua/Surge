@@ -27,7 +27,7 @@ if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.
 fi
 grep -q '个人 AliDNS 地址' "$fixture_dir/result.log"
 bash "$fixture_dir/scripts/sync-local-surge.sh" "$fixture_dir" --apply
-grep -q '^encrypted-dns-server = https://dns.alidns.com/dns-query' "$fixture_dir/Shared-General.dconf"
+grep -q '^encrypted-dns-server = .*https://dns.alidns.com/dns-query' "$fixture_dir/Shared-General.dconf"
 if grep -q 'test-account.alidns.com' "$fixture_dir/Shared-General.dconf"; then
   exit 1
 fi
@@ -59,4 +59,19 @@ if grep -q 'synthetic-token' "$fixture_dir/Shared-Routing.dconf"; then
   exit 1
 fi
 
-echo 'DNS、代理与订阅地址脱敏回归检查通过'
+# 确认关键分流参数与顺序发生回退时，校验器确实会拒绝。
+for mutation in \
+  's#non_ip/ai.conf,Intelligence,extended-matching#non_ip/ai.conf,Intelligence#' \
+  's#ip/china_ip.conf,DIRECT#ip/china_ip.conf,DIRECT,no-resolve#' \
+  's#domainset/download.conf,Proxy#domainset/download.conf,DIRECT#' \
+  '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy$/d'; do
+  sed "$mutation" "$repo_root/Shared-Routing.dconf" > "$fixture_dir/Shared-Routing.dconf"
+  if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.log" 2>&1; then
+    echo '错误：关键分流配置回退未被拒绝' >&2
+    exit 1
+  fi
+done
+cp "$repo_root/Shared-Routing.dconf" "$fixture_dir/Shared-Routing.dconf"
+bash "$fixture_dir/scripts/validate-public-config.sh"
+
+echo 'DNS、代理、订阅脱敏与关键分流回归检查通过'

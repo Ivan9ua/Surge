@@ -1,93 +1,60 @@
-# Surge 配置
+# Surge 双端配置
 
-个人 Surge 脱敏配置模板，基于 [SukkaW/Surge](https://github.com/SukkaW/Surge) 规则集，并维护微信域名与可见 SNI 补充规则。
+个人 Surge Mac / iPhone 脱敏模板，规则基于 [SukkaW/Surge](https://github.com/SukkaW/Surge)，另维护微信统一规则。同步日期：2026-10-01。
 
-## 文件说明
+## 文件与使用
 
-| 文件 | 说明 |
-|------|------|
-| `Surge.conf` | Mac 配置模板 |
-| `iPhone.conf` | iPhone 配置模板 |
-| `Shared-Routing.dconf` | 共享路由（代理节点 + 策略组 + 分流规则） |
-| `Shared-General.dconf` | 共享 General（Mac / iPhone 公共设置） |
-| `wechat.list` | 微信域名与可见 SNI 统一直连规则 |
+| 文件 | 用途 |
+|---|---|
+| Surge.conf | Mac 入口，对应私有 Mac.conf |
+| iPhone.conf | iPhone 入口 |
+| Shared-General.dconf | 共享 DNS、IPv6、网络检测与兼容设置 |
+| Shared-Routing.dconf | 节点占位符、策略组、分流规则 |
+| wechat.list | 微信域名及可见 SNI/Host 统一直连规则 |
+| [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 最新规则顺序、参数和验证边界 |
+| [SECURITY.md](SECURITY.md) | 安全同步与泄露处理 |
 
-## 规则排序逻辑
+将四份配置放入同一 Surge 配置目录，分别导入设备入口。在自己的私有副本填写 example.com、YOUR_PROXY_PASSWORD、YOUR_SURGE_SUBSCRIPTION_URL；个人 AliDNS 已替换为通用 DoH。MITM 证书与 Keystore 已删除，需在设备 UI 单独生成和配置。不要将填写后的副本提交到仓库。
 
-按“广告优先、专用规则早于通用规则、域名规则早于 IP 规则”排序：
+双端在 General 引用 Shared-General，在 Proxy、Proxy Group、Rule 各引用一次 Shared-Routing。category 仅用于展示，地区和机场订阅共享分类。ipv6=true、ipv6-vif=auto 放在共享 General。
 
-```
-广告 → 内网与精确直连例外 → 微信 → AI/Apple Intelligence → 流媒体 → Telegram → Apple 国内 CDN/国内服务 → Apple 其他服务 → Microsoft 国内 CDN → Microsoft 其他服务 → 网易云 → 通用下载 DIRECT → 通用 CDN Proxy → 国内/通用直连 → 海外 → 广告 IP → 流媒体/AI/Telegram IP → 网易云 IP → 内网与国内 IPv4/IPv6 → Mac 微信进程兜底 → FINAL
-```
+## 规则排序与策略
 
-## 规则源
+主体按 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/) 组织，加入个人微信和 Apple Intelligence 规则，并非每个参数都照搬博客：
 
-- [SukkaW/Surge](https://github.com/SukkaW/Surge) — 域名规则 + IP 规则
-- `wechat.list` — 基于实际连接审计与公开微信规则集交叉核对维护的单一远程规则
-- 策略组 Smart 自动选优
+广告 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → Apple 中国区/其他服务 → Microsoft → AI/Apple Intelligence → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 广告/Telegram/流媒体/AI/网易云 IP → 内网/国内 IPv4/IPv6 → Mac 微信进程 → FINAL。
 
-规则地址、策略和扩展匹配的逐条核对记录见 [当前项目规则对照表](BLOG-RULE-AUDIT.md)。Sukka 规则统一使用 `ruleset.skk.moe`；Apple CDN 使用项目现行的 DOMAIN-SET 地址。
+- 通用 CDN 和下载走 Proxy；交集以首条命中为准，不保证资源跟随服务专用出口。
+- Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网规则走 DIRECT。
+- AI 和 Apple Intelligence 使用 Intelligence,extended-matching；其他业务域名规则保留当前普通匹配。
+- 所有主配置 IP 规则目前允许解析，未命中域名规则的目标可能发起本地 DNS，再按 IP 分流；失败由 FINAL,Proxy,dns-failed 兜底。
+- 全局连通性测试用 HTTP，Hysteria 单独用 HTTPS。测试延迟不是实际吞吐保证。
+- 保留 skip-proxy、真实 IP 兼容列表、网易云与 hostname-disabled。不新增 Apple 精确例外；不叠加 Telegram ASN/MTProto 入站规则。
 
-## 使用方法
+## 微信
 
-1. Mac 导入 `Surge.conf`，iPhone 导入 `iPhone.conf`。
-2. 将 `Shared-Routing.dconf` 与 `Shared-General.dconf` 放入 iCloud Drive 的 Surge 目录，确保与设备配置同目录。
-3. 将 `Shared-Routing.dconf` 中的 `example.com`、`YOUR_PROXY_PASSWORD` 和 `YOUR_SURGE_SUBSCRIPTION_URL` 替换为自己的值。
-4. 在 Surge UI 中为 Mac 与 iPhone 分别生成并配置自己的 MITM 证书和 Keystore；公开模板不会保存该部分。
+共享配置仅引用一次固定提交的 wechat.list，使用 DIRECT,extended-matching,no-resolve；sgshort.wechat.com、sgminorshort.wechat.com 由 DOMAIN-SUFFIX,wechat.com 覆盖，无独立代理例外。
 
-### 微信规则收录范围
+32 条规则覆盖核心连接、媒体/上传、小程序、支付和定位；交叉核对 [Blackmatrix7](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list)、[NobyDa](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)。保留应用内 DNS 和朋友圈广告的逻辑排除，不引入通用腾讯大表、静态 IP/ASN、顶层 DOMAIN-KEYWORD 或内容改写。
 
-`sgshort.wechat.com` 与 `sgminorshort.wechat.com` 已由规则集中的 `DOMAIN-SUFFIX,wechat.com` 统一覆盖，不再配置独立规则或代理例外。当前网络 HTTP 探测均能直连，未发现稳定的强制代理收益；这不是所有网络和微信协议的性能保证。微信域名继续使用一条远程直连规则，先于通用 CDN、流媒体和下载规则。广告优先保持不变，完全没有域名信息的请求仍按后续 IP/进程规则处理。
+微信规则不覆盖先前已命中的 CDN/海外策略；Mac WeChat/WeChatAppEx 进程只兜底此前未命中的请求，iPhone 没有进程兜底。规则判断中 DNS 失败直接进入 FINAL。
 
-`wechat.list` 已交叉核对 [Blackmatrix7 WeChat](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR Wechat](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list) 与 [NobyDa WeChat](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)，统一收录核心登录、媒体/上传、小程序、微信支付与定位域名。共享配置只引用一次，固定到已验证且仍可由仓库 `main` 历史访问的提交，并使用 `no-resolve,extended-matching`，覆盖目标域名、可见 SNI 与 HTTP Host。四个应用内 DNS 端点和 `wxsnsdy` 朋友圈广告端点通过逻辑排除继续交由 Sukka 广告规则处理。
+[在线微信规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list)。固定提交仍在 main 历史可达；只改说明不必更新固定引用。
 
-未命中微信规则的请求继续按主配置处理：国内 IP 可由后续中国 IP 规则直连；Mac 的 `WeChat`、`WeChatAppEx` 进程在此前规则未命中时还可兜底直连，该兜底不限于裸 IP 或无 SNI 请求。iPhone 没有这两条进程兜底，其余未命中请求使用 `FINAL,Proxy,dns-failed`。如果规则匹配期间 DNS 解析失败，则直接使用 FINAL 策略，不再继续匹配 Mac 微信进程兜底。
+## 模块与验证
 
-仅更新注释或说明时可保留原固定提交：新旧版本的有效规则相同，固定版本中的旧注释可能尚未同步，以本说明为准。
+模块状态不随模板同步。当前个人双端启用 Sukka Always Real IP Plus、URL Redirect (Minimum)、Local DNS Mapping、Enhance Better ADBlock；Mac 另启用 iRingo News。主配置广告条目为 Mac 专用，iPhone 广告拦截依赖已启用模块。模块可追加 MITM hostname，基础入口不设置宽泛 hostname。
 
-当前使用 `extended-matching` 识别直接连接 IP 时暴露的 TLS/QUIC SNI；不使用静态 IP、`IP-ASN,132203` 或顶层 `DOMAIN-KEYWORD`，避免将非微信腾讯流量一并直连。
+最近 USB 核验双端各 20 项代表性匹配一致，四条国内 IP 兜底及 AI EM 已实际加载。运行时 AI 选择美国、Telegram 新加坡、Proxy 香港；这些不是模板对地区的保证。随后最新本地又移除其余五条专项 IP 的 no-resolve，本次照实同步，未重新进行这些参数的双端端到端验收。不宣称所有软件、网速、网络切换或电池表现已经验证。
 
-以下内容明确不并入微信直连规则：`trace.qq.com`、`beacon.qq.com`、`btrace.qq.com` 等追踪/广告端点；小程序去广告的 URL Rewrite、Body Rewrite、Map Local、Script、MITM 模块；以及 Blackmatrix7 的通用 Tencent 大清单。它们分别属于拦截、内容改写或广义腾讯业务，不是媒体上传的必要路由。
-### IPv6 与 Telegram
+本仓库不维护 Bilibili/YouTube 模块；远程文件删除不会自动卸载设备模块。
 
-- Mac 使用 `ipv6 = true`、`ipv6-vif = auto`，中国 IPv6 由 Sukka `china_ip_ipv6.conf` 直连。
-- iPhone 使用 `ipv6 = true`、`ipv6-vif = auto`；与 Mac 共用中国 IPv6 直连规则并使用 `no-resolve`，其他 IPv6 请求仍按专项规则或 FINAL 分流。
-- Telegram 使用域名与官方 CIDR 出站分流；不配置 `PROTOCOL,MTProto,Telegram` 入站规则。
+## 安全同步
 
-### Mac 模块兼容说明
+运行 `bash scripts/sync-local-surge.sh "/path/to/Surge" --apply`，先临时脱敏和完整校验，再更新公开模板。不要直接复制私有配置。提交前运行：
 
-Mac 使用 `[Sukka] Always Real IP Plus`，基础真实 IP 例外位于 `Shared-General.dconf`；当前不包含 `*.windowsupdate.com`。`Fix Windows No Network Alert` 与 `HTTP Download Optimization` 保持停用。
+- `bash scripts/validate-public-config.sh`
+- `bash scripts/test-dns-sanitization.sh`
+- `bash scripts/validate-public-config.sh --history-ref HEAD`
 
-共享 General 使用 AliDNS DoH，公开模板将个人专属地址替换为 `https://dns.alidns.com/dns-query`；使用个人服务时自行填写地址。当前本地还启用了 `[Sukka] Local DNS Mapping`，其 `[Host]` 规则可覆盖部分域名的解析器，模块启用状态需在设备上单独核验。
-
-业务规则的扩展匹配参数按当前 Sukka GitHub 示例及最新本地选择配置：广告基础域名双端开启扩展匹配，Apple Intelligence 与微信例外/直连保留扩展匹配；AI、流媒体、Telegram、Apple/Microsoft 服务、网易云、下载/CDN 与国内/海外通用规则使用普通匹配。仅有 IP＋SNI 的请求可能改走后续 IP 或 FINAL；例如本次模拟 `1.1.1.1` 携带 `api.openai.com` SNI 时走 Proxy，而非 Intelligence。此变化不等于语法错误，也不保证与此前覆盖完全相同。
-
-[上游项目](https://github.com/SukkaW/Surge#telegram) 推荐优先使用 Telegram 官方 CIDR；当前配置未再叠加 ASN 规则。
-
-通用下载保留本机的 DIRECT 选择，并置于通用 CDN 前；前序专项服务仍优先。实测 codeload.github.com、registry-1.docker.io、objects.githubusercontent.com 按下载规则直连，GitHub 主站由 global 代理；未命中下载规则的通用静态资源仍由 CDN 代理。这不是所有下载都会更快或可达的保证。captive.apple.com、lcdn-locator.apple.com、cdnstatic.tencentcs.com、mirrorlist.cdn.skk.moe 使用前置精确直连例外。公开模板与本机同步了本轮排序和策略改动，未全量统一此前不同的扩展匹配、IP no-resolve 或平台广告参数。Hysteria 单独使用 HTTPS 测速，其余代理沿用全局 HTTP 测速；iPhone 也已启用 IPv6。本次未测量 iPhone 耗电。
-
-## 在线规则
-
-- [微信统一直连规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list)
-
-> 本仓库不再维护 Bilibili 与 YouTube Surge 模块；已安装的设备模块不会因远程文件删除自动卸载，请在 Surge 模块列表中手动移除。
-
-> 本仓库只保存脱敏模板；请勿提交节点地址、订阅链接、密钥或 MITM 证书。
-
-## 安全同步与校验
-
-不要直接把正在使用的 Surge 配置复制到公开仓库。需要同步时，使用带脱敏和失败保护的脚本：
-
-```bash
-scripts/sync-local-surge.sh "/path/to/Surge" --apply
-```
-
-脚本会先在临时目录删除 MITM Keystore、证书引用与远程控制凭据，并将代理地址、凭据、SNI、订阅地址及可能存在的 MTProto secret 替换为占位符；只有完整校验通过后才会更新仓库文件。提交前可再次运行：
-
-```bash
-scripts/validate-public-config.sh
-```
-
-CI 会检查当前分支可达的 Git 历史与脱敏回归用例，阻止凭据重新进入公开提交；GitHub 保留的旧 PR 引用还需单独检查。
-
-发现真实凭据进入 Git 历史时，删除当前文件并不足够：必须先轮换凭据，再重写历史并清理所有可达分支。详见 `SECURITY.md`。
+校验包括凭据、证书、个人 DNS、顺序、AI EM、共享 IPv6 和 IP 参数，回归只用合成数据。CI 检查可达 Git 历史，不证明旧 PR 缓存、Fork 或他人克隆已经清理。凭据泄露须先轮换，再按 SECURITY.md 处理历史。

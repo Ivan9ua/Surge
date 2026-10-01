@@ -25,68 +25,65 @@ US = smart, include-other-group=Flower Cloud, Hysteria, hidden=1, include-all-pr
 Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])(HK|TW|JP|SG|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png, category=节点选择
 
 [Rule]
-# Non-IP 规则
-# Mac 广告规则：扩展匹配
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching
-RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching
+# 域名规则
+# 广告拦截（Mac）
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
-# 内网与明确直连例外：先于宽泛服务及 CDN
-RULE-SET,https://ruleset.skk.moe/List/non_ip/lan.conf,DIRECT
-DOMAIN,captive.apple.com,DIRECT,extended-matching
-DOMAIN,lcdn-locator.apple.com,DIRECT,extended-matching
-DOMAIN,cdnstatic.tencentcs.com,DIRECT,extended-matching
-DOMAIN,mirrorlist.cdn.skk.moe,DIRECT,extended-matching
-# 微信域名/SNI 直连：广告优先，先于通用 CDN、流媒体和下载
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@c3534e5117a64204431104887437ab02ea742131/wechat.list,DIRECT,extended-matching,no-resolve
+RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY
+# CDN
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy
+RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy
+# 流媒体
+RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream
+# Telegram
+RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram
+# Apple 国内 CDN
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
+# Microsoft 国内 CDN
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
+# 下载与更新
+DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,Proxy
+RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,Proxy
+# Apple
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple
+# Microsoft
+RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft
 # AI 与 Apple Intelligence
 RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching
 RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,Intelligence,extended-matching
-# 流媒体
-RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream,extended-matching
-# Telegram：域名分流
-RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram,extended-matching
-# Apple 中国 CDN 直连
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
-# Apple：中国区直连，其余走 Apple
-RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT
-RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple,extended-matching
-# Microsoft：中国 CDN 直连，其余走 Microsoft
-RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT
-RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching
-# 网易云音乐直连
+# 海外服务
+RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy
+# 网易云音乐
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
-# 通用下载：DIRECT；保留前序专项服务策略
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/download.conf,DIRECT,extended-matching
-RULE-SET,https://ruleset.skk.moe/List/non_ip/download.conf,DIRECT,extended-matching
-# 通用 CDN：Proxy；不得抢先匹配专项服务及下载
-DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy
-RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy
-# 国内域名直连
-RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching
-RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching
-# 其他海外域名：Proxy
-RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy,extended-matching
+# 微信
+RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@c3534e5117a64204431104887437ab02ea742131/wechat.list,DIRECT,extended-matching,no-resolve
+# 国内与直连服务
+RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT
+RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT
+# 内网域名
+RULE-SET,https://ruleset.skk.moe/List/non_ip/lan.conf,DIRECT
 
 # IP 规则
-# 广告 IP：静默丢弃
+# 广告 IP
 RULE-SET,https://ruleset.skk.moe/List/ip/reject.conf,REJECT-DROP
+# Telegram IP
+RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram
 # 流媒体 IP
 RULE-SET,https://ruleset.skk.moe/List/ip/stream.conf,Stream
-# AI IP：Intelligence
+# AI IP
 RULE-SET,https://ruleset.skk.moe/List/ip/ai.conf,Intelligence
-# Telegram：官方 CIDR 与 ASN 补充
-RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram
-# 网易云音乐 IP 直连
+# 网易云音乐 IP
 RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,DIRECT
-# 内网与国内 IP 直连
+# 内网与国内 IP
 RULE-SET,https://ruleset.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,DIRECT
-# 中国 IPv6：Mac 与 iPhone 共用直连，避免主动触发 DNS 解析
-RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT,no-resolve
-# Mac 微信进程兜底：此前规则未命中时直连；DNS 失败由 FINAL 处理
+# 中国 IPv6
+RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT
+# 微信进程兜底（Mac）
 PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY
 PROCESS-NAME,WeChatAppEx,DIRECT #!MACOS-ONLY
-# 未匹配及 DNS 失败：Proxy
+# 最终兜底
 FINAL,Proxy,dns-failed
