@@ -52,6 +52,8 @@ sanitize_config() {
       -e 's/(password=)[^,]*/\1YOUR_PROXY_PASSWORD/g' \
       -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
       -e 's#https://[A-Za-z0-9.-]+\.alidns\.com/dns-query#https://dns.alidns.com/dns-query#g' \
+      -e 's/^[[:space:]]*[A-Za-z0-9.-]+\.alidns\.com([[:space:]]*=)/dns.alidns.com\1/g' \
+      -e 's/^[[:space:]]*server-proxy-name[[:space:]]*=.*/server-proxy-name= Hysteria/g' \
       -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
       -e 's/(= *hysteria2, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
       -e 's/(= *anytls, *)[^,]+,[^,]+,/\1example.com, 443,/g' \

@@ -171,9 +171,17 @@ fi
 if grep -Eq '^[[:space:]]*show-error-page-for-reject[[:space:]]*=[[:space:]]*true[[:space:]]*$' "$scan_root/Shared-General.dconf"; then
   fail "共享 General 显式启用了 REJECT 普通 HTTP 错误页"
 fi
-if grep -Eio 'https://[a-z0-9.-]+\.alidns\.com' "${all_public_files[@]}" | grep -Eiv 'https://dns\.alidns\.com$' >/dev/null; then
+if grep -h -Eio '[a-z0-9.-]+\.alidns\.com' "${all_public_files[@]}" | grep -Eiv '^dns\.alidns\.com$' >/dev/null; then
   fail "发现未脱敏的个人 AliDNS 地址"
 fi
+if grep -nE '^[[:space:]]*server-proxy-name[[:space:]]*=' "${config_files[@]}" | grep -v 'server-proxy-name= Hysteria' >/dev/null; then
+  fail "发现非占位 Ponte server-proxy-name"
+fi
+grep -q '^hijack-dns = 8\.8\.8\.8:53, 8\.8\.4\.4:53, 1\.1\.1\.1:53, 114\.114\.114\.114:53$' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少完整 hijack-dns 配置"
+for profile_name in Surge.conf iPhone.conf; do
+  grep -q '^dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6$' "$scan_root/$profile_name" || fail "$profile_name 缺少 DoH Host 自举解析"
+  grep -q '^server-proxy-name= Hysteria$' "$scan_root/$profile_name" || fail "$profile_name 缺少 Ponte 中继代理配置"
+done
 grep -q '^icmp-forwarding = true$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 macOS 专用 ICMP 转发"
 if grep -q '^icmp-forwarding' "$scan_root/iPhone.conf" "$scan_root/Shared-General.dconf"; then
   fail "icmp-forwarding 不应进入 iPhone 或共享 General 配置"
