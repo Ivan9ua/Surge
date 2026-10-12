@@ -9,7 +9,7 @@ Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD, download-b
 [Proxy Group]
 Proxy = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0, category=常用策略
 Stream = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/HKMTMedia.png, category=常用策略
-Intelligence = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0, category=常用策略
+Intelligence = select, US, JP, SG, TW, Hysteria, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0, category=常用策略
 Telegram = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png, category=常用策略
 Apple = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png, category=系统服务
 Microsoft = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png, category=系统服务
@@ -31,6 +31,8 @@ DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-ma
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY
+# QUIC 拦截（促使客户端即时回退到极速 TCP HTTP/2，消除朋友圈/图片/视频转圈卡顿）
+RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/quic-reject.list,REJECT-NO-DROP,extended-matching
 # CDN
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy
 RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy
@@ -58,7 +60,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy
 # 网易云音乐
 RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT
 # 微信
-RULE-SET,https://cdn.jsdelivr.net/gh/Ivan9ua/Surge@c3534e5117a64204431104887437ab02ea742131/wechat.list,DIRECT,extended-matching,no-resolve
+RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list,DIRECT,extended-matching
 # 国内与直连服务
 RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT
@@ -80,8 +82,6 @@ RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,DIRECT
-# 中国 IPv6
-RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,DIRECT
 # 微信进程兜底（Mac）
 PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY
 PROCESS-NAME,WeChatAppEx,DIRECT #!MACOS-ONLY
