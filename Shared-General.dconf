@@ -30,3 +30,14 @@ udp-policy-not-supported-behaviour = REJECT
 udp-priority = false
 # 关闭 GeoIP 自动更新；当前不使用 GEOIP 规则
 disable-geoip-db-auto-update = true
+
+[Host]
+# DoH 引导映射：阿里公共 DNS
+dns.alidns.com = 223.5.5.5, 223.6.6.6
+
+[Ponte]
+server-proxy-name= Hysteria
+
+[MITM]
+h2 = true
+hostname-disabled = gateway.icloud.com, gateway.icloud.com.cn, weather-data.apple.com, buy.itunes.apple.com, ios.chat.openai.com

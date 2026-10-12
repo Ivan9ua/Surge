@@ -1,22 +1,23 @@
 # Surge 双端配置
 
-个人 Surge Mac / iPhone 脱敏模板，规则基于 [SukkaW/Surge](https://github.com/SukkaW/Surge)，另维护微信统一规则。同步日期：2026-10-01。
+个人 Surge Mac / iPhone 脱敏模板，规则基于 [SukkaW/Surge](https://github.com/SukkaW/Surge)，另维护微信与 QUIC 统一规则。同步日期：2026-10-13。
 
 ## 文件与使用
 
 | 文件 | 用途 |
 |---|---|
-| Surge.conf | Mac 入口，对应私有 Mac.conf |
-| iPhone.conf | iPhone 入口 |
-| Shared-General.dconf | 共享 DNS、IPv6、网络检测与兼容设置 |
+| Surge.conf | Mac 入口薄壳，对应私有 Mac.conf |
+| iPhone.conf | iPhone 入口薄壳 |
+| Shared-General.dconf | 共享 DNS、Host 自举解析、Ponte 中继、MITM 通用设置、IPv6 与网络检测兼容设置 |
 | Shared-Routing.dconf | 节点占位符、策略组、分流规则 |
+| quic-reject.list | 针对国内媒体等 UDP 劣化的 QUIC 拦截规则集 |
 | wechat.list | 微信域名及可见 SNI/Host 统一直连规则 |
 | [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 最新规则顺序、参数和验证边界 |
 | [SECURITY.md](SECURITY.md) | 安全同步与泄露处理 |
 
 将四份配置放入同一 Surge 配置目录，分别导入设备入口。在自己的私有副本填写 example.com、YOUR_PROXY_PASSWORD、YOUR_SURGE_SUBSCRIPTION_URL；个人 AliDNS 已替换为通用 DoH。MITM 证书与 Keystore 已删除，需在设备 UI 单独生成和配置。不要将填写后的副本提交到仓库。
 
-双端在 General 引用 Shared-General，在 Proxy、Proxy Group、Rule 各引用一次 Shared-Routing。category 仅用于展示，地区和机场订阅共享分类。ipv6=true、ipv6-vif=auto 放在共享 General。
+双端在 General、Host、Ponte、MITM 引用 Shared-General，在 Proxy、Proxy Group、Rule 各引用一次 Shared-Routing。category 仅用于展示，地区和机场订阅共享分类。ipv6=false、ipv6-vif=disabled 放在共享 General。
 
 ## 规则排序与策略
 
