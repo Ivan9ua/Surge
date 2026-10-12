@@ -32,6 +32,32 @@ if grep -q 'test-account.alidns.com' "$fixture_dir/Shared-General.dconf"; then
   exit 1
 fi
 
+sed 's#dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6#test-account.alidns.com = 223.5.5.5, 223.6.6.6#g' \
+  "$repo_root/Surge.conf" > "$fixture_dir/Surge.conf"
+if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.log" 2>&1; then
+  echo '错误：个人 Host AliDNS 地址未被拒绝' >&2
+  exit 1
+fi
+grep -q '个人 AliDNS 地址' "$fixture_dir/result.log"
+bash "$fixture_dir/scripts/sync-local-surge.sh" "$fixture_dir" --apply
+grep -q '^dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6' "$fixture_dir/Surge.conf"
+if grep -q 'test-account.alidns.com' "$fixture_dir/Surge.conf"; then
+  exit 1
+fi
+
+sed 's#server-proxy-name= Hysteria#server-proxy-name= private-relay#' \
+  "$repo_root/iPhone.conf" > "$fixture_dir/iPhone.conf"
+if bash "$fixture_dir/scripts/validate-public-config.sh" > "$fixture_dir/result.log" 2>&1; then
+  echo '错误：非占位 Ponte 节点未被拒绝' >&2
+  exit 1
+fi
+grep -q '非占位 Ponte server-proxy-name' "$fixture_dir/result.log"
+bash "$fixture_dir/scripts/sync-local-surge.sh" "$fixture_dir" --apply
+grep -q '^server-proxy-name= Hysteria' "$fixture_dir/iPhone.conf"
+if grep -q 'private-relay' "$fixture_dir/iPhone.conf"; then
+  exit 1
+fi
+
 sed -E \
   -e 's#Hysteria = hysteria2, example\.com, 443, password=YOUR_PROXY_PASSWORD#Hysteria = hysteria2, private-proxy.invalid, 8443, password=synthetic-secret#' \
   -e 's#sni=example\.com#sni=private-sni.invalid#' \
