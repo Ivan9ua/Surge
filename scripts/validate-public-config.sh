@@ -178,10 +178,10 @@ if grep -nE '^[[:space:]]*server-proxy-name[[:space:]]*=' "${config_files[@]}" |
   fail "发现非占位 Ponte server-proxy-name"
 fi
 grep -q '^hijack-dns = 8\.8\.8\.8:53, 8\.8\.4\.4:53, 1\.1\.1\.1:53, 114\.114\.114\.114:53$' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少完整 hijack-dns 配置"
-for profile_name in Surge.conf iPhone.conf; do
-  grep -q '^dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6$' "$scan_root/$profile_name" || fail "$profile_name 缺少 DoH Host 自举解析"
-  grep -q '^server-proxy-name= Hysteria$' "$scan_root/$profile_name" || fail "$profile_name 缺少 Ponte 中继代理配置"
-done
+grep -q '^dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6$' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少 DoH Host 自举解析"
+grep -q '^server-proxy-name= Hysteria$' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少 Ponte 中继代理配置"
+grep -q '^h2 = true$' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少 MITM h2 配置"
+grep -q '^hostname-disabled = ' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少 MITM hostname-disabled 列表"
 grep -q '^icmp-forwarding = true$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 macOS 专用 ICMP 转发"
 if grep -q '^icmp-forwarding' "$scan_root/iPhone.conf" "$scan_root/Shared-General.dconf"; then
   fail "icmp-forwarding 不应进入 iPhone 或共享 General 配置"
@@ -309,7 +309,7 @@ for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)
   [[ "$include_count" -eq 3 ]] || fail "$profile_name 必须在 Proxy、Proxy Group、Rule 各包含一次 Shared-Routing.dconf"
   general_include_count=$(grep -c '^#!include Shared-General\.dconf$' "$scan_root/$profile_name" || true)
-  [[ "$general_include_count" -eq 1 ]] || fail "$profile_name 必须在 General 包含一次 Shared-General.dconf"
+  [[ "$general_include_count" -eq 4 ]] || fail "$profile_name 必须在 General、Host、Ponte、MITM 各包含一次 Shared-General.dconf"
 done
 
 if command -v surge-cli >/dev/null 2>&1; then

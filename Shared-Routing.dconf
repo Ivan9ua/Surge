@@ -2,27 +2,26 @@
 # 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书与 Keystore。
 
 [Proxy]
-#US-AnyTLS = anytls, example.com, 443, password=YOUR_PROXY_PASSWORD, skip-cert-verify=true, reuse=true
+US-Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD, download-bandwidth=100, test-url=https://latency-test.skk.moe/endpoint, sni=example.com, gecko-password=YOUR_PROXY_PASSWORD, port-hopping="20000-50000", port-hopping-interval=30
 
-Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD, download-bandwidth=70, sni=example.com, test-url=https://latency-test.skk.moe/endpoint
 
 [Proxy Group]
-Proxy = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0, category=常用策略
+Proxy = select, HK, TW, JP, SG, US, US-Hysteria, icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png, include-all-proxies=0, category=常用策略
 Stream = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/HKMTMedia.png, category=常用策略
-Intelligence = select, US, JP, SG, TW, Hysteria, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0, category=常用策略
-Telegram = select, HK, TW, JP, SG, US, Hysteria, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png, category=常用策略
+Intelligence = select, US, JP, SG, TW, US-Hysteria, icon-url=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/ChatGPT7.png, include-all-proxies=0, category=常用策略
+Telegram = select, HK, TW, JP, SG, US, US-Hysteria, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png, category=常用策略
 Apple = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple_2.png, category=系统服务
 Microsoft = select, HK, TW, JP, SG, US, DIRECT, icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png, category=系统服务
 
 # 地区智能选优
-HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|(^|[^A-Za-z])HK([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
-TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇹🇼|台湾|臺灣|Taiwan|(^|[^A-Za-z])TW([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
-JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇯🇵|日本|Japan|(^|[^A-Za-z])JP([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
-SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(🇸🇬|新加坡|Singapore|(^|[^A-Za-z])SG([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
-US = smart, include-other-group=Flower Cloud, Hysteria, hidden=1, include-all-proxies=0, policy-regex-filter=(🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])US([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=高级:0.95; 标准:1; ^US-AnyTLS$:1.05; 实验性:1.10; ^Hysteria$:1.15, category=节点选择
+HK = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(?i)(?:🇭🇰|香港|Hong[ _-]?Kong|(?:^|[^A-Za-z])HK(?:[^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+TW = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(?i)(?:🇹🇼|台湾|臺灣|Taiwan|(?:^|[^A-Za-z])TW(?:[^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+JP = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(?i)(?:🇯🇵|日本|Japan|(?:^|[^A-Za-z])JP(?:[^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+SG = smart, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(?i)(?:🇸🇬|新加坡|Singapore|(?:^|[^A-Za-z])SG(?:[^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png, policy-priority=高级:0.95; 标准:1; 实验性:1.05, category=节点选择
+US = smart, US-Hysteria, include-other-group=Flower Cloud, hidden=1, include-all-proxies=0, policy-regex-filter=(?i)(?:🇺🇸|美国|美國|United[ _-]?States|(?:^|[^A-Za-z])US(?:[^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png, policy-priority=^US-Hysteria$:1.00; ^US-Snell$:1.00; 高级:0.95; 标准:1.00; 实验性:1.10, category=节点选择
 
 # 订阅节点
-Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(^|[^A-Za-z])(HK|TW|JP|SG|US)([^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png, category=节点选择
+Flower Cloud = select, policy-path=YOUR_SURGE_SUBSCRIPTION_URL, hidden=1, include-all-proxies=0, policy-regex-filter=(?i)(?:🇭🇰|香港|Hong[ _-]?Kong|🇹🇼|台湾|臺灣|Taiwan|🇯🇵|日本|Japan|🇸🇬|新加坡|Singapore|🇺🇸|美国|美國|United[ _-]?States|(?:^|[^A-Za-z])(?:HK|TW|JP|SG|US)(?:[^A-Za-z]|$)), icon-url=https://raw.githubusercontent.com/lige47/QuanX-icon-rule/main/icon/06jichang/FlowerCloud.png, category=节点选择
 
 [Rule]
 # 域名规则
@@ -39,7 +38,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy
 # 流媒体
 RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream
 # Telegram
-RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram
+RULE-SET,https://ruleset.skk.moe/List/non_ip/telegram.conf,Telegram,extended-matching
 # Apple 国内 CDN
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT
 # Microsoft 国内 CDN
@@ -82,7 +81,7 @@ RULE-SET,https://ruleset.skk.moe/List/ip/neteasemusic.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/lan.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/domestic.conf,DIRECT
 RULE-SET,https://ruleset.skk.moe/List/ip/china_ip.conf,DIRECT
-# 微信进程兜底（Mac）
+# 微信进程直连兜底（Mac）
 PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY
 PROCESS-NAME,WeChatAppEx,DIRECT #!MACOS-ONLY
 # 最终兜底
