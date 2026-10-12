@@ -255,6 +255,9 @@ required_wechat_direct_rules=(
   'DOMAIN-SUFFIX,wechatpay.cn'
   'DOMAIN-SUFFIX,wxapp.tc.qq.com'
   'DOMAIN-SUFFIX,map.qq.com'
+  'DOMAIN-SUFFIX,wecom.work'
+  'DOMAIN-SUFFIX,video.qq.com'
+  'DOMAIN-SUFFIX,wetype.cn'
 )
 for required_rule in "${required_wechat_direct_rules[@]}"; do
   grep -qF -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少域名: $required_rule"
@@ -280,7 +283,7 @@ if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT),' "$scan_root/
   fail "微信统一规则不应使用静态 IP、ASN、顶层 DOMAIN-KEYWORD 或 USER-AGENT"
 fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
-[[ "$wechat_rule_count" -eq 32 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 32）"
+[[ "$wechat_rule_count" -eq 36 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 36）"
 
 required_quic_rules=(
   'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn))'
