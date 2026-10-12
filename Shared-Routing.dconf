@@ -32,7 +32,7 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matchin
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY
 RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY
 # QUIC 拦截（促使客户端即时回退到极速 TCP HTTP/2，消除朋友圈/图片/视频转圈卡顿）
-RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/quic-reject.list,REJECT-NO-DROP
+RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/quic-reject.list,REJECT-NO-DROP,extended-matching
 # CDN
 DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy
 RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy

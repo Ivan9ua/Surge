@@ -8,7 +8,7 @@ loglevel = notify
 exclude-simple-hostnames = true
 # IPv6 关闭（防 DNS 污染与节点断流，保持纯 IPv4 环境）
 ipv6 = false
-ipv6-vif = disable
+ipv6-vif = disabled
 # 网络与策略测试
 test-timeout = 5
 internet-test-url = http://connectivitycheck.platform.hicloud.com/generate_204

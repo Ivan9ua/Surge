@@ -128,8 +128,8 @@ grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRE
 for download_type in domainset non_ip; do
   grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy$" "$scan_root/Shared-Routing.dconf" || fail "通用下载未映射到 Proxy"
 done
-quic_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/([0-9a-f]{40}|main)/quic-reject\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@([0-9a-f]{40}|main)/quic-reject\.list),REJECT-NO-DROP$'
-grep -Eq "$quic_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "QUIC拦截规则未正确引用或策略不为 REJECT-NO-DROP"
+quic_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/([0-9a-f]{40}|main)/quic-reject\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@([0-9a-f]{40}|main)/quic-reject\.list),REJECT-NO-DROP,extended-matching$'
+grep -Eq "$quic_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "QUIC拦截规则未正确引用或缺少 extended-matching"
 
 wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/([0-9a-f]{40}|main)/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@([0-9a-f]{40}|main)/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve|extended-matching)$'
 grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未引用或缺少 extended-matching"
@@ -161,7 +161,7 @@ done
 if grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf"; then
   grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "启用 IPv6 时共享 General 未使用自动 IPv6 VIF"
 elif grep -q '^ipv6 = false$' "$scan_root/Shared-General.dconf"; then
-  grep -q '^ipv6-vif = disable$' "$scan_root/Shared-General.dconf" || fail "禁用 IPv6 时共享 General 未使用 disable IPv6 VIF"
+  grep -q '^ipv6-vif = disabled$' "$scan_root/Shared-General.dconf" || fail "禁用 IPv6 时共享 General 未使用 disabled IPv6 VIF"
 else
   fail "共享 General IPv6 设置异常"
 fi
