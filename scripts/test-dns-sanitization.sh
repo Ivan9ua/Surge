@@ -6,7 +6,7 @@ fixture_dir="$(mktemp -d "${TMPDIR:-/tmp}/surge-dns-test.XXXXXX")"
 trap 'rm -rf -- "$fixture_dir"' EXIT
 mkdir "$fixture_dir/scripts"
 cp "$repo_root/scripts/sync-local-surge.sh" "$repo_root/scripts/validate-public-config.sh" "$fixture_dir/scripts/"
-for name in Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf wechat.list; do
+for name in Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf wechat.list quic-reject.list; do
   cp "$repo_root/$name" "$fixture_dir/$name"
 done
 

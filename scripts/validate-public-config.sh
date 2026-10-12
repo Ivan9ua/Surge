@@ -30,7 +30,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf wechat.list)
+required_files=(Surge.conf iPhone.conf Shared-Routing.dconf Shared-General.dconf wechat.list quic-reject.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -49,7 +49,7 @@ for config_file in "$scan_root"/*.conf "$scan_root"/*.dconf; do
 done
 
 config_files=("$scan_root/Surge.conf" "$scan_root/iPhone.conf" "$scan_root/Shared-Routing.dconf" "$scan_root/Shared-General.dconf")
-all_public_files=("${config_files[@]}" "$scan_root/wechat.list")
+all_public_files=("${config_files[@]}" "$scan_root/wechat.list" "$scan_root/quic-reject.list")
 
 forbidden_extension='.'q'xrewrite'
 if find "$scan_root" -maxdepth 1 -type f -name "*$forbidden_extension" -print -quit | grep -q .; then
@@ -128,9 +128,12 @@ grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRE
 for download_type in domainset non_ip; do
   grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy$" "$scan_root/Shared-Routing.dconf" || fail "通用下载未映射到 Proxy"
 done
-wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/[0-9a-f]{40}/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@[0-9a-f]{40}/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve)$'
-grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未固定到完整提交或缺少 no-resolve,extended-matching"
-[[ "$(grep -cE 'Ivan9ua/Surge@[0-9a-f]{40}/wechat\.list' "$scan_root/Shared-Routing.dconf")" -eq 1 ]] || fail "微信统一规则必须且只能引用一次"
+quic_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/([0-9a-f]{40}|main)/quic-reject\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@([0-9a-f]{40}|main)/quic-reject\.list),REJECT-NO-DROP$'
+grep -Eq "$quic_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "QUIC拦截规则未正确引用或策略不为 REJECT-NO-DROP"
+
+wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/([0-9a-f]{40}|main)/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@([0-9a-f]{40}|main)/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve|extended-matching)$'
+grep -Eq "$wechat_reference_regex" "$scan_root/Shared-Routing.dconf" || fail "微信统一规则未引用或缺少 extended-matching"
+[[ "$(grep -cE 'Ivan9ua/Surge(@main|/[0-9a-f]{40}|@([0-9a-f]{40}|main)|/main)/wechat\.list' "$scan_root/Shared-Routing.dconf")" -eq 1 ]] || fail "微信统一规则必须且只能引用一次"
 if grep -Eq 'wechat-(direct|exception|ip)\.list' "$scan_root/Shared-Routing.dconf"; then
   fail "共享规则仍引用旧版微信拆分规则"
 fi
@@ -143,7 +146,11 @@ telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram
 if [[ -n "$telegram_asn_line" && "$telegram_cidr_line" -ge "$telegram_asn_line" ]]; then
   fail "Telegram ASN 补充须位于官方 CIDR 之后并使用同一策略"
 fi
-for domestic_ip in lan domestic china_ip china_ip_ipv6; do
+domestic_ip_list=(lan domestic china_ip)
+if grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf"; then
+  domestic_ip_list+=(china_ip_ipv6)
+fi
+for domestic_ip in "${domestic_ip_list[@]}"; do
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$domestic_ip.conf,DIRECT" "$scan_root/Shared-Routing.dconf" || fail "国内或内网 IP 兜底应允许解析: $domestic_ip"
 done
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching' "$scan_root/Shared-Routing.dconf" || fail "AI 规则缺少扩展匹配"
@@ -151,8 +158,13 @@ for ip_policy in 'reject REJECT-DROP' 'telegram Telegram' 'stream Stream' 'ai In
   read -r ip_name ip_route <<< "$ip_policy"
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Shared-Routing.dconf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
 done
-grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf" || fail "共享 General 未启用 IPv6"
-grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "共享 General 未使用自动 IPv6 VIF"
+if grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf"; then
+  grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "启用 IPv6 时共享 General 未使用自动 IPv6 VIF"
+elif grep -q '^ipv6 = false$' "$scan_root/Shared-General.dconf"; then
+  grep -q '^ipv6-vif = disable$' "$scan_root/Shared-General.dconf" || fail "禁用 IPv6 时共享 General 未使用 disable IPv6 VIF"
+else
+  fail "共享 General IPv6 设置异常"
+fi
 if grep -qE '^ipv6(-vif)?[[:space:]]*=' "$scan_root/Surge.conf" "$scan_root/iPhone.conf"; then
   fail "设备入口不应重复覆盖共享 IPv6 设置"
 fi
@@ -202,6 +214,7 @@ if grep -qE '^DOMAIN,sg(minor)?short\.wechat\.com,' "$scan_root/Shared-Routing.d
   fail "微信端点已并入统一规则集，不应保留独立规则"
 fi
 ordered_routes=(
+  'quic-reject.list'
   'List/domainset/cdn.conf' 'List/non_ip/cdn.conf'
   'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
   'List/domainset/apple_cdn.conf' 'List/non_ip/microsoft_cdn.conf'
@@ -212,8 +225,12 @@ ordered_routes=(
   'List/non_ip/domestic.conf' 'List/non_ip/direct.conf' 'List/non_ip/lan.conf'
   'List/ip/reject.conf' 'List/ip/telegram.conf' 'List/ip/stream.conf' 'List/ip/ai.conf'
   'List/ip/neteasemusic.conf' 'List/ip/lan.conf' 'List/ip/domestic.conf'
-  'List/ip/china_ip.conf' 'List/ip/china_ip_ipv6.conf' 'PROCESS-NAME,WeChat,' 'FINAL,Proxy,dns-failed'
+  'List/ip/china_ip.conf'
 )
+if grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf"; then
+  ordered_routes+=('List/ip/china_ip_ipv6.conf')
+fi
+ordered_routes+=('PROCESS-NAME,WeChat,' 'FINAL,Proxy,dns-failed')
 previous_route_line=0
 for route in "${ordered_routes[@]}"; do
   route_line="$(line_of "$scan_root/Shared-Routing.dconf" "$route")"
@@ -264,6 +281,18 @@ if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT),' "$scan_root/
 fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
 [[ "$wechat_rule_count" -eq 32 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 32）"
+
+required_quic_rules=(
+  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn))'
+  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qlogo.cn))'
+  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,video.qq.com))'
+  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,weixin.qq.com))'
+)
+for required_rule in "${required_quic_rules[@]}"; do
+  grep -qFx -- "$required_rule" "$scan_root/quic-reject.list" || fail "QUIC 统一规则缺少条目: $required_rule"
+done
+quic_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/quic-reject.list" | wc -l | tr -d ' ')"
+[[ "$quic_rule_count" -eq 4 ]] || fail "QUIC 统一规则数量异常: $quic_rule_count（预期 4）"
 
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)

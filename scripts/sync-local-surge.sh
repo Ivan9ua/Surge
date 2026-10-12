@@ -25,6 +25,7 @@ tracked_files=(
   Shared-Routing.dconf
   Shared-General.dconf
   wechat.list
+  quic-reject.list
 )
 for tracked_file in "${tracked_files[@]}"; do
   if [[ -f "$repo_root/$tracked_file" ]]; then
