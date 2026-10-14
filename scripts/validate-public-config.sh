@@ -188,7 +188,7 @@ grep -q '^dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6$' "$scan_root/Shared-Gen
 grep -q '^server-proxy-name= Hysteria$' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少 Ponte 中继代理配置"
 grep -q '^h2 = true$' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少 MITM h2 配置"
 grep -q '^hostname-disabled = ' "$scan_root/Shared-General.dconf" || fail "Shared-General.dconf 缺少 MITM hostname-disabled 列表"
-grep -q '^icmp-forwarding = true$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 macOS 专用 ICMP 转发"
+grep -qE '^icmp-forwarding = true([[:space:]]+#!MACOS-ONLY)?$' "$scan_root/Surge.conf" || fail "Mac 模板缺少 macOS 专用 ICMP 转发"
 if grep -q '^icmp-forwarding' "$scan_root/iPhone.conf" "$scan_root/Shared-General.dconf"; then
   fail "icmp-forwarding 不应进入 iPhone 或共享 General 配置"
 fi

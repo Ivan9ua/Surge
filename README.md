@@ -1,13 +1,13 @@
 # Surge 双端配置
 
-个人 Surge Mac / iPhone 脱敏模板，规则基于 [SukkaW/Surge](https://github.com/SukkaW/Surge)，另维护微信与 QUIC 统一规则。同步日期：2026-10-13。
+个人 Surge Mac / iPhone 脱敏模板，规则基于 [SukkaW/Surge](https://github.com/SukkaW/Surge)，另维护微信与 QUIC 统一规则。同步日期：2026-10-14。
 
 ## 文件与使用
 
 | 文件 | 用途 |
 |---|---|
-| Surge.conf | Mac 入口薄壳，对应私有 Mac.conf |
-| iPhone.conf | iPhone 入口薄壳 |
+| Surge.conf | 双端统一入口薄壳（Mac / iPhone 共用，通过 #!MACOS-ONLY 隔离桌面特性） |
+| iPhone.conf | iPhone 独立入口薄壳（历史兼容保留） |
 | Shared-General.dconf | 共享 DNS、Host 自举解析、Ponte 中继、MITM 通用设置、IPv6 与网络检测兼容设置 |
 | Shared-Routing.dconf | 节点占位符、策略组、分流规则 |
 | quic-reject.list | 针对国内媒体等 UDP 劣化的 QUIC 拦截规则集 |
