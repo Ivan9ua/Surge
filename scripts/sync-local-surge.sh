@@ -66,10 +66,10 @@ sanitize_config() {
   } > "$output_file"
 }
 
-if [[ -f "$source_dir/Mac.conf" ]]; then
+if [[ -f "$source_dir/Surge.conf" ]]; then
+  sanitize_config "$source_dir/Surge.conf" "$staging_dir/Surge.conf" 'Surge 双端统一配置模板'
+elif [[ -f "$source_dir/Mac.conf" ]]; then
   sanitize_config "$source_dir/Mac.conf" "$staging_dir/Surge.conf" 'Surge Mac 配置模板'
-elif [[ -f "$source_dir/Surge.conf" ]]; then
-  sanitize_config "$source_dir/Surge.conf" "$staging_dir/Surge.conf" 'Surge Mac 配置模板'
 fi
 
 if [[ -f "$source_dir/iPhone.conf" ]]; then
