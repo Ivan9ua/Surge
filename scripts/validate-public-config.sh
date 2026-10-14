@@ -122,8 +122,9 @@ grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRE
 for download_type in domainset non_ip; do
   grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy$" "$scan_root/Surge.conf" || fail "通用下载未映射到 Proxy"
 done
-quic_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/([0-9a-f]{40}|main)/quic-reject\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@([0-9a-f]{40}|main)/quic-reject\.list),REJECT-NO-DROP,extended-matching$'
-grep -Eq "$quic_reference_regex" "$scan_root/Surge.conf" || fail "QUIC拦截规则未正确引用或缺少 extended-matching"
+if grep -Eq '^[^#;]*quic-reject\.list|^AND,.*\(PROTOCOL,UDP\).*\(DEST-PORT,443\).*REJECT' "$scan_root/Surge.conf"; then
+  fail "主配置仍含已撤回的自定义 QUIC 硬拒绝"
+fi
 
 wechat_reference_regex='^RULE-SET,https://(raw\.githubusercontent\.com/Ivan9ua/Surge/([0-9a-f]{40}|main)/wechat\.list|cdn\.jsdelivr\.net/gh/Ivan9ua/Surge@([0-9a-f]{40}|main)/wechat\.list),DIRECT,(no-resolve,extended-matching|extended-matching,no-resolve|extended-matching)$'
 grep -Eq "$wechat_reference_regex" "$scan_root/Surge.conf" || fail "微信统一规则未引用或缺少 extended-matching"
@@ -179,9 +180,9 @@ grep -q '^dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6$' "$scan_root/Surge.conf
 grep -q '^server-proxy-name= Hysteria$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 Ponte 中继代理配置"
 grep -q '^h2 = true$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 MITM h2 配置"
 grep -q '^hostname-disabled = ' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 MITM hostname-disabled 列表"
-for mac_setting in 'icmp-forwarding = true' 'read-etc-hosts = true' 'download-duration-limit = 5' 'upload-size-limit = 104857600' 'upload-duration-limit = 5'; do
-  grep -qFx "$mac_setting #!MACOS-ONLY" "$scan_root/Surge.conf" || fail "Mac 专用参数缺失或未隔离: $mac_setting"
-done
+if grep -Eq '^\[Testing\]|^(download-duration-limit|upload-size-limit|upload-duration-limit)[[:space:]]*=' "$scan_root/Surge.conf"; then
+  fail "主配置重新引入已删除的 Mac 测速段"
+fi
 
 if awk '
   BEGIN { in_group=0; bad=0 }
@@ -218,7 +219,6 @@ if grep -qE '^DOMAIN,sg(minor)?short\.wechat\.com,' "$scan_root/Surge.conf"; the
   fail "微信端点已并入统一规则集，不应保留独立规则"
 fi
 ordered_routes=(
-  'quic-reject.list'
   'List/domainset/cdn.conf' 'List/non_ip/cdn.conf'
   'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
   'List/domainset/apple_cdn.conf' 'List/non_ip/microsoft_cdn.conf'
@@ -289,18 +289,9 @@ fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
 [[ "$wechat_rule_count" -eq 36 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 36）"
 
-required_quic_rules=(
-  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn))'
-  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qlogo.cn))'
-  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,video.qq.com))'
-  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,weixin.qq.com))'
-  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))'
-)
-for required_rule in "${required_quic_rules[@]}"; do
-  grep -qFx -- "$required_rule" "$scan_root/quic-reject.list" || fail "QUIC 统一规则缺少条目: $required_rule"
-done
-quic_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/quic-reject.list" | wc -l | tr -d ' ')"
-[[ "$quic_rule_count" -eq 5 ]] || fail "QUIC 统一规则数量异常: $quic_rule_count（预期 5）"
+if grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/quic-reject.list" >/dev/null; then
+  fail "已停用的 QUIC 兼容地址不得包含有效规则"
+fi
 
 if grep -qE '^[[:space:]]*#!include[[:space:]]' "$scan_root/Surge.conf"; then
   fail "主配置必须独立完整，不能引用分离配置"

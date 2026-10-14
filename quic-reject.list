@@ -1,16 +1,6 @@
-# NAME: QUIC Reject
-# AUTHOR: Ivan9ua
+# NAME: QUIC Reject (Retired)
 # UPDATED: 2026-10-14
-# REPO: Ivan9ua/Surge
-# TOTAL: 5
-# 说明：拒绝以下指定域名的 UDP 443；客户端是否回退、回退耗时、使用的 TCP 协议及吞吐需实测，不保证零延迟或提速。
-# 边界：覆盖 qpic.cn、qlogo.cn、video.qq.com、weixin.qq.com、wechat.com（含 sni.cdn.wechat.com），不是全局 QUIC 开关；UDP 拒绝返回 ICMP Administratively Prohibited。
-# 引用策略必须为：REJECT-NO-DROP
-# 规则级硬拒绝，不等于节点 block-quic=adaptive；不保证 QUIC-only 客户端可回退。
-
-AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn))
-AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qlogo.cn))
-AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,video.qq.com))
-AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,weixin.qq.com))
-AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))
-
+# TOTAL: 0
+# 已撤回全部自定义 UDP 443 硬拒绝规则；当前主配置不再引用本文件。
+# 仅保留原 URL 的空兼容响应，避免旧配置刷新时遇到 404。
+# 旧缓存须由设备刷新才会更新；不代表已启用 Adaptive QUIC。
