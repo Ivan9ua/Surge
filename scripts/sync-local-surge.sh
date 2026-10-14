@@ -12,6 +12,11 @@ if [[ -z "$source_dir" || "$apply_flag" != "--apply" ]]; then
 fi
 
 [[ -d "$source_dir" ]] || { echo "源目录不存在: $source_dir" >&2; exit 1; }
+[[ -f "$source_dir/Surge.conf" ]] || { echo "源目录缺少单文件 Surge.conf" >&2; exit 1; }
+if grep -qE '^[[:space:]]*#!include[[:space:]]' "$source_dir/Surge.conf"; then
+  echo "源配置仍依赖分离文件，请先完成合并。" >&2
+  exit 1
+fi
 
 staging_dir="$(mktemp -d "${TMPDIR:-/tmp}/surge-public-sync.XXXXXX")"
 cleanup() {
@@ -21,9 +26,6 @@ trap cleanup EXIT
 
 tracked_files=(
   Surge.conf
-  iPhone.conf
-  Shared-Routing.dconf
-  Shared-General.dconf
   wechat.list
   quic-reject.list
 )
@@ -39,13 +41,14 @@ sanitize_config() {
   template_name="$3"
   {
     printf '# %s\n' "$template_name"
-    printf '# 公开脱敏模板：请替换占位符，并在 Surge UI 中配置设备证书与 Keystore。\n\n'
+    printf '# 公开脱敏模板：仅在私有副本填写占位符并配置证书，切勿回传私有副本。\n\n'
     awk '
       BEGIN { in_keystore=0 }
       /^[[:space:]]*\[Keystore\][[:space:]]*$/ { in_keystore=1; next }
       in_keystore && /^[[:space:]]*\[/ { in_keystore=0 }
       !in_keystore { print }
     ' "$input_file" | sed -E \
+      -e '/^# 含私密凭据与共用 CA/d' \
       -e '/^[[:space:]]*(ca-p12|ca-passphrase|ca-keystore-name)[[:space:]]*=/d' \
       -e '/^[[:space:]]*(http-api|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
       -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
@@ -54,6 +57,7 @@ sanitize_config() {
       -e 's#https://[A-Za-z0-9.-]+\.alidns\.com/dns-query#https://dns.alidns.com/dns-query#g' \
       -e 's/^[[:space:]]*[A-Za-z0-9.-]+\.alidns\.com([[:space:]]*=)/dns.alidns.com\1/g' \
       -e 's/^[[:space:]]*server-proxy-name[[:space:]]*=.*/server-proxy-name= Hysteria/g' \
+      -e 's/US-Hysteria/Hysteria/g' \
       -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
       -e 's/(= *hysteria2, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
       -e 's/(= *anytls, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
@@ -66,23 +70,7 @@ sanitize_config() {
   } > "$output_file"
 }
 
-if [[ -f "$source_dir/Surge.conf" ]]; then
-  sanitize_config "$source_dir/Surge.conf" "$staging_dir/Surge.conf" 'Surge 双端统一配置模板'
-elif [[ -f "$source_dir/Mac.conf" ]]; then
-  sanitize_config "$source_dir/Mac.conf" "$staging_dir/Surge.conf" 'Surge Mac 配置模板'
-fi
-
-if [[ -f "$source_dir/iPhone.conf" ]]; then
-  sanitize_config "$source_dir/iPhone.conf" "$staging_dir/iPhone.conf" 'Surge iPhone 配置模板'
-fi
-
-if [[ -f "$source_dir/Shared-Routing.dconf" ]]; then
-  sanitize_config "$source_dir/Shared-Routing.dconf" "$staging_dir/Shared-Routing.dconf" 'Surge Mac / iPhone 共享配置模板'
-fi
-
-if [[ -f "$source_dir/Shared-General.dconf" ]]; then
-  sanitize_config "$source_dir/Shared-General.dconf" "$staging_dir/Shared-General.dconf" 'Surge Mac / iPhone 共享 General 配置模板'
-fi
+sanitize_config "$source_dir/Surge.conf" "$staging_dir/Surge.conf" 'Surge 双端单文件配置模板'
 
 "$repo_root/scripts/validate-public-config.sh" --root "$staging_dir"
 

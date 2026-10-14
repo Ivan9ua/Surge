@@ -19,7 +19,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate templates and Git history
+      - name: Check maintenance script syntax
+        run: bash -n scripts/*.sh
+
+      - name: Validate single-file template and Git history
         run: bash scripts/validate-public-config.sh --history
 
       - name: Test credential sanitization and routing guards
