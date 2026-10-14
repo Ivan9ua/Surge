@@ -83,12 +83,20 @@ for mutation in \
   's#domainset/download.conf,Proxy#domainset/download.conf,DIRECT#' \
   '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy$/d' \
   '/^PROCESS-NAME,XPlayer,/d' \
-  's|icmp-forwarding = true #!MACOS-ONLY|icmp-forwarding = true|'; do
+  's|PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY|PROCESS-NAME,WeChat,DIRECT|' \
+  's|^\[Rule\]|[Rule]\nRULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/quic-reject.list,REJECT-NO-DROP,extended-matching|' \
+  's|^\[Rule\]|[Rule]\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn,extended-matching)),REJECT-NO-DROP|' \
+  's|^\[Proxy\]|[Testing]\n\n[Proxy]|'; do
   mutate "$mutation"
   reject '关键规则或平台隔离回退'
 done
 mutate 's|^\[General\]|[General]\n#!include missing.dconf|'
 reject '分离文件引用'
+
+cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
+printf '\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))\n' >> "$fixture_dir/source/quic-reject.list"
+reject '停用 QUIC 地址重新加入有效规则'
+cp "$repo_root/quic-reject.list" "$fixture_dir/source/quic-reject.list"
 
 cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
 if bash "$fixture_dir/public/scripts/sync-local-surge.sh" "$fixture_dir/source" > "$fixture_dir/result.log" 2>&1; then
