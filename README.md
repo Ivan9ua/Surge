@@ -1,67 +1,69 @@
-# Surge 双端配置
+# Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 脱敏模板，规则基于 [SukkaW/Surge](https://github.com/SukkaW/Surge)，另维护微信与 QUIC 统一规则。同步日期：2026-10-14。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-10-14。基于当前私有 `Surge.conf` 同步，保留分流语义，不发布真实节点、订阅、个人 DNS 标识或证书。
 
 ## 文件与使用
 
 | 文件 | 用途 |
 |---|---|
-| Surge.conf | 双端统一入口薄壳（Mac / iPhone 共用，通过 #!MACOS-ONLY 隔离桌面特性） |
-| iPhone.conf | iPhone 独立入口薄壳（历史兼容保留） |
-| Shared-General.dconf | 共享 DNS、Host 自举解析、Ponte 中继、MITM 通用设置、IPv6 与网络检测兼容设置 |
-| Shared-Routing.dconf | 节点占位符、策略组、分流规则 |
-| quic-reject.list | 针对国内媒体等 UDP 劣化的 QUIC 拦截规则集 |
-| wechat.list | 微信域名及可见 SNI/Host 统一直连规则 |
-| [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 最新规则顺序、参数和验证边界 |
-| [SECURITY.md](SECURITY.md) | 安全同步与泄露处理 |
+| [Surge.conf](Surge.conf) | 唯一主配置：网络、DNS、Host、Ponte、Testing、节点、策略组、分流与 MITM 通用设置 |
+| [wechat.list](wechat.list) | 36 条微信纯域名规则，由主配置在线引用 |
+| [quic-reject.list](quic-reject.list) | 5 条指定域名 UDP 443 拒绝规则，由主配置在线引用 |
+| [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 规则顺序、已验证结果与未验证边界 |
+| [SECURITY.md](SECURITY.md) | 脱敏同步与泄露处理 |
+| [scripts/](scripts/) | 同步、安全校验及合成数据回归测试 |
 
-将四份配置放入同一 Surge 配置目录，分别导入设备入口。在自己的私有副本填写 example.com、YOUR_PROXY_PASSWORD、YOUR_SURGE_SUBSCRIPTION_URL；个人 AliDNS 已替换为通用 DoH。MITM 证书与 Keystore 已删除，需在设备 UI 单独生成和配置。不要将填写后的副本提交到仓库。
+主配置没有 `#!include`，不再维护 `Mac.conf`、`iPhone.conf` 或两份 Shared 分离配置。两个 `.list` 是在线规则集，不是额外设备配置；保留原 URL，避免中断现有引用。
 
-双端在 General、Host、Ponte、MITM 引用 Shared-General，在 Proxy、Proxy Group、Rule 各引用一次 Shared-Routing。category 仅用于展示，地区和机场订阅共享分类。ipv6=false、ipv6-vif=disabled 放在共享 General。
+1. 将 `Surge.conf` 复制到自己的私有 Surge iCloud 配置目录。
+2. 仅在私有副本替换 `example.com`、`YOUR_PROXY_PASSWORD`、`YOUR_SURGE_SUBSCRIPTION_URL`；Hysteria 普通密码、Gecko 密码分别按服务端要求填写。个人 AliDNS 标识已替换为通用 DoH。
+3. 双端均选中同一份 iCloud `Surge.conf`，分别确认自动重载开启。仍使用旧入口的设备须先切换，再清理旧文件。
+4. 如需共用 MITM CA，只在私有配置保留证书与 Keystore，并在两台设备分别安装和信任。公开模板没有证书，不能直接覆盖现有生产配置。
+5. 修改后分别确认设备实际加载结果。iCloud 同步、Surge 重载、证书信任、在线规则刷新不是同一个步骤，不保证后台立即生效。
 
-## 规则排序与策略
+`#!MACOS-ONLY` 隔离 Mac 广告主规则、四条微信进程兜底及专用网络/测速参数。模块状态、系统证书信任和运行时策略选择不由单文件完整管理。旧配置先移至私有归档，禁止上传归档。
 
-主体按 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/) 组织，加入个人微信和 Apple Intelligence 规则，并非每个参数都照搬博客：
+## 当前策略
 
-广告 → 指定域名 UDP 443 拦截 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → Apple 中国区/其他服务 → Microsoft → AI/Apple Intelligence → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 广告/Telegram/流媒体/AI/网易云 IP → 内网/国内 IPv4 → Mac 微信进程 → FINAL。
+排序参考 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)，并非逐项照搬：
 
-- 通用 CDN 和下载走 Proxy；交集以首条命中为准，不保证资源跟随服务专用出口。
-- Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网规则走 DIRECT。
-- AI 和 Apple Intelligence 使用 Intelligence,extended-matching；其他业务域名规则保留当前普通匹配。
-- 海外与广告专项 IP（reject、telegram、stream、ai）启用 no-resolve；网易云与国内/内网 IP 允许解析以兜底国内长尾域名，失败由 FINAL,Proxy,dns-failed 兜底。
-- 全局连通性测试用 HTTP，Hysteria 单独用 HTTPS。测试延迟不是实际吞吐保证。
-- 保留 skip-proxy、真实 IP 兼容列表、网易云与 hostname-disabled。不新增 Apple 精确例外；不叠加 Telegram ASN/MTProto 入站规则。
+广告 → 指定域名 UDP 443 拦截 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → Apple 中国区/其他服务 → Microsoft → AI/Apple Intelligence → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 → Mac 微信进程 → FINAL。
 
-## 微信
+- CDN 和下载走 Proxy；首条命中可能先于服务专项规则，不保证同一应用全部请求同出口。
+- Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。
+- AI、Apple Intelligence、Telegram、微信和 QUIC 规则保留 `extended-matching`。
+- 广告、Telegram、流媒体、AI 的专项 IP 使用 `no-resolve`；网易云、国内及内网 IP 允许解析。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
+- 当前 `ipv6=false`、`ipv6-vif=disabled`，不宣称能解决 DNS 污染或下载慢。
+- 全局测试使用 HTTP，Hysteria 单独使用 HTTPS；延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
+- 保留 skip-proxy、真实 IP 兼容列表、网易云、hostname-disabled；不新增 Apple 精确例外、Telegram ASN 或 MTProto 入站。
 
-共享配置仅引用一次 main 分支的 wechat.list，使用 DIRECT,extended-matching；sgshort.wechat.com、sgminorshort.wechat.com 由 DOMAIN-SUFFIX,wechat.com 覆盖，无独立代理例外。规则集为纯域名规则，外层 no-resolve 不影响其匹配；main 更新会随设备远程资源刷新生效，不是固定版本。
+## 微信与 QUIC
 
-36 条规则用于核心连接、媒体/上传、小程序、支付、定位、企业微信与微信输入法；交叉核对 [Blackmatrix7](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list)、[NobyDa](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)。保留应用内 DNS 和朋友圈广告的逻辑排除，不引入通用腾讯大表、静态 IP/ASN、顶层 DOMAIN-KEYWORD 或内容改写。这不是所有使用场景均已端到端验证的声明。
+主配置仅引用一次 `main/wechat.list`，使用 `DIRECT,extended-matching`。`sgshort.wechat.com`、`sgminorshort.wechat.com` 由 `DOMAIN-SUFFIX,wechat.com` 覆盖，无单独代理例外。规则涵盖核心连接、媒体/上传、小程序、支付、定位、企业微信和微信输入法，保留应用内 DNS 与朋友圈广告的逻辑排除；不使用通用腾讯大表、静态 IP/ASN 或顶层 DOMAIN-KEYWORD。
 
-微信规则不覆盖先前已命中的 CDN/海外策略；Mac WeChat/WeChatAppEx 进程只兜底此前未命中的请求，iPhone 没有进程兜底。规则判断中 DNS 失败直接进入 FINAL。
+Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 只兜底前面未命中的请求，不覆盖更早的 CDN/海外规则；iPhone 不应用进程规则。always-real-ip 已移除四个宽泛微信媒体后缀，保留本地登录回调例外。
 
-[在线微信规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list)。当前随 main 更新；若改为固定提交，应同步修改引用与说明。
+QUIC 规则覆盖 qpic.cn、qlogo.cn、video.qq.com、weixin.qq.com、wechat.com 的 UDP 443，包含聊天及朋友圈部分媒体域名。它是 **REJECT-NO-DROP 规则级硬拒绝，不是 block-quic=adaptive**；不会自动在 1 秒后放行 QUIC-only 客户端，亦不保证回退、HTTP/2 或提速。[拒绝策略说明](https://manual.nssurge.com/policies/reject.html)
 
-QUIC 拦截覆盖 qpic.cn、qlogo.cn、video.qq.com、weixin.qq.com、wechat.com（含 sni.cdn.wechat.com）的 UDP 443，使用 REJECT-NO-DROP；不是全局 QUIC 开关。客户端是否回退、回退耗时、是否使用 HTTP/2 及实际吞吐仍需真实请求验证，不承诺零延迟或必然提速。UDP 拒绝响应是 ICMP Administratively Prohibited，见 [官方拒绝策略说明](https://manual.nssurge.com/policies/reject.html)。
-
-已从 always-real-ip 移除 `*.qpic.cn`、`*.qlogo.cn`、`*.weixin.qq.com`、`*.wechat.com` 四个宽泛后缀（仅保留 `localhost.*.qq.com` 与 `localhost.*.weixin.qq.com` 本地登录回调），让微信媒体与服务域名通过 Fake-IP 直接匹配域名与 QUIC 规则。共享关闭 IPv6 也不是防 DNS 污染或解决下载慢的保证。
+本次保持当前本地分流不变，没有扩大或撤回拦截。此前用户反馈的局部 UDP 拒绝、SG 出口及 Wi-Fi/热点对照均未明显改善慢视频，不能宣称根因已解决。在线规则随 main 发布及设备资源刷新生效，不是修改 README 就已在设备生效。
 
 ## 模块与验证
 
-模块状态不随模板同步。当前个人双端启用 Sukka Always Real IP Plus、URL Redirect (Minimum)、Local DNS Mapping、Enhance Better ADBlock；Mac 另启用 iRingo News。主配置广告条目为 Mac 专用，iPhone 广告拦截依赖已启用模块。模块可追加 MITM hostname，基础入口不设置宽泛 hostname。
+当前 Mac 启用 Sukka Always Real IP Plus、URL Redirect (Minimum)、Local DNS Mapping、Enhance Better ADBlock，以及 iRingo News。模块独立管理，可追加规则与 MITM hostname；主配置不保留旧的宽泛 hostname 排除清单。iPhone 的主配置广告条目被平台条件排除，需另确认其广告模块状态。
 
-2026-10-13 复核：双端本地语法通过，Mac 有效配置与代表性规则匹配通过；自有微信与 QUIC 远程资源就绪。Mac 样本中的 AI 选择美国、Telegram 新加坡；这些不是模板对地区的保证。Antigravity 的 iPhone 输出证明的是设备端规则匹配，不是微信真实下载、协议回退或全场景验收。本轮 iPhone 未连接，无法复核当前真机状态。历史 2026-10-01 双端 20 项匹配仅作旧版本记录，不代表当前全部参数已经双端验收。
+2026-10-14：Mac 6.11.0（12510）加载单文件 Surge.conf；合并前后有效内容一致，45/45 远程资源就绪。微信媒体 TCP、OpenAI、Telegram 的代表性分流通过，直连 HTTPS 探测成功。公开模板另经过脱敏、原生配置检查及合成回归测试。
 
-2026-10-13 已从私有 iPhone.conf 移除临时 HTTP API/External Controller 字段，本地语法通过；手机重新加载与设备侧监听关闭尚待验证。不得将本地清理等同于真机零残留。
+本轮 iPhone 未连接，未验收新入口、自动重载、模块或临时管理接口关闭；Mac 语法通过不等于手机实机通过。也未重新验收朋友圈视频吞吐、所有应用、耗电或网络切换。历史双端记录不作为当前完整验收。
 
-本仓库不维护 Bilibili/YouTube 模块；远程文件删除不会自动卸载设备模块。
+## 安全同步与维护
 
-## 安全同步
+```bash
+bash scripts/sync-local-surge.sh "/path/to/private/Surge" --apply
+bash scripts/validate-public-config.sh
+bash scripts/test-dns-sanitization.sh
+bash scripts/validate-public-config.sh --history-ref HEAD
+```
 
-运行 `bash scripts/sync-local-surge.sh "/path/to/Surge" --apply`，先临时脱敏和完整校验，再更新公开模板。不要直接复制私有配置。提交前运行：
+脚本要求源目录存在独立完整的 Surge.conf，先临时脱敏及校验，再覆盖公开模板；缺少源文件或校验失败即停止。两份在线规则保留仓库版本，不从私有目录或历史备份隐式复制。不要直接复制私有配置，也不要在仓库填写生产凭据。
 
-- `bash scripts/validate-public-config.sh`
-- `bash scripts/test-dns-sanitization.sh`
-- `bash scripts/validate-public-config.sh --history-ref HEAD`
-
-校验包括凭据、证书、个人 DNS、顺序、AI EM、共享 IPv6 和 IP 参数，回归只用合成数据。CI 检查可达 Git 历史，不证明旧 PR 缓存、Fork 或他人克隆已经清理。凭据泄露须先轮换，再按 SECURITY.md 处理历史。
+CI 检查单文件结构、凭据/证书、个人 DNS、平台隔离、四个微信进程、规则顺序、关键参数及可达 Git 历史。Linux 无原生 Surge 时仅执行静态校验；原生语法与真实业务测试需分别进行。历史扫描不证明旧 PR 缓存、Fork 或他人克隆已经清理；泄露后先轮换，再按安全策略处理。

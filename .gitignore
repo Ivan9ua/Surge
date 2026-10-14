@@ -6,6 +6,10 @@ Shared.dconf
 *.local.conf
 *.private.conf
 secrets/
+.surge-backups/
+.surge-audits/
+*.iosinterface
+.DS_Store
 *.p12
 *.pfx
 *.pem
