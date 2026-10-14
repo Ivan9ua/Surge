@@ -2,12 +2,14 @@
 # AUTHOR: Ivan9ua
 # UPDATED: 2026-10-13
 # REPO: Ivan9ua/Surge
-# TOTAL: 4
-# 说明：针对腾讯/微信媒体等国内易受 UDP QoS 劣化的服务拦截 QUIC (UDP 443)，促使客户端即时 0 延迟回退至稳定高速的 TCP HTTP/2 直连。
+# TOTAL: 5
+# 说明：拒绝以下指定域名的 UDP 443；客户端是否回退、回退耗时、使用的 TCP 协议及吞吐需实测，不保证零延迟或提速。
+# 边界：覆盖 qpic.cn、qlogo.cn、video.qq.com、weixin.qq.com、wechat.com（含 sni.cdn.wechat.com），不是全局 QUIC 开关；UDP 拒绝返回 ICMP Administratively Prohibited。
 # 引用策略必须为：REJECT-NO-DROP
 
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn))
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qlogo.cn))
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,video.qq.com))
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,weixin.qq.com))
+AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))
 

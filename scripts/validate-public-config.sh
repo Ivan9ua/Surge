@@ -140,8 +140,8 @@ fi
 if grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Shared-Routing.dconf"; then
   fail "共享规则仍含已删除的 MTProto 入站分流"
 fi
-telegram_cidr_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram' "$scan_root/Shared-Routing.dconf" | cut -d: -f1 || true)
-telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,Telegram' "$scan_root/Shared-Routing.dconf" | cut -d: -f1 || true)
+telegram_cidr_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram,no-resolve' "$scan_root/Shared-Routing.dconf" | cut -d: -f1 || true)
+telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,Telegram,no-resolve' "$scan_root/Shared-Routing.dconf" | cut -d: -f1 || true)
 [[ -n "$telegram_cidr_line" ]] || fail "缺少 Telegram 官方 CIDR 规则"
 if [[ -n "$telegram_asn_line" && "$telegram_cidr_line" -ge "$telegram_asn_line" ]]; then
   fail "Telegram ASN 补充须位于官方 CIDR 之后并使用同一策略"
@@ -154,10 +154,16 @@ for domestic_ip in "${domestic_ip_list[@]}"; do
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$domestic_ip.conf,DIRECT" "$scan_root/Shared-Routing.dconf" || fail "国内或内网 IP 兜底应允许解析: $domestic_ip"
 done
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching' "$scan_root/Shared-Routing.dconf" || fail "AI 规则缺少扩展匹配"
-for ip_policy in 'reject REJECT-DROP' 'telegram Telegram' 'stream Stream' 'ai Intelligence' 'neteasemusic DIRECT'; do
+for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram,no-resolve' 'stream Stream,no-resolve' 'ai Intelligence,no-resolve' 'neteasemusic DIRECT'; do
   read -r ip_name ip_route <<< "$ip_policy"
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Shared-Routing.dconf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
 done
+if grep -q 'US-Snell' "$scan_root/Shared-Routing.dconf"; then
+  fail "Shared-Routing.dconf 策略组仍残留已停用的 US-Snell 引用"
+fi
+if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)(\*\.qpic\.cn|\*\.qlogo\.cn|\*\.weixin\.qq\.com|\*\.wechat\.com)([[:space:]]*,|$)' "$scan_root/Shared-General.dconf" >/dev/null; then
+  fail "Shared-General.dconf always-real-ip 仍残留已移除的微信宽泛后缀"
+fi
 if grep -q '^ipv6 = true$' "$scan_root/Shared-General.dconf"; then
   grep -q '^ipv6-vif = auto$' "$scan_root/Shared-General.dconf" || fail "启用 IPv6 时共享 General 未使用自动 IPv6 VIF"
 elif grep -q '^ipv6 = false$' "$scan_root/Shared-General.dconf"; then
@@ -298,12 +304,13 @@ required_quic_rules=(
   'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qlogo.cn))'
   'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,video.qq.com))'
   'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,weixin.qq.com))'
+  'AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))'
 )
 for required_rule in "${required_quic_rules[@]}"; do
   grep -qFx -- "$required_rule" "$scan_root/quic-reject.list" || fail "QUIC 统一规则缺少条目: $required_rule"
 done
 quic_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/quic-reject.list" | wc -l | tr -d ' ')"
-[[ "$quic_rule_count" -eq 4 ]] || fail "QUIC 统一规则数量异常: $quic_rule_count（预期 4）"
+[[ "$quic_rule_count" -eq 5 ]] || fail "QUIC 统一规则数量异常: $quic_rule_count（预期 5）"
 
 for profile_name in Surge.conf iPhone.conf; do
   include_count=$(grep -c '^#!include Shared-Routing\.dconf$' "$scan_root/$profile_name" || true)
