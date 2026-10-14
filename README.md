@@ -23,30 +23,36 @@
 
 主体按 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/) 组织，加入个人微信和 Apple Intelligence 规则，并非每个参数都照搬博客：
 
-广告 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → Apple 中国区/其他服务 → Microsoft → AI/Apple Intelligence → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 广告/Telegram/流媒体/AI/网易云 IP → 内网/国内 IPv4/IPv6 → Mac 微信进程 → FINAL。
+广告 → 指定域名 UDP 443 拦截 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → Apple 中国区/其他服务 → Microsoft → AI/Apple Intelligence → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 广告/Telegram/流媒体/AI/网易云 IP → 内网/国内 IPv4 → Mac 微信进程 → FINAL。
 
 - 通用 CDN 和下载走 Proxy；交集以首条命中为准，不保证资源跟随服务专用出口。
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网规则走 DIRECT。
 - AI 和 Apple Intelligence 使用 Intelligence,extended-matching；其他业务域名规则保留当前普通匹配。
-- 所有主配置 IP 规则目前允许解析，未命中域名规则的目标可能发起本地 DNS，再按 IP 分流；失败由 FINAL,Proxy,dns-failed 兜底。
+- 海外与广告专项 IP（reject、telegram、stream、ai）启用 no-resolve；网易云与国内/内网 IP 允许解析以兜底国内长尾域名，失败由 FINAL,Proxy,dns-failed 兜底。
 - 全局连通性测试用 HTTP，Hysteria 单独用 HTTPS。测试延迟不是实际吞吐保证。
 - 保留 skip-proxy、真实 IP 兼容列表、网易云与 hostname-disabled。不新增 Apple 精确例外；不叠加 Telegram ASN/MTProto 入站规则。
 
 ## 微信
 
-共享配置仅引用一次固定提交的 wechat.list，使用 DIRECT,extended-matching,no-resolve；sgshort.wechat.com、sgminorshort.wechat.com 由 DOMAIN-SUFFIX,wechat.com 覆盖，无独立代理例外。
+共享配置仅引用一次 main 分支的 wechat.list，使用 DIRECT,extended-matching；sgshort.wechat.com、sgminorshort.wechat.com 由 DOMAIN-SUFFIX,wechat.com 覆盖，无独立代理例外。规则集为纯域名规则，外层 no-resolve 不影响其匹配；main 更新会随设备远程资源刷新生效，不是固定版本。
 
-32 条规则覆盖核心连接、媒体/上传、小程序、支付和定位；交叉核对 [Blackmatrix7](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list)、[NobyDa](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)。保留应用内 DNS 和朋友圈广告的逻辑排除，不引入通用腾讯大表、静态 IP/ASN、顶层 DOMAIN-KEYWORD 或内容改写。
+36 条规则用于核心连接、媒体/上传、小程序、支付、定位、企业微信与微信输入法；交叉核对 [Blackmatrix7](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/WeChat/WeChat.list)、[ACL4SSR](https://github.com/ACL4SSR/ACL4SSR/blob/master/Clash/Ruleset/Wechat.list)、[NobyDa](https://github.com/NobyDa/Script/blob/master/Surge/WeChat.list)。保留应用内 DNS 和朋友圈广告的逻辑排除，不引入通用腾讯大表、静态 IP/ASN、顶层 DOMAIN-KEYWORD 或内容改写。这不是所有使用场景均已端到端验证的声明。
 
 微信规则不覆盖先前已命中的 CDN/海外策略；Mac WeChat/WeChatAppEx 进程只兜底此前未命中的请求，iPhone 没有进程兜底。规则判断中 DNS 失败直接进入 FINAL。
 
-[在线微信规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list)。固定提交仍在 main 历史可达；只改说明不必更新固定引用。
+[在线微信规则](https://raw.githubusercontent.com/Ivan9ua/Surge/main/wechat.list)。当前随 main 更新；若改为固定提交，应同步修改引用与说明。
+
+QUIC 拦截覆盖 qpic.cn、qlogo.cn、video.qq.com、weixin.qq.com、wechat.com（含 sni.cdn.wechat.com）的 UDP 443，使用 REJECT-NO-DROP；不是全局 QUIC 开关。客户端是否回退、回退耗时、是否使用 HTTP/2 及实际吞吐仍需真实请求验证，不承诺零延迟或必然提速。UDP 拒绝响应是 ICMP Administratively Prohibited，见 [官方拒绝策略说明](https://manual.nssurge.com/policies/reject.html)。
+
+已从 always-real-ip 移除 `*.qpic.cn`、`*.qlogo.cn`、`*.weixin.qq.com`、`*.wechat.com` 四个宽泛后缀（仅保留 `localhost.*.qq.com` 与 `localhost.*.weixin.qq.com` 本地登录回调），让微信媒体与服务域名通过 Fake-IP 直接匹配域名与 QUIC 规则。共享关闭 IPv6 也不是防 DNS 污染或解决下载慢的保证。
 
 ## 模块与验证
 
 模块状态不随模板同步。当前个人双端启用 Sukka Always Real IP Plus、URL Redirect (Minimum)、Local DNS Mapping、Enhance Better ADBlock；Mac 另启用 iRingo News。主配置广告条目为 Mac 专用，iPhone 广告拦截依赖已启用模块。模块可追加 MITM hostname，基础入口不设置宽泛 hostname。
 
-最近 USB 核验双端各 20 项代表性匹配一致，四条国内 IP 兜底及 AI EM 已实际加载。运行时 AI 选择美国、Telegram 新加坡、Proxy 香港；这些不是模板对地区的保证。随后最新本地又移除其余五条专项 IP 的 no-resolve，本次照实同步，未重新进行这些参数的双端端到端验收。不宣称所有软件、网速、网络切换或电池表现已经验证。
+2026-10-13 复核：双端本地语法通过，Mac 有效配置与代表性规则匹配通过；自有微信与 QUIC 远程资源就绪。Mac 样本中的 AI 选择美国、Telegram 新加坡；这些不是模板对地区的保证。Antigravity 的 iPhone 输出证明的是设备端规则匹配，不是微信真实下载、协议回退或全场景验收。本轮 iPhone 未连接，无法复核当前真机状态。历史 2026-10-01 双端 20 项匹配仅作旧版本记录，不代表当前全部参数已经双端验收。
+
+2026-10-13 已从私有 iPhone.conf 移除临时 HTTP API/External Controller 字段，本地语法通过；手机重新加载与设备侧监听关闭尚待验证。不得将本地清理等同于真机零残留。
 
 本仓库不维护 Bilibili/YouTube 模块；远程文件删除不会自动卸载设备模块。
 

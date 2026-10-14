@@ -11,7 +11,7 @@
 # 说明：匹配微信域名、可见 SNI 与 HTTP Host；未命中请求继续按主配置分流。
 # 主配置：国内 IP 由后续 IP 规则直连；Mac 微信进程可兜底直连，其余未命中请求走 FINAL。
 # DNS 失败时主配置直接使用 FINAL 策略，不再继续匹配微信进程兜底。
-# 外层引用必须使用 no-resolve,extended-matching；不使用顶层 DOMAIN-KEYWORD、静态 IP、ASN 或 USER-AGENT。
+# 外层引用使用 extended-matching；本集为纯域名规则，no-resolve 非必需；不使用顶层 DOMAIN-KEYWORD、静态 IP、ASN 或 USER-AGENT。
 # wup.imtt.qq.com 命中 Sukka 广告域名集，按广告优先策略不纳入直连。
 
 # 微信核心、登录、媒体与上传服务
