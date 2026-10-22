@@ -6,7 +6,7 @@ fixture_dir="$(mktemp -d "${TMPDIR:-/tmp}/surge-public-test.XXXXXX")"
 trap 'rm -rf -- "$fixture_dir"' EXIT
 mkdir -p "$fixture_dir/public/scripts" "$fixture_dir/source"
 cp "$repo_root/scripts/sync-local-surge.sh" "$repo_root/scripts/validate-public-config.sh" "$fixture_dir/public/scripts/"
-for name in Surge.conf wechat.list quic-reject.list; do
+for name in Surge.conf wechat.list quic-reject.list ai-extra.list; do
   cp "$repo_root/$name" "$fixture_dir/public/$name"
   cp "$repo_root/$name" "$fixture_dir/source/$name"
 done
@@ -83,6 +83,7 @@ for mutation in \
   's#domainset/download.conf,Proxy#domainset/download.conf,DIRECT#' \
   '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy$/d' \
   '/^PROCESS-NAME,XPlayer,/d' \
+  '/^RULE-SET,.*\/ai-extra.list,/d' \
   's|PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY|PROCESS-NAME,WeChat,DIRECT|' \
   's|^\[Rule\]|[Rule]\nRULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/quic-reject.list,REJECT-NO-DROP,extended-matching|' \
   's|^\[Rule\]|[Rule]\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn,extended-matching)),REJECT-NO-DROP|' \
@@ -97,6 +98,12 @@ cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
 printf '\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))\n' >> "$fixture_dir/source/quic-reject.list"
 reject '停用 QUIC 地址重新加入有效规则'
 cp "$repo_root/quic-reject.list" "$fixture_dir/source/quic-reject.list"
+
+sed 's|DOMAIN-SUFFIX,muse.ai|IP-CIDR,1.1.1.1/32,no-resolve|' "$repo_root/ai-extra.list" > "$fixture_dir/source/ai-extra.list"
+reject 'AI 补充混入 IP 规则'
+sed 's|DOMAIN-SUFFIX,muse.ai|DOMAIN-SUFFIX,auth0.com|' "$repo_root/ai-extra.list" > "$fixture_dir/source/ai-extra.list"
+reject 'AI 补充扩大到共享认证后缀'
+cp "$repo_root/ai-extra.list" "$fixture_dir/source/ai-extra.list"
 
 cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
 if bash "$fixture_dir/public/scripts/sync-local-surge.sh" "$fixture_dir/source" > "$fixture_dir/result.log" 2>&1; then
