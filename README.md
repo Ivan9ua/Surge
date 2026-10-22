@@ -1,6 +1,6 @@
 # Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-10-14。基于当前私有 `Surge.conf` 同步，保留分流语义，不发布真实节点、订阅、个人 DNS 标识或证书。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-10-22（AI 专项）；其余主体为 2026-10-14 脱敏快照。不发布真实节点、订阅、个人 DNS 标识或证书，也不将模板视为当前设备完整运行态。
 
 ## 文件与使用
 
@@ -8,6 +8,8 @@
 |---|---|
 | [Surge.conf](Surge.conf) | 唯一主配置：网络、DNS、Host、Ponte、节点、策略组、分流与 MITM 通用设置 |
 | [wechat.list](wechat.list) | 36 条微信纯域名规则，由主配置在线引用 |
+| [ai-extra.list](ai-extra.list) | 22 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
+| [AI-EXTRA.md](AI-EXTRA.md) | AI 补充范围、来源、排序与验证边界 |
 | [quic-reject.list](quic-reject.list) | 已停用的空兼容地址，0 条规则；主配置不再引用 |
 | [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 规则顺序、已验证结果与未验证边界 |
 | [SECURITY.md](SECURITY.md) | 脱敏同步与泄露处理 |
@@ -27,7 +29,7 @@
 
 排序参考 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)，并非逐项照搬：
 
-广告 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → Apple 中国区/其他服务 → Microsoft → AI/Apple Intelligence → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 → Mac 微信进程 → FINAL。
+广告 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 → Mac 微信进程 → FINAL。
 
 - CDN 和下载走 Proxy；首条命中可能先于服务专项规则，不保证同一应用全部请求同出口。
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。
@@ -64,6 +66,6 @@ bash scripts/test-dns-sanitization.sh
 bash scripts/validate-public-config.sh --history-ref HEAD
 ```
 
-脚本要求源目录存在独立完整的 Surge.conf，先临时脱敏及校验，再覆盖公开模板；缺少源文件或校验失败即停止。两份在线规则保留仓库版本，不从私有目录或历史备份隐式复制。不要直接复制私有配置，也不要在仓库填写生产凭据。
+脚本要求源目录存在独立完整的 Surge.conf，先临时脱敏及校验，再覆盖公开模板；缺少源文件或校验失败即停止。在线规则及 QUIC 空兼容文件保留仓库版本，不从私有目录或历史备份隐式复制。不要直接复制私有配置，也不要在仓库填写生产凭据。
 
 CI 检查单文件结构、凭据/证书、个人 DNS、平台隔离、四个微信进程、规则顺序、关键参数及可达 Git 历史。Linux 无原生 Surge 时仅执行静态校验；原生语法与真实业务测试需分别进行。历史扫描不证明旧 PR 缓存、Fork 或他人克隆已经清理；泄露后先轮换，再按安全策略处理。

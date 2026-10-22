@@ -30,7 +30,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf wechat.list quic-reject.list)
+required_files=(Surge.conf wechat.list quic-reject.list ai-extra.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -49,7 +49,7 @@ for config_file in "$scan_root"/*.conf "$scan_root"/*.dconf; do
 done
 
 config_files=("$scan_root/Surge.conf")
-all_public_files=("${config_files[@]}" "$scan_root/wechat.list" "$scan_root/quic-reject.list")
+all_public_files=("${config_files[@]}" "$scan_root/wechat.list" "$scan_root/quic-reject.list" "$scan_root/ai-extra.list")
 
 forbidden_extension='.'q'xrewrite'
 if find "$scan_root" -maxdepth 1 -type f -name "*$forbidden_extension" -print -quit | grep -q .; then
@@ -149,6 +149,20 @@ for domestic_ip in "${domestic_ip_list[@]}"; do
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$domestic_ip.conf,DIRECT" "$scan_root/Surge.conf" || fail "国内或内网 IP 兜底应允许解析: $domestic_ip"
 done
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching' "$scan_root/Surge.conf" || fail "AI 规则缺少扩展匹配"
+grep -qFx 'RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/ai-extra.list,Intelligence,extended-matching' "$scan_root/Surge.conf" || fail "AI 补充引用缺失或参数异常"
+if ! awk '
+  /^[[:space:]]*(#|;|\/\/|$)/ { next }
+  { count++; if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/ || seen[$0]++) bad=1 }
+  END { exit (bad || count != 22) }
+' "$scan_root/ai-extra.list"; then
+  fail "AI 补充应为22条不重复的纯域名规则"
+fi
+if grep -Eq '^DOMAIN-SUFFIX,(auth0\.com|stripe\.com|googleapis\.com|microsoft\.com|facebook\.com|instagram\.com|whatsapp\.net)$' "$scan_root/ai-extra.list"; then
+  fail "AI 补充含未经批准的宽泛共享服务"
+fi
+for ai_domain in 'DOMAIN-SUFFIX,muse.ai' 'DOMAIN-SUFFIX,copilot.microsoft.com' 'DOMAIN-SUFFIX,githubcopilot.com'; do
+  grep -qFx "$ai_domain" "$scan_root/ai-extra.list" || fail "AI 补充缺少关键产品域名"
+done
 for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram,no-resolve' 'stream Stream,no-resolve' 'ai Intelligence,no-resolve' 'neteasemusic DIRECT'; do
   read -r ip_name ip_route <<< "$ip_policy"
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Surge.conf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
@@ -223,8 +237,9 @@ ordered_routes=(
   'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
   'List/domainset/apple_cdn.conf' 'List/non_ip/microsoft_cdn.conf'
   'List/domainset/download.conf' 'List/non_ip/download.conf'
+  'ai-extra.list' 'List/non_ip/ai.conf' 'List/non_ip/apple_intelligence.conf'
   'List/non_ip/apple_cn.conf' 'List/non_ip/apple_services.conf' 'List/non_ip/microsoft.conf'
-  'List/non_ip/ai.conf' 'List/non_ip/apple_intelligence.conf' 'List/non_ip/global.conf'
+  'List/non_ip/global.conf'
   'List/non_ip/neteasemusic.conf' 'wechat.list'
   'List/non_ip/domestic.conf' 'List/non_ip/direct.conf' 'List/non_ip/lan.conf'
   'List/ip/reject.conf' 'List/ip/telegram.conf' 'List/ip/stream.conf' 'List/ip/ai.conf'

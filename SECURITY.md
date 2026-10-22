@@ -11,7 +11,7 @@ scripts/test-dns-sanitization.sh
 
 本地真实配置仅能通过 `scripts/sync-local-surge.sh <目录> --apply` 同步。该脚本先在临时目录脱敏并校验，校验失败时不会覆盖仓库文件。
 
-当前只允许一份独立的 `Surge.conf`。不得把已归档的设备入口、分离配置、`.iosinterface`、备份目录或诊断原始输出复制入库；在线 `wechat.list`、`quic-reject.list` 在仓库独立维护。脚本不会从旧入口自动回退，也不会在源文件缺失时复用陈旧模板。
+当前只允许一份独立的 `Surge.conf`。不得把已归档的设备入口、分离配置、`.iosinterface`、备份目录或诊断原始输出复制入库；在线 `wechat.list`、`ai-extra.list` 和停用的 `quic-reject.list` 在仓库独立维护。脚本不会从旧入口自动回退，也不会在源文件缺失时复用陈旧模板。
 
 `quic-reject.list` 已停用，仅保留不含有效规则的兼容响应；不得重新添加未经实测批准的硬拒绝。发布时同时验证模板无旧引用、兼容文件为空和旧 Mac Testing 段未被恢复。
 

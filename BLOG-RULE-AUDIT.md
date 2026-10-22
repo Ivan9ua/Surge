@@ -1,4 +1,14 @@
-# 当前配置核对记录
+# 配置核对记录
+
+## 2026-10-22 AI 专项更新
+
+- 新增 ai-extra.list：22 条 DOMAIN/DOMAIN-SUFFIX，覆盖 Meta Muse、Copilot、内容域名及 Agent 产品扩展；不含 IP/ASN、宽泛关键词或整套共享登录/支付服务。
+- 公开模板及私有配置的 AI 补充、Sukka AI、Apple Intelligence 移到 Apple 中国区及 Apple/Microsoft 通用规则之前，保持原有 CDN/下载规则优先。
+- 公开模板现为37条主规则；本地另有云元数据拦截和 captive.apple.com 例外，保留本地已有修改，未借本次发布覆盖其他配置或全面重新同步私有源。
+- 维护脚本增加 AI 文件传递、纯域名断言和关键引用/顺序回归。范围与来源见 [AI-EXTRA.md](AI-EXTRA.md)。
+- 本轮不验收所有 AI 应用登录、授权、付费、媒体或云端任务；下面的双端结果是2026-10-14历史快照，不代表本轮iPhone已验证。
+
+## 2026-10-14 历史核对快照
 
 更新：2026-10-14。以当前私有单文件和双端有效配置为依据。参考：[Sukka 排序](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)、[首条命中语义](https://manual.nssurge.com/rules/overview.html)。本次发布同步已验证的删除与精简结果，不新增提速规则。
 

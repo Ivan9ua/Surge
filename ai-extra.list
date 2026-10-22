@@ -1,0 +1,47 @@
+# NAME: AI Extra
+# UPDATED: 2026-10-22
+# TOTAL: 22
+# 与 Sukka AI / Apple Intelligence 配合；引用策略 Intelligence,extended-matching。
+# 仅补 AI 产品域名；不含 IP、ASN、进程、通用登录/支付域和关键词。
+
+# Meta Muse：官方独立个人 Agent，覆盖 auth 等子域名。
+DOMAIN-SUFFIX,muse.ai
+
+# Microsoft Copilot：消费版与工作版专用入口，不包含微软通用登录。
+DOMAIN-SUFFIX,copilot.microsoft.com
+DOMAIN-SUFFIX,copilot.cloud.microsoft
+DOMAIN-SUFFIX,copilot.com
+
+# GitHub Copilot：专用服务及官方建议接口；api.github.com 已由 Sukka 覆盖。
+DOMAIN-SUFFIX,githubcopilot.com
+DOMAIN,copilot-proxy.githubusercontent.com
+DOMAIN,origin-tracker.githubusercontent.com
+
+# 模型产品内容域名；避免仅覆盖聊天主页。
+DOMAIN-SUFFIX,oaiusercontent.com
+DOMAIN-SUFFIX,claudeusercontent.com
+
+# Cursor：补充站点、服务与 Agent VM；cursor.sh 已由 Sukka 覆盖。
+DOMAIN-SUFFIX,cursor.com
+DOMAIN-SUFFIX,cursorapi.com
+DOMAIN-SUFFIX,cursorvm.com
+
+# Windsurf / Codeium：扩展 Sukka 的个别 API 主机覆盖。
+DOMAIN-SUFFIX,codeium.com
+DOMAIN-SUFFIX,codeiumdata.com
+DOMAIN-SUFFIX,windsurf.com
+
+# Agent 产品扩展：仅限定产品域名，不包含所有第三方依赖。
+# Manus：与 Meta Muse 不同，不推断当前公司归属。
+DOMAIN-SUFFIX,manus.im
+DOMAIN,api.manus.ai
+# Genspark
+DOMAIN-SUFFIX,genspark.ai
+# Devin
+DOMAIN-SUFFIX,devin.ai
+# Augment Code
+DOMAIN-SUFFIX,augmentcode.com
+# Lovable：不把用户发布站点 lovable.app 也归入 AI。
+DOMAIN-SUFFIX,lovable.dev
+# Bolt：不扩大到整个 StackBlitz。
+DOMAIN-SUFFIX,bolt.new

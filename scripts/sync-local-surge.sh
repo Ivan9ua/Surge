@@ -28,6 +28,7 @@ tracked_files=(
   Surge.conf
   wechat.list
   quic-reject.list
+  ai-extra.list
 )
 for tracked_file in "${tracked_files[@]}"; do
   if [[ -f "$repo_root/$tracked_file" ]]; then
