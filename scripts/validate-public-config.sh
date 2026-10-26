@@ -279,7 +279,7 @@ required_wechat_direct_rules=(
   'DOMAIN-SUFFIX,wetype.cn'
 )
 for required_rule in "${required_wechat_direct_rules[@]}"; do
-  grep -qF -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少域名: $required_rule"
+  grep -qFx -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少域名: $required_rule"
 done
 required_wechat_exclusions=(
   'AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))'
@@ -303,6 +303,17 @@ if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT),' "$scan_root/
 fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
 [[ "$wechat_rule_count" -eq 36 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 36）"
+if ! awk '
+  /^[[:space:]]*(#|;|\/\/|$)/ { next }
+  {
+    if ($0 ~ /^AND,/) logical++
+    else if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/) bad=1
+    if (seen[$0]++) bad=1
+  }
+  END { exit (bad || logical != 3) }
+' "$scan_root/wechat.list"; then
+  fail "微信统一规则格式异常、存在重复或逻辑条目数量异常"
+fi
 
 if grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/quic-reject.list" >/dev/null; then
   fail "已停用的 QUIC 兼容地址不得包含有效规则"
