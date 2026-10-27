@@ -10,6 +10,7 @@
 | [wechat.list](wechat.list) | 36 条微信纯域名规则，由主配置在线引用 |
 | [ai-extra.list](ai-extra.list) | 22 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
 | [AI-EXTRA.md](AI-EXTRA.md) | AI 补充范围、来源、排序与验证边界 |
+| [RULESET-MAINTENANCE.md](RULESET-MAINTENANCE.md) | 2026-10-26 规则集维护、运行态样本与校验修复 |
 | [quic-reject.list](quic-reject.list) | 已停用的空兼容地址，0 条规则；主配置不再引用 |
 | [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 规则顺序、已验证结果与未验证边界 |
 | [SECURITY.md](SECURITY.md) | 脱敏同步与泄露处理 |

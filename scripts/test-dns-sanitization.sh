@@ -105,6 +105,18 @@ sed 's|DOMAIN-SUFFIX,muse.ai|DOMAIN-SUFFIX,auth0.com|' "$repo_root/ai-extra.list
 reject 'AI 补充扩大到共享认证后缀'
 cp "$repo_root/ai-extra.list" "$fixture_dir/source/ai-extra.list"
 
+sed 's|DOMAIN-SUFFIX,weixin.com$|DOMAIN-SUFFIX,weixin.com.invalid|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
+reject '微信关键域名被追加后缀后仍被当成原条目'
+cp "$repo_root/wechat.list" "$fixture_dir/source/wechat.list"
+
+sed 's|DOMAIN-SUFFIX,wximg.qq.com$|DOMAIN-SUFFIX,qpic.cn|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
+reject '微信重复条目掩盖覆盖丢失'
+cp "$repo_root/wechat.list" "$fixture_dir/source/wechat.list"
+
+sed 's|DOMAIN-SUFFIX,wximg.qq.com$|DOMAIN-SUFFIX,wximg.qq.com,DIRECT|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
+reject '微信规则集内误带策略字段'
+cp "$repo_root/wechat.list" "$fixture_dir/source/wechat.list"
+
 cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
 if bash "$fixture_dir/public/scripts/sync-local-surge.sh" "$fixture_dir/source" > "$fixture_dir/result.log" 2>&1; then
   echo '错误：同步未要求 --apply' >&2
