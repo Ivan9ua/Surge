@@ -1,6 +1,6 @@
 # Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-10-22（AI 专项）；其余主体为 2026-10-14 脱敏快照。不发布真实节点、订阅、个人 DNS 标识或证书，也不将模板视为当前设备完整运行态。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-01，已同步当前共享配置、简洁注释与统一策略组排序。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
 
 ## 文件与使用
 
@@ -19,7 +19,7 @@
 主配置没有 `#!include`，不再维护 `Mac.conf`、`iPhone.conf` 或两份 Shared 分离配置。微信 `.list` 是在线规则集，不是额外设备配置；原 QUIC 地址仅保留空兼容响应。
 
 1. 将 `Surge.conf` 复制到自己的私有 Surge iCloud 配置目录。
-2. 仅在私有副本替换 `example.com`、`YOUR_PROXY_PASSWORD`、`YOUR_SURGE_SUBSCRIPTION_URL`；Hysteria 普通密码、Gecko 密码分别按服务端要求填写。个人 AliDNS 标识已替换为通用 DoH。
+2. 仅在私有副本替换 `example.com`、`YOUR_SNELL_PSK`、`YOUR_PROXY_PASSWORD`、`YOUR_SURGE_SUBSCRIPTION_URL`；Snell v6、Hysteria 参数按各自服务端填写。公开别名 `Snell`、`Hysteria` 对应私有节点，个人 AliDNS 标识已替换为通用 DoH。
 3. 双端均选中同一份 iCloud `Surge.conf`，分别确认自动重载开启。仍使用旧入口的设备须先切换，再清理旧文件。
 4. 如需共用 MITM CA，只在私有配置保留证书与 Keystore，并在两台设备分别安装和信任。公开模板没有证书，不能直接覆盖现有生产配置。
 5. 修改后分别确认设备实际加载结果。iCloud 同步、Surge 重载、证书信任、在线规则刷新不是同一个步骤，不保证后台立即生效。
@@ -36,8 +36,10 @@
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。
 - AI、Apple Intelligence、Telegram、微信规则保留 `extended-matching`。
 - 广告、Telegram、流媒体、AI 的专项 IP 使用 `no-resolve`；网易云、国内及内网 IP 允许解析。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
-- 当前 `ipv6=false`、`ipv6-vif=disabled`，不宣称能解决 DNS 污染或下载慢。
-- 全局测试使用 HTTP，Hysteria 单独使用 HTTPS；延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
+- 当前 `ipv6=true`、`ipv6-vif=auto`；未额外加入独立的国内 IPv6 规则集，不宣称所有国内 IPv6 都已被专门兜底，也不宣称能解决下载慢。
+- 全局测试使用 HTTP，延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
+- 策略组依次为 Proxy、Intelligence、Stream、Telegram、Apple、Microsoft、HK、TW、JP、SG、US、Flower Cloud。地区选项统一为 HK、TW、JP、SG、US；AI 组保留 US 首位，其余地区按相同相对顺序排列，保留原默认首选。
+- DNS 劫持仅配置 `8.8.8.8:53`、`8.8.4.4:53`；主配置不再内联 Host 自举，设备启用的 Local DNS Mapping 模块另行提供映射。
 - 保留 skip-proxy、真实 IP 兼容列表、网易云、hostname-disabled；不新增 Apple 精确例外、Telegram ASN 或 MTProto 入站。
 
 ## 微信与 QUIC
@@ -52,7 +54,11 @@ Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 只兜底前面未命中�
 
 ## 模块与验证
 
-当前双端均启用 Sukka Always Real IP Plus、URL Redirect (Minimum)、Local DNS Mapping、Enhance Better ADBlock；Mac 另启用 iRingo News，iPhone 另启用 Youtube (Music) Enhance。模块独立管理，可追加规则与 MITM hostname；主配置不保留旧的宽泛 hostname 排除清单。iPhone 的四条主配置广告条目被平台条件排除，由设备模块提供相应覆盖，不能据此保证所有广告均被拦截。
+2026-10-14 的模块快照：双端均启用 Sukka Always Real IP Plus、URL Redirect (Minimum)、Local DNS Mapping、Enhance Better ADBlock；Mac 另启用 iRingo News，iPhone 另启用 Youtube (Music) Enhance。模块独立管理，可追加规则与 MITM hostname；模板不包含模块启用记录。iPhone 的四条主配置广告条目被平台条件排除，模块不等于完整域名广告拦截；2026-11-01 手机抽样中广告域名仍可进入 Proxy。
+
+2026-11-01 整理后核验：Mac 6.11.0（12660）、iPhone iOS 6 Beta（4004）的 General、Proxy Group、Rule 内容一致，手机手动策略选择未变化；微信媒体抽样 DIRECT，ChatGPT 与 Apple Intelligence 抽样进入 Intelligence。该结果仅证明代表性规则命中，不证明媒体吞吐或地区解锁。
+
+私有配置使用 iPhone MCP 管理接口，公开同步会移除整组 HTTP API/MCP 设置和全部管理密钥。自建 Mac 连接工具与 USB 转发保存在仓库之外，不随模板发布。该手机构建的热点无线管理端口不可达，已验证热点上网同时通过 USB 转发调用 MCP；临时 External Controller 与热点访问测试项已清理。
 
 2026-10-14 双端现场核验：Mac 6.11.0（12510）、iPhone Beta 5.102.0（3870）均加载单文件；删除 QUIC 引用后分别 44/44、40/40 远程资源就绪。微信媒体 TCP/QUIC 为 DIRECT，AI、Telegram、下载与独立广告代表性匹配正常。Mac 直连 HTTPS 200、AI 探测 204；iPhone DIRECT 200、Proxy/Intelligence 204。临时 USB 管理设置已清理，未发布控制器凭据。
 

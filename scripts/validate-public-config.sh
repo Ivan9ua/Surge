@@ -70,7 +70,7 @@ for config_file in "${config_files[@]}"; do
   fi
 done
 
-if grep -nEi '^[[:space:]]*(private-key|http-api|external-controller-access|wifi-access-password)[[:space:]]*=' "${config_files[@]}" >/dev/null; then
+if grep -nEi '^[[:space:]]*(private-key|http-api(-mcp|-tls|-web-dashboard)?|external-controller-access|wifi-access-password)[[:space:]]*=' "${config_files[@]}" >/dev/null; then
   fail "发现私钥或远程访问凭据字段"
 fi
 
@@ -142,7 +142,7 @@ if [[ -n "$telegram_asn_line" && "$telegram_cidr_line" -ge "$telegram_asn_line" 
   fail "Telegram ASN 补充须位于官方 CIDR 之后并使用同一策略"
 fi
 domestic_ip_list=(lan domestic china_ip)
-if grep -q '^ipv6 = true$' "$scan_root/Surge.conf"; then
+if grep -q '^RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,' "$scan_root/Surge.conf"; then
   domestic_ip_list+=(china_ip_ipv6)
 fi
 for domestic_ip in "${domestic_ip_list[@]}"; do
@@ -168,7 +168,7 @@ for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram,no-resolve' 
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Surge.conf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
 done
 if grep -q 'US-Snell' "$scan_root/Surge.conf"; then
-  fail "Surge.conf 策略组仍残留已停用的 US-Snell 引用"
+  fail "Surge.conf 节点名称尚未统一为公开别名 Snell"
 fi
 if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)(\*\.qpic\.cn|\*\.qlogo\.cn|\*\.weixin\.qq\.com|\*\.wechat\.com)([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null; then
   fail "Surge.conf always-real-ip 仍残留已移除的微信宽泛后缀"
@@ -189,8 +189,7 @@ fi
 if grep -nE '^[[:space:]]*server-proxy-name[[:space:]]*=' "${config_files[@]}" | grep -v 'server-proxy-name= Hysteria' >/dev/null; then
   fail "发现非占位 Ponte server-proxy-name"
 fi
-grep -q '^hijack-dns = 8\.8\.8\.8:53, 8\.8\.4\.4:53, 1\.1\.1\.1:53, 114\.114\.114\.114:53$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少完整 hijack-dns 配置"
-grep -q '^dns\.alidns\.com = 223\.5\.5\.5, 223\.6\.6\.6$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 DoH Host 自举解析"
+grep -qFx 'hijack-dns = 8.8.8.8:53, 8.8.4.4:53' "$scan_root/Surge.conf" || fail "Surge.conf DNS 劫持项与当前共享配置不一致"
 grep -q '^server-proxy-name= Hysteria$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 Ponte 中继代理配置"
 grep -q '^h2 = true$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 MITM h2 配置"
 grep -q '^hostname-disabled = ' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 MITM hostname-disabled 列表"
@@ -210,7 +209,7 @@ fi
 
 required_platform_ad_rules=(
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY'
-  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
+  'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,pre-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
 )
@@ -246,7 +245,7 @@ ordered_routes=(
   'List/ip/neteasemusic.conf' 'List/ip/lan.conf' 'List/ip/domestic.conf'
   'List/ip/china_ip.conf'
 )
-if grep -q '^ipv6 = true$' "$scan_root/Surge.conf"; then
+if grep -q '^RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,' "$scan_root/Surge.conf"; then
   ordered_routes+=('List/ip/china_ip_ipv6.conf')
 fi
 ordered_routes+=('PROCESS-NAME,WeChat,' 'PROCESS-NAME,WeChatAppEx,' 'PROCESS-NAME,XPlayer,' 'PROCESS-NAME,WeChatHelper,' 'FINAL,Proxy,dns-failed')

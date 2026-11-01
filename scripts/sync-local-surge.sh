@@ -51,7 +51,8 @@ sanitize_config() {
     ' "$input_file" | sed -E \
       -e '/^# 含私密凭据与共用 CA/d' \
       -e '/^[[:space:]]*(ca-p12|ca-passphrase|ca-keystore-name)[[:space:]]*=/d' \
-      -e '/^[[:space:]]*(http-api|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
+      -e '/^[[:space:]]*(http-api(-mcp|-tls|-web-dashboard)?|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
+      -e '/^# iPhone 管理/d' \
       -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
       -e 's/(password=)[^,]*/\1YOUR_PROXY_PASSWORD/g' \
       -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
@@ -59,13 +60,14 @@ sanitize_config() {
       -e 's/^[[:space:]]*[A-Za-z0-9.-]+\.alidns\.com([[:space:]]*=)/dns.alidns.com\1/g' \
       -e 's/^[[:space:]]*server-proxy-name[[:space:]]*=.*/server-proxy-name= Hysteria/g' \
       -e 's/US-Hysteria/Hysteria/g' \
+      -e 's/US-Snell/Snell/g' \
       -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
       -e 's/(= *hysteria2, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
       -e 's/(= *anytls, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
       -e 's/(sni=)[^,]*/\1example.com/g' \
       -e 's/^[[:space:]]*secret[[:space:]]*=.*/secret = 00000000000000000000000000000000/' |
       awk '
-        NF { while (blank_count > 0) { print ""; blank_count-- } print; next }
+        NF { if (blank_count > 0) { print ""; blank_count=0 } print; next }
         { blank_count++ }
       '
   } > "$output_file"
