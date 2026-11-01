@@ -34,6 +34,9 @@ grep -q '未纳入脱敏流程' "$fixture_dir/result.log"
 mv "$fixture_dir/source/Mac.conf" "$fixture_dir/Mac.conf.fixture"
 
 mutate 's#https://dns.alidns.com/dns-query#https://test-account.alidns.com/dns-query#g; s#^dns.alidns.com =#test-account.alidns.com =#'
+if ! grep -q '^test-account.alidns.com =' "$fixture_dir/source/Surge.conf"; then
+  printf '\n[Host]\ntest-account.alidns.com = 223.5.5.5, 223.6.6.6\n' >> "$fixture_dir/source/Surge.conf"
+fi
 reject '个人 DNS 与 Host'
 sync_public
 grep -q '^encrypted-dns-server = .*https://dns.alidns.com/dns-query' "$fixture_dir/public/Surge.conf"
@@ -61,13 +64,19 @@ assert_absent 'synthetic-token'
 
 awk '
   { print }
-  /^\[General\]$/ { print "external-controller-access = synthetic-controller@127.0.0.1:6170"; print "http-api = synthetic-api@127.0.0.1:6171" }
+  /^\[General\]$/ { print "external-controller-access = synthetic-controller@127.0.0.1:6170"; print "http-api = synthetic-api@127.0.0.1:6171"; print "http-api-mcp = true"; print "http-api-tls = false"; print "http-api-web-dashboard = true" }
   /^\[MITM\]$/ { print "ca-keystore-name = synthetic-ca"; print "ca-passphrase = synthetic-ca-password" }
   END { print "\n[Keystore]\nsynthetic-ca = type = p12, base64 = SYNTHETIC_NOT_A_CERTIFICATE, password = synthetic-ca-password" }
 ' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
 reject '证书与控制器'
 sync_public
 assert_absent 'synthetic-|\[Keystore\]|ca-keystore-name|external-controller-access|http-api'
+
+mutate 's|^\[General\]|[General]\nhttp-api-mcp = true|'
+reject '公开模板遗留 MCP 管理开关'
+
+mutate 's|^\[General\]|[General]\nhttp-api-tls = false|'
+reject '公开模板遗留 HTTP API 设置'
 
 # 校验失败时不得覆盖任何已脱敏的公开模板。
 before="$(cksum "$fixture_dir/public/Surge.conf")"
