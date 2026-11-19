@@ -43,18 +43,54 @@ grep -q '^encrypted-dns-server = .*https://dns.alidns.com/dns-query' "$fixture_d
 grep -q '^dns.alidns.com = 223.5.5.5, 223.6.6.6' "$fixture_dir/public/Surge.conf"
 assert_absent 'test-account'
 
-mutate 's#server-proxy-name= Hysteria#server-proxy-name= private-relay#'
+awk '
+  { print }
+  /^\[Proxy\]$/ { print ""; print "[Ponte]"; print "server-proxy-name= private-relay" }
+' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
 reject '非占位 Ponte'
 sync_public
 grep -q '^server-proxy-name= Hysteria' "$fixture_dir/public/Surge.conf"
 
-mutate 's#hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD#hysteria2, private-proxy.invalid, 8443, password=synthetic-secret#; s#sni=example.com#sni=private-sni.invalid#; s#gecko-password=YOUR_PROXY_PASSWORD#gecko-password=synthetic-gecko-secret#'
-reject '代理地址及多个凭据'
+sed -E \
+  -e 's#VLESS-1 = vless, example\.com, 443#Oracle-Xray = vless, private-vless.invalid, 8443#' \
+  -e 's#VLESS-2#Tencent-Xray#g' \
+  -e 's#VLESS-1#Oracle-Xray#g' \
+  -e 's#username=00000000-0000-0000-0000-000000000000#username=11111111-2222-3333-4444-555555555555#g' \
+  -e 's#sni=example\.com#sni=private-sni.invalid#g' \
+  -e 's#reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA#reality-public-key=SYNTHETIC_REALITY_PUBKEY_SECRET_VAL#g' \
+  -e 's#reality-short-id=00000000#reality-short-id=abcd1234#g' \
+  "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
+reject 'VLESS 真实地址、UUID 或 REALITY 凭据'
 sync_public
-assert_absent 'private-(proxy|sni).invalid|synthetic-'
-grep -q 'hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD' "$fixture_dir/public/Surge.conf"
+assert_absent 'private-(vless|sni)\.invalid|11111111-2222|SYNTHETIC_REALITY|abcd1234|Oracle-Xray|Tencent-Xray'
+grep -q 'VLESS-1 = vless, example\.com, 443, username=00000000-0000-0000-0000-000000000000, sni=example\.com, flow=xtls-rprx-vision, reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA, reality-short-id=00000000' "$fixture_dir/public/Surge.conf"
 
-mutate 's#gecko-password=YOUR_PROXY_PASSWORD#gecko-password=synthetic-gecko-secret#'
+mutate 's#reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA#reality-public-key=SYNTHETIC_LEAKED_KEY#'
+reject '被占位 UUID 掩盖的 REALITY 公钥'
+
+sed -E \
+  -e 's#exec = "/path/to/external-proxy/start-client\.sh"#exec = "/Users/tester/Library/start-client.sh"#' \
+  -e 's#addresses = 198\.51\.100\.1#addresses = 203.0.113.9#' \
+  -e 's#Hikyaku#Oracle-Hikyaku#g' \
+  "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
+reject 'external 代理本机路径与真实 IP'
+sync_public
+assert_absent 'Users/tester|203\.0\.113\.9|Oracle-Hikyaku'
+grep -q 'Hikyaku = external, exec = "/path/to/external-proxy/start-client\.sh", local-port = 11080, addresses = 198\.51\.100\.1, udp-relay=true #!MACOS-ONLY' "$fixture_dir/public/Surge.conf"
+
+awk '
+  { print }
+  /^\[Proxy\]$/ { print "US-Hysteria = hysteria2, private-proxy.invalid, 8443, password=synthetic-secret, download-bandwidth=100, gecko-password=synthetic-gecko-secret, sni=private-sni.invalid, port-hopping=20000-50000" }
+' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
+reject 'Hysteria2 代理地址及多个凭据'
+sync_public
+assert_absent 'private-(proxy|sni)\.invalid|synthetic-|US-Hysteria'
+grep -q 'Hysteria = hysteria2, example\.com, 443, password=YOUR_PROXY_PASSWORD, download-bandwidth=100, gecko-password=YOUR_PROXY_PASSWORD, sni=example\.com, port-hopping=20000-50000' "$fixture_dir/public/Surge.conf"
+
+awk '
+  { print }
+  /^\[Proxy\]$/ { print "Hysteria = hysteria2, example.com, 443, password=YOUR_PROXY_PASSWORD, download-bandwidth=100, gecko-password=synthetic-gecko-secret, sni=example.com, port-hopping=20000-50000" }
+' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
 reject '被同一行占位密码掩盖的 gecko-password'
 
 mutate 's#policy-path=YOUR_SURGE_SUBSCRIPTION_URL#policy-path=https://converter.invalid/sub?url=https%3A%2F%2Fprovider.invalid%2Fapi%3Ftoken2%3Dsynthetic-token#'
@@ -89,8 +125,11 @@ fi
 
 for mutation in \
   's#ip/china_ip.conf,DIRECT#ip/china_ip.conf,DIRECT,no-resolve#' \
-  's#domainset/download.conf,Proxy#domainset/download.conf,DIRECT#' \
-  '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy$/d' \
+  's#domainset/download.conf,Proxy,extended-matching#domainset/download.conf,DIRECT#' \
+  's#domainset/download.conf,Proxy,extended-matching#domainset/download.conf,Proxy#' \
+  '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy,extended-matching$/d' \
+  '/^tun-included-routes = 169\.254\.169\.254\/32$/d' \
+  '/^IP-CIDR,169\.254\.169\.254\/32,/d' \
   '/^PROCESS-NAME,XPlayer,/d' \
   '/^RULE-SET,.*\/ai-extra.list,/d' \
   's|PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY|PROCESS-NAME,WeChat,DIRECT|' \

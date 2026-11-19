@@ -78,10 +78,20 @@ if grep -nEi '^[[:space:]]*secret[[:space:]]*=' "${config_files[@]}" | grep -v '
   fail "发现非占位 MTProto secret"
 fi
 
-# 按字段检查，避免同一行的占位 password 掩盖真实 gecko-password。
-if grep -hEo '(psk|([[:alnum:]-]*password)|policy-path)[[:space:]]*=[[:space:]]*[^,]*' "${config_files[@]}" |
-  grep -Ev '^(psk=YOUR_SNELL_PSK|([[:alnum:]-]*password)=YOUR_PROXY_PASSWORD|policy-path=YOUR_SURGE_SUBSCRIPTION_URL)[[:space:]]*$' >/dev/null; then
-  fail "发现非占位代理密码、PSK 或订阅地址"
+# 按字段检查，避免同一行的占位符掩盖真实凭据、UUID、REALITY 密钥或本机路径。
+if grep -nE '/Users/' "${all_public_files[@]}" >/dev/null; then
+  fail "发现本机用户目录路径"
+fi
+
+if grep -hEo '(psk|([[:alnum:]-]*password)|policy-path|username|reality-public-key|reality-short-id|addresses)[[:space:]]*=[[:space:]]*[^,#]*' "${config_files[@]}" |
+  sed -E 's/[[:space:]]*=[[:space:]]*/=/; s/[[:space:]]+$//' |
+  grep -Ev '^(psk=YOUR_SNELL_PSK|([[:alnum:]-]*password)=YOUR_PROXY_PASSWORD|policy-path=YOUR_SURGE_SUBSCRIPTION_URL|username=00000000-0000-0000-0000-000000000000|reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA|reality-short-id=00000000|addresses=198\.51\.100\.1)$' >/dev/null; then
+  fail "发现非占位代理密码、PSK、VLESS 凭据、节点地址或订阅地址"
+fi
+
+if grep -nE '^[[:space:]]*[^#;].*exec[[:space:]]*=' "${config_files[@]}" |
+  grep -Ev 'exec[[:space:]]*=[[:space:]]*"/path/to/external-proxy/start-client\.sh"' >/dev/null; then
+  fail "发现非占位 external exec 路径"
 fi
 
 if grep -nEi '(ss|ssr|vmess|vless|trojan|hysteria2?)://' "${config_files[@]}" >/dev/null; then
@@ -94,20 +104,24 @@ if ! awk '
   /^\[/ { in_proxy=0 }
   in_proxy && /^[[:space:]]*[^#;[:space:]][^=]*=/ {
     if ($0 !~ /= *snell, *example\.com, *8388, *psk=YOUR_SNELL_PSK,/ &&
-        $0 !~ /= *hysteria2, *example\.com, *443, *password=YOUR_PROXY_PASSWORD,.*sni=example\.com/) bad=1
+        $0 !~ /= *hysteria2, *example\.com, *443, *password=YOUR_PROXY_PASSWORD,.*sni=example\.com/ &&
+        $0 !~ /= *vless, *example\.com, *443, *username=00000000-0000-0000-0000-000000000000,.*sni=example\.com,.*reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA, *reality-short-id=00000000/ &&
+        $0 !~ /= *external, *exec *= *"\/path\/to\/external-proxy\/start-client\.sh",.*addresses *= *198\.51\.100\.1/) bad=1
   }
   END { exit bad }
 ' "${config_files[@]}"; then
   fail "[Proxy] 中存在未经脱敏或未纳入校验器的代理定义"
 fi
 
-if ! grep -qE '(psk=YOUR_SNELL_PSK|password=YOUR_PROXY_PASSWORD)' "$scan_root/Surge.conf"; then
+if ! grep -qE '(psk=YOUR_SNELL_PSK|password=YOUR_PROXY_PASSWORD|username=00000000-0000-0000-0000-000000000000)' "$scan_root/Surge.conf"; then
   fail "缺少受支持的代理凭据占位符"
 fi
 if ! awk '
-  /= *(snell|hysteria2|anytls),/ {
+  /= *(snell|hysteria2|anytls|vless|external),/ {
     if ($0 ~ /= *snell,/ && $0 !~ /= *snell, *example\.com, *8388, *psk=YOUR_SNELL_PSK,/) bad=1
     if ($0 ~ /= *(hysteria2|anytls),/ && $0 !~ /= *(hysteria2|anytls), *example\.com, *443, *password=YOUR_PROXY_PASSWORD,/) bad=1
+    if ($0 ~ /= *vless,/ && $0 !~ /= *vless, *example\.com, *443, *username=00000000-0000-0000-0000-000000000000,.*sni=example\.com,.*reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA, *reality-short-id=00000000/) bad=1
+    if ($0 ~ /= *external,/ && $0 !~ /= *external, *exec *= *"\/path\/to\/external-proxy\/start-client\.sh",.*addresses *= *198\.51\.100\.1/) bad=1
   }
   END { exit bad }
 ' "$scan_root/Surge.conf"; then
@@ -118,10 +132,17 @@ grep -q '^FINAL,Proxy,dns-failed$' "$scan_root/Surge.conf" || fail "共享规则
 if grep -qE 'List/non_ip/apple_cdn\.conf' "$scan_root/Surge.conf"; then
   fail "规则地址仍使用已废弃的 Apple CDN 路径"
 fi
+grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy,extended-matching' "$scan_root/Surge.conf" || fail "CDN 域名集缺少扩展匹配"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy,extended-matching' "$scan_root/Surge.conf" || fail "CDN 规则集缺少扩展匹配"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream,extended-matching' "$scan_root/Surge.conf" || fail "流媒体规则集缺少扩展匹配"
 grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT' "$scan_root/Surge.conf" || fail "Apple CDN 地址或匹配方式与本地决定不一致"
 for download_type in domainset non_ip; do
-  grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy$" "$scan_root/Surge.conf" || fail "通用下载未映射到 Proxy"
+  grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy,extended-matching$" "$scan_root/Surge.conf" || fail "通用下载未映射到 Proxy 或缺少扩展匹配"
 done
+grep -qFx 'tun-included-routes = 169.254.169.254/32' "$scan_root/Surge.conf" || fail "缺少 169.254.169.254 VIF 精准纳入路由"
+grep -qFx 'DOMAIN,metadata.google.internal,REJECT-NO-DROP,pre-matching' "$scan_root/Surge.conf" || fail "缺少 metadata.google.internal 预匹配拦截"
+grep -qE '^IP-CIDR,169\.254\.169\.254/32,REJECT-NO-DROP,(no-resolve,pre-matching|pre-matching,no-resolve)$' "$scan_root/Surge.conf" || fail "缺少 169.254.169.254/32 预匹配拦截"
+grep -qFx '169.254.169.254 = reject' "$scan_root/Surge.conf" || fail "缺少 [IP Rewrite] 169.254.169.254 拦截"
 if grep -Eq '^[^#;]*quic-reject\.list|^AND,.*\(PROTOCOL,UDP\).*\(DEST-PORT,443\).*REJECT' "$scan_root/Surge.conf"; then
   fail "主配置仍含已撤回的自定义 QUIC 硬拒绝"
 fi
@@ -167,8 +188,8 @@ for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram,no-resolve' 
   read -r ip_name ip_route <<< "$ip_policy"
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Surge.conf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
 done
-if grep -q 'US-Snell' "$scan_root/Surge.conf"; then
-  fail "Surge.conf 节点名称尚未统一为公开别名 Snell"
+if grep -qE 'US-Snell|US-Hysteria|Oracle-Xray|Tencent-Xray|Oracle-Hikyaku' "$scan_root/Surge.conf"; then
+  fail "Surge.conf 节点名称尚未统一为公开别名"
 fi
 if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)(\*\.qpic\.cn|\*\.qlogo\.cn|\*\.weixin\.qq\.com|\*\.wechat\.com)([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null; then
   fail "Surge.conf always-real-ip 仍残留已移除的微信宽泛后缀"
@@ -190,7 +211,6 @@ if grep -nE '^[[:space:]]*server-proxy-name[[:space:]]*=' "${config_files[@]}" |
   fail "发现非占位 Ponte server-proxy-name"
 fi
 grep -qFx 'hijack-dns = 8.8.8.8:53, 8.8.4.4:53' "$scan_root/Surge.conf" || fail "Surge.conf DNS 劫持项与当前共享配置不一致"
-grep -q '^server-proxy-name= Hysteria$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 Ponte 中继代理配置"
 grep -q '^h2 = true$' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 MITM h2 配置"
 grep -q '^hostname-disabled = ' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 MITM hostname-disabled 列表"
 if grep -Eq '^\[Testing\]|^(download-duration-limit|upload-size-limit|upload-duration-limit)[[:space:]]*=' "$scan_root/Surge.conf"; then
@@ -232,6 +252,7 @@ if grep -qE '^DOMAIN,sg(minor)?short\.wechat\.com,' "$scan_root/Surge.conf"; the
   fail "微信端点已并入统一规则集，不应保留独立规则"
 fi
 ordered_routes=(
+  'DOMAIN,metadata.google.internal' 'IP-CIDR,169.254.169.254/32'
   'List/domainset/cdn.conf' 'List/non_ip/cdn.conf'
   'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
   'List/domainset/apple_cdn.conf' 'List/non_ip/microsoft_cdn.conf'
@@ -356,6 +377,18 @@ if [[ "$scan_history" == true ]]; then
     fi
     if git -C "$repo_root" grep -I -E '^[[:space:]]*(private-key|http-api|external-controller-access|wifi-access-password)[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -q .; then
       fail "Git 历史提交 ${revision:0:12} 含私钥或远程访问凭据"
+    fi
+    if git -C "$repo_root" grep -I -E 'username[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'username=00000000-0000-0000-0000-000000000000' | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含非占位 VLESS username"
+    fi
+    if git -C "$repo_root" grep -I -E 'reality-public-key[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含非占位 REALITY 公钥"
+    fi
+    if git -C "$repo_root" grep -I -E 'reality-short-id[[:space:]]*=' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -v 'reality-short-id=00000000' | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含非占位 REALITY short-id"
+    fi
+    if git -C "$repo_root" grep -I -E 'exec[[:space:]]*=.*\/Users\/|/Users/' "$revision" -- '*.conf' '*.dconf' 2>/dev/null | grep -q .; then
+      fail "Git 历史提交 ${revision:0:12} 含本机用户路径"
     fi
   done < <(git -C "$repo_root" rev-list "$history_ref")
 fi

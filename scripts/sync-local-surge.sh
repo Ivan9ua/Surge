@@ -53,6 +53,8 @@ sanitize_config() {
       -e '/^[[:space:]]*(ca-p12|ca-passphrase|ca-keystore-name)[[:space:]]*=/d' \
       -e '/^[[:space:]]*(http-api(-mcp|-tls|-web-dashboard)?|external-controller-access|wifi-access-password)[[:space:]]*=/d' \
       -e '/^# iPhone 管理/d' \
+      -e '/^# HTTPS 管理传输/d' \
+      -e 's/^# DoH 引导映射：私人 AliDNS$/# DoH 引导映射：阿里公共 DNS/' \
       -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
       -e 's/(password=)[^,]*/\1YOUR_PROXY_PASSWORD/g' \
       -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
@@ -61,9 +63,18 @@ sanitize_config() {
       -e 's/^[[:space:]]*server-proxy-name[[:space:]]*=.*/server-proxy-name= Hysteria/g' \
       -e 's/US-Hysteria/Hysteria/g' \
       -e 's/US-Snell/Snell/g' \
-      -e 's/(= *snell, *)[^,]+,[^,]+,/\1example.com, 8388,/g' \
-      -e 's/(= *hysteria2, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
-      -e 's/(= *anytls, *)[^,]+,[^,]+,/\1example.com, 443,/g' \
+      -e 's/Oracle-Xray/VLESS-1/g' \
+      -e 's/Tencent-Xray/VLESS-2/g' \
+      -e 's/Oracle-Hikyaku/Hikyaku/g' \
+      -e 's/(= *snell, *)[^,]+, *[^,]+,/\1example.com, 8388,/g' \
+      -e 's/(= *hysteria2, *)[^,]+, *[^,]+,/\1example.com, 443,/g' \
+      -e 's/(= *anytls, *)[^,]+, *[^,]+,/\1example.com, 443,/g' \
+      -e 's/(= *vless, *)[^,]+, *[^,]+,/\1example.com, 443,/g' \
+      -e 's/(username[[:space:]]*=[[:space:]]*)[^,]*/username=00000000-0000-0000-0000-000000000000/g' \
+      -e 's/(reality-public-key[[:space:]]*=[[:space:]]*)[^,]*/reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/g' \
+      -e 's/(reality-short-id[[:space:]]*=[[:space:]]*)[^,# ]*/reality-short-id=00000000/g' \
+      -e 's/(exec[[:space:]]*=[[:space:]]*)"[^"]*"/exec = "\/path\/to\/external-proxy\/start-client.sh"/g' \
+      -e 's/(addresses[[:space:]]*=[[:space:]]*)[^,# ]*/addresses = 198.51.100.1/g' \
       -e 's/(sni=)[^,]*/\1example.com/g' \
       -e 's/^[[:space:]]*secret[[:space:]]*=.*/secret = 00000000000000000000000000000000/' |
       awk '
