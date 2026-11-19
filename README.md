@@ -1,12 +1,12 @@
 # Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-01，已同步当前共享配置、简洁注释与统一策略组排序。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-19，已同步 Surge 6.12 原生 VLESS、Mac 外置节点、`[IP Rewrite]`、`[Host]` 与国内 IPv6 规则。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
 
 ## 文件与使用
 
 | 文件 | 用途 |
 |---|---|
-| [Surge.conf](Surge.conf) | 唯一主配置：网络、DNS、Host、Ponte、节点、策略组、分流与 MITM 通用设置 |
+| [Surge.conf](Surge.conf) | 唯一主配置：网络、DNS、节点、策略组、分流、Host、MITM 与 IP Rewrite 通用设置 |
 | [wechat.list](wechat.list) | 36 条微信纯域名规则，由主配置在线引用 |
 | [ai-extra.list](ai-extra.list) | 22 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
 | [AI-EXTRA.md](AI-EXTRA.md) | AI 补充范围、来源、排序与验证边界 |
@@ -19,28 +19,28 @@
 主配置没有 `#!include`，不再维护 `Mac.conf`、`iPhone.conf` 或两份 Shared 分离配置。微信 `.list` 是在线规则集，不是额外设备配置；原 QUIC 地址仅保留空兼容响应。
 
 1. 将 `Surge.conf` 复制到自己的私有 Surge iCloud 配置目录。
-2. 仅在私有副本替换 `example.com`、`YOUR_SNELL_PSK`、`YOUR_PROXY_PASSWORD`、`YOUR_SURGE_SUBSCRIPTION_URL`；Snell v6、Hysteria 参数按各自服务端填写。公开别名 `Snell`、`Hysteria` 对应私有节点，个人 AliDNS 标识已替换为通用 DoH。
+2. 仅在私有副本替换 `example.com`、VLESS 的 UUID（`00000000-0000-0000-0000-000000000000`）、`reality-public-key` / `reality-short-id`、`Hikyaku` 的 `exec` 路径与 `addresses`（`198.51.100.1`）以及 `YOUR_SURGE_SUBSCRIPTION_URL`；公开别名 `VLESS-1`、`VLESS-2`、`Hikyaku` 对应私有节点，个人 AliDNS 标识已替换为通用 DoH。
 3. 双端均选中同一份 iCloud `Surge.conf`，分别确认自动重载开启。仍使用旧入口的设备须先切换，再清理旧文件。
-4. 如需共用 MITM CA，只在私有配置保留证书与 Keystore，并在两台设备分别安装和信任。公开模板没有证书，不能直接覆盖现有生产配置。
+4. 如需共用 MITM CA，只在私有配置或系统钥匙串配置证书与 `ca-keystore-name`，并在两台设备分别安装和信任。公开模板没有证书，不能直接覆盖现有生产配置。
 5. 修改后分别确认设备实际加载结果。iCloud 同步、Surge 重载、证书信任、在线规则刷新不是同一个步骤，不保证后台立即生效。
 
-`#!MACOS-ONLY` 隔离 Mac 广告主规则及四条微信进程兜底。已删除 Mac Testing 段；显式默认值和 Smart 中性权重已精简，非中性权重保留。模块状态、系统证书信任和运行时策略选择不由单文件完整管理。旧配置先移至私有归档，禁止上传归档。
+`#!MACOS-ONLY` 隔离 Mac 独占外置节点 `Hikyaku`、Mac 广告主规则及四条微信进程兜底。已删除 Mac Testing 段与 `[Ponte]` 段；非中性 `US` Smart 权重保留。模块状态、系统证书信任和运行时策略选择不由单文件完整管理。旧配置先移至私有归档，禁止上传归档。
 
 ## 当前策略
 
 排序参考 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)，并非逐项照搬：
 
-广告 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 → Mac 微信进程 → FINAL。
+云元数据双层拦截 → 广告 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 & IPv6 → Mac 微信进程 → FINAL。
 
 - CDN 和下载走 Proxy；首条命中可能先于服务专项规则，不保证同一应用全部请求同出口。
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。
-- AI、Apple Intelligence、Telegram、微信规则保留 `extended-matching`。
-- 广告、Telegram、流媒体、AI 的专项 IP 使用 `no-resolve`；网易云、国内及内网 IP 允许解析。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
-- 当前 `ipv6=true`、`ipv6-vif=auto`；未额外加入独立的国内 IPv6 规则集，不宣称所有国内 IPv6 都已被专门兜底，也不宣称能解决下载慢。
+- CDN、流媒体、下载、AI、Apple Intelligence、Telegram、微信规则保留 `extended-matching`。
+- 广告、Telegram、流媒体、AI 的专项 IP 与前置云元数据 IP `169.254.169.254/32` 使用 `no-resolve`；网易云、国内及内网 IP 允许解析。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
+- 当前 `ipv6=true`、`ipv6-vif=auto`，并已在末尾 IP 规则加入 `china_ip_ipv6.conf` 处理国内 IPv6 直连；不宣称可单独解决特定运营商或下载限速问题。
 - 全局测试使用 HTTP，延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
-- 策略组依次为 Proxy、Intelligence、Stream、Telegram、Apple、Microsoft、HK、TW、JP、SG、US、Flower Cloud。地区选项统一为 HK、TW、JP、SG、US；AI 组保留 US 首位，其余地区按相同相对顺序排列，保留原默认首选。
-- DNS 劫持仅配置 `8.8.8.8:53`、`8.8.4.4:53`；主配置不再内联 Host 自举，设备启用的 Local DNS Mapping 模块另行提供映射。
-- 保留 skip-proxy、真实 IP 兼容列表、网易云、hostname-disabled；不新增 Apple 精确例外、Telegram ASN 或 MTProto 入站。
+- 策略组依次为 Proxy、Intelligence、Stream、Telegram、Apple、Microsoft、HK、TW、JP、SG、US、Flower Cloud。地区选项统一为 HK、TW、JP、SG、US；AI 组保留 US 首位，其余地区按相同相对顺序排列，`Stream` 由代理组接管。
+- DNS 劫持仅配置 `8.8.8.8:53`、`8.8.4.4:53`；主配置 `[Host]` 保留 DoH 引导映射（公开版使用 `dns.alidns.com = 223.5.5.5, 223.6.6.6`），设备启用的 Local DNS Mapping 模块另行提供国内规则分流映射。
+- `[General]` 通过 `tun-included-routes = 169.254.169.254/32` 配合 `[IP Rewrite]`（`169.254.169.254 = reject`）及前置 `IP-CIDR,169.254.169.254/32,REJECT-NO-DROP,no-resolve,pre-matching` 完成云元数据探测双层阻断；保留 `skip-proxy`、`always-real-ip`（含多级 `time.*.apple.com`）、网易云、`hostname-disabled`。
 
 ## 微信与 QUIC
 
@@ -53,6 +53,8 @@ Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 只兜底前面未命中�
 此前用户反馈的局部 UDP 拒绝、SG 出口及 Wi-Fi/热点对照均未明显改善慢视频，未证明硬拒绝有稳定收益，因此保留删除方案。用户近期反馈 iPhone 视频已明显改善，但不能将改善归因于本次删除。旧配置必须刷新资源才能清除缓存；当前单文件已无该依赖。若未来确有实测必要，再通过 GitHub 远程规则维护，不恢复未经验证的宽泛拦截。
 
 ## 模块与验证
+
+2026-11-19 双端实测与公开脚本适配：Mac 6.12.0 (12900) 与 iPhone iOS 6.100.0 (4034) 已同步单文件配置（Core 6012000，无 `[Ponte]`，`[Keystore]` 外迁）。Mac 启用 Sukka 4 件套与 iRingo News / TV app，iPhone 启用 Sukka 4 件套与 Youtube (Music) Enhance；Mac 共用 CA（`MITM-iPhone-CA`）真实 HTTPS MITM 重定向验签通过（系统 TLS 验证正常），`169.254.169.254/32` 精准纳入 VIF 路由与前置 `no-resolve,pre-matching` 规则对直连 VIF 与代理端口均已验证生效，同时未触发域名规则额外 DNS 查询。同步更新 `scripts/sync-local-surge.sh`、`scripts/validate-public-config.sh` 与 `scripts/test-dns-sanitization.sh`，补全对 VLESS（UUID / REALITY）与 `external` 节点的脱敏、校验及回归测试。
 
 2026-10-14 的模块快照：双端均启用 Sukka Always Real IP Plus、URL Redirect (Minimum)、Local DNS Mapping、Enhance Better ADBlock；Mac 另启用 iRingo News，iPhone 另启用 Youtube (Music) Enhance。模块独立管理，可追加规则与 MITM hostname；模板不包含模块启用记录。iPhone 的四条主配置广告条目被平台条件排除，模块不等于完整域名广告拦截；2026-11-01 手机抽样中广告域名仍可进入 Proxy。
 
