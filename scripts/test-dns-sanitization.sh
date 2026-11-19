@@ -44,8 +44,8 @@ grep -q '^dns.alidns.com = 223.5.5.5, 223.6.6.6' "$fixture_dir/public/Surge.conf
 assert_absent 'test-account'
 
 awk '
+  /^\[Proxy\]$/ { print "[Ponte]"; print "server-proxy-name= private-relay"; print ""; print; next }
   { print }
-  /^\[Proxy\]$/ { print ""; print "[Ponte]"; print "server-proxy-name= private-relay" }
 ' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
 reject '非占位 Ponte'
 sync_public
