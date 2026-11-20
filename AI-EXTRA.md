@@ -1,12 +1,16 @@
 # AI / Agent 补充规则
 
-更新：2026-10-22。ai-extra.list 共22条，作为 Sukka AI 和 Apple Intelligence 的补充，而非完整替代。仅 DOMAIN / DOMAIN-SUFFIX；引用到 Intelligence 并启用 extended-matching。域名集合不是访问控制白名单，也不是可用性或地区资格保证。
+更新：2026-11-21。ai-extra.list 共35条，作为 Sukka AI 和 Apple Intelligence 的补充，而非完整替代。仅 DOMAIN / DOMAIN-SUFFIX；引用到 Intelligence 并启用 extended-matching。域名集合不是访问控制白名单，也不是可用性或地区资格保证。
 
 ## 收录与来源
 
 | 产品 | 范围与理由 | 依据 |
 |---|---|---|
-| Meta Muse | muse.ai及其登录子域；与已有meta.ai不同 | [Meta公告](https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/) |
+| Meta Muse | muse.ai、metaaivm.com（专用Agent VM）、museai.com；与已有meta.ai不同，不收共享域meta.graph.meta.com | [Meta公告](https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/) 与实测流量 |
+| Antigravity / Gemini Code Assist | 仅精确主机 jetski-webchannel.googleapis.com、cloudaicompanion.googleapis.com，绝不扩大到 googleapis.com | 实测活跃连接与 [Google Cloud文档](https://cloud.google.com/gemini/docs/codeassist/overview) |
+| MCP 与 AI 研发工具 | context7.com、tavily.com、gemini-api-docs-mcp.dev、nousresearch.com；含实测高频漏入FINAL的MCP及模型工具域 | 实测流量与 [Context7](https://context7.com/)、[Tavily](https://tavily.com/)、[Nous Research](https://nousresearch.com/) |
+| Perplexity | perplexity.com、pplx.ai；实测未命中通用列表而落入FINAL | [Perplexity](https://www.perplexity.ai/) |
+| Hugging Face | hf.co、hf.space、huggingface.co；模型与Space权重下载及访问 | [Hugging Face](https://huggingface.co/) |
 | Microsoft Copilot | copilot.microsoft.com、copilot.cloud.microsoft、copilot.com，新旧产品入口 | [微软文档](https://support.microsoft.com/en-us/microsoft-365-copilot/what-is-microsoft-copilot-app) |
 | GitHub Copilot | githubcopilot.com、建议代理、origin-tracker接口；api.github.com由Sukka承担 | [官方白名单](https://docs.github.com/en/copilot/reference/copilot-allowlist-reference) |
 | ChatGPT内容 | oaiusercontent.com | [OpenAI网络建议](https://help.openai.com/en/articles/9247338-network-recommendations-for-chatgpt-errors-on-web-and-apps) |
@@ -37,4 +41,4 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,Intelligenc
 
 ## 检查
 
-维护检查要求22条不重复纯域名规则、正确引用和顺序，回归测试拒绝IP混入、共享认证后缀扩大及引用丢失。离线原生语法和静态命中检查不等于实际登录、上传、授权、付款或全部Agent功能验收；不宣称提速倍数或100%覆盖。
+维护检查要求35条不重复纯域名规则、正确引用和顺序，回归测试拒绝IP混入、共享认证后缀扩大及引用丢失。离线原生语法和静态命中检查不等于实际登录、上传、授权、付款或全部Agent功能验收；不宣称提速倍数或100%覆盖。

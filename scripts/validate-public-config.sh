@@ -174,14 +174,22 @@ grep -qFx 'RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/ai-extr
 if ! awk '
   /^[[:space:]]*(#|;|\/\/|$)/ { next }
   { count++; if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/ || seen[$0]++) bad=1 }
-  END { exit (bad || count != 22) }
+  END { exit (bad || count != 35) }
 ' "$scan_root/ai-extra.list"; then
-  fail "AI 补充应为22条不重复的纯域名规则"
+  fail "AI 补充应为35条不重复的纯域名规则"
 fi
 if grep -Eq '^DOMAIN-SUFFIX,(auth0\.com|stripe\.com|googleapis\.com|microsoft\.com|facebook\.com|instagram\.com|whatsapp\.net)$' "$scan_root/ai-extra.list"; then
   fail "AI 补充含未经批准的宽泛共享服务"
 fi
-for ai_domain in 'DOMAIN-SUFFIX,muse.ai' 'DOMAIN-SUFFIX,copilot.microsoft.com' 'DOMAIN-SUFFIX,githubcopilot.com'; do
+for ai_domain in \
+  'DOMAIN-SUFFIX,muse.ai' \
+  'DOMAIN-SUFFIX,metaaivm.com' \
+  'DOMAIN-SUFFIX,copilot.microsoft.com' \
+  'DOMAIN-SUFFIX,githubcopilot.com' \
+  'DOMAIN,jetski-webchannel.googleapis.com' \
+  'DOMAIN-SUFFIX,context7.com' \
+  'DOMAIN-SUFFIX,perplexity.com' \
+  'DOMAIN-SUFFIX,huggingface.co'; do
   grep -qFx "$ai_domain" "$scan_root/ai-extra.list" || fail "AI 补充缺少关键产品域名"
 done
 for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram,no-resolve' 'stream Stream,no-resolve' 'ai Intelligence,no-resolve' 'neteasemusic DIRECT'; do
@@ -241,8 +249,10 @@ line_of() {
   grep -nF "$2" "$1" | head -1 | cut -d: -f1 || true
 }
 
+reject_drop_line="$(line_of "$scan_root/Surge.conf" 'List/non_ip/reject-drop.conf')"
 ad_domain_line="$(line_of "$scan_root/Surge.conf" 'List/domainset/reject.conf')"
 wechat_line="$(line_of "$scan_root/Surge.conf" 'wechat.list')"
+[[ -n "$reject_drop_line" && -n "$ad_domain_line" && "$reject_drop_line" -lt "$ad_domain_line" ]] || fail "广告规则 reject-drop.conf 须置于广告组首位，避免被前置 REJECT 降级"
 [[ -n "$ad_domain_line" && -n "$wechat_line" && "$ad_domain_line" -lt "$wechat_line" ]] || fail "微信统一规则未置于广告规则之后"
 for ad_rule in 'List/non_ip/reject.conf' 'List/non_ip/reject-no-drop.conf'; do
   ad_line="$(line_of "$scan_root/Surge.conf" "$ad_rule")"

@@ -142,6 +142,13 @@ done
 mutate 's|^\[General\]|[General]\n#!include missing.dconf|'
 reject '分离文件引用'
 
+awk '
+  /List\/non_ip\/reject-drop\.conf/ { drop=$0; next }
+  { print }
+  /List\/non_ip\/reject-no-drop\.conf/ && drop { print drop; drop="" }
+' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
+reject 'reject-drop 广告规则置后降级'
+
 cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
 printf '\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))\n' >> "$fixture_dir/source/quic-reject.list"
 reject '停用 QUIC 地址重新加入有效规则'
