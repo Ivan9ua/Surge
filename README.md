@@ -1,6 +1,6 @@
 # Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-20，已同步 Surge 6.12/6.13 原生 VLESS、Mac 外置节点、`[IP Rewrite]`、`[Host]`、国内 IPv6 规则与 `api.skk.moe` 定向分流。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-21，已对齐 Mac 广告 `reject-drop` 优先级顺序并扩展 `ai-extra.list` 至 35 条。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
 
 ## 文件与使用
 
@@ -8,7 +8,7 @@
 |---|---|
 | [Surge.conf](Surge.conf) | 唯一主配置：网络、DNS、节点、策略组、分流、Host、MITM 与 IP Rewrite 通用设置 |
 | [wechat.list](wechat.list) | 36 条微信纯域名规则，由主配置在线引用 |
-| [ai-extra.list](ai-extra.list) | 22 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
+| [ai-extra.list](ai-extra.list) | 35 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
 | [AI-EXTRA.md](AI-EXTRA.md) | AI 补充范围、来源、排序与验证边界 |
 | [RULESET-MAINTENANCE.md](RULESET-MAINTENANCE.md) | 2026-10-26 规则集维护、运行态样本与校验修复 |
 | [quic-reject.list](quic-reject.list) | 已停用的空兼容地址，0 条规则；主配置不再引用 |
@@ -32,7 +32,7 @@
 
 云元数据双层拦截 → 广告 → CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → 下载 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 网易云 → 微信 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 & IPv6 → Mac 微信进程 → FINAL。
 
-- CDN 和下载走 Proxy；首条命中可能先于服务专项规则，不保证同一应用全部请求同出口。
+- Mac 广告主规则按 Sukka 原则将 `non_ip/reject-drop.conf` 置于广告组首位，确保高重试遥测域名执行静默丢弃而不被前置 `REJECT` 降级；CDN 和下载走 Proxy，首条命中可能先于服务专项规则，不保证同一应用全部请求同出口。
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。在 `global.conf` 之前为 `ipv4-ip.api.skk.moe`、`ipv6-ip.api.skk.moe`、`ip.api.skk.moe` 指定直走 `VLESS-1`，以规避部分机场节点访问该接口时的 TLS EOF。
 - CDN、流媒体、下载、AI、Apple Intelligence、Telegram、微信规则保留 `extended-matching`。
 - 广告、Telegram、流媒体、AI 的专项 IP 与前置云元数据 IP `169.254.169.254/32` 使用 `no-resolve`；网易云、国内及内网 IP 允许解析。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
@@ -53,6 +53,8 @@ Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 只兜底前面未命中�
 此前用户反馈的局部 UDP 拒绝、SG 出口及 Wi-Fi/热点对照均未明显改善慢视频，未证明硬拒绝有稳定收益，因此保留删除方案。用户近期反馈 iPhone 视频已明显改善，但不能将改善归因于本次删除。旧配置必须刷新资源才能清除缓存；当前单文件已无该依赖。若未来确有实测必要，再通过 GitHub 远程规则维护，不恢复未经验证的宽泛拦截。
 
 ## 模块与验证
+
+2026-11-21 广告排序对齐与 AI 补充扩充：调整 Mac 端 `#!MACOS-ONLY` 广告组将 `non_ip/reject-drop.conf` 上移至首位，`rule explain` 实测 `telemetry.mozilla.org`、`mobile.events.data.microsoft.com`、`beacon.qq.com` 已恢复直接命中 `REJECT-DROP`（iPhone 同步加载）。同时从实测漏网流量与第三方线索人工筛选 13 条纯净 AI/MCP/Agent 域（含 `metaaivm.com`、`context7.com`、`nousresearch.com`、`perplexity.com`、`huggingface.co` 及精确主机 `jetski-webchannel.googleapis.com` 等）补入 `ai-extra.list`（22 → 35 条）。
 
 2026-11-20 双端 Core `6013000`（Mac `6.13.0 (12910)` + iPhone `6.100.0 (4041)`）连续运行 4 小时以上实测：双端配置与 `[Rule]` 已同步一致（`169.254.169.254/32` 双层阻断及 3 条 `api.skk.moe` 规则均生效），6.13 Smart 组新算法、IPv6 双栈及默认 TLS `client-fingerprint=auto`（`apple-26`）均稳定运行、零代理握手失败；外置连接桥接脚本亦已消除单标签主机名漏网。
 
