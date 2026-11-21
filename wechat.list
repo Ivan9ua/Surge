@@ -1,59 +1,31 @@
-# NAME: WeChat Domain Direct
+# NAME: WeChat Domain Direct (Sukka Delta)
 # AUTHOR: Ivan9ua
-# UPDATED: 2026-10-13
-# REPO-SOURCES: blackmatrix7/ios_rule_script · ACL4SSR/ACL4SSR · NobyDa/Script
-# DOMAIN: 7
-# DOMAIN-SUFFIX: 26
-# LOGICAL: 3
+# UPDATED: 2026-11-21
+# REPO-SOURCES: Ivan9ua live traffic · blackmatrix7/ios_rule_script (pruned against Sukka domestic/reject)
+# DOMAIN: 1
+# DOMAIN-SUFFIX: 10
 # IP-CIDR: 0
 # IP-CIDR6: 0
-# TOTAL: 36
-# 说明：匹配微信域名、可见 SNI 与 HTTP Host；未命中请求继续按主配置分流。
-# 主配置：国内 IP 由后续 IP 规则直连；Mac 微信进程可兜底直连，其余未命中请求走 FINAL。
-# DNS 失败时主配置直接使用 FINAL 策略，不再继续匹配微信进程兜底。
-# 外层引用使用 extended-matching；本集为纯域名规则，no-resolve 非必需；不使用顶层 DOMAIN-KEYWORD、静态 IP、ASN 或 USER-AGENT。
-# wup.imtt.qq.com 命中 Sukka 广告域名集，按广告优先策略不纳入直连。
+# TOTAL: 11
+# 说明：作为 Sukka non_ip/domestic.conf（已启用 extended-matching）的精简微信差量直连集，仅保留 Sukka 未覆盖的微信核心与生态域名。
+# 已移除与 Sukka domainset/reject.conf 冲突的 5 条规则（apd-pcdnwxlogin.teg.tencent-cloud.net、soup.v.qq.com、up-hl.3g.qq.com、yun-hl.3g.qq.com、wxs.qq.com）、
+# 已被 non_ip/domestic.conf 覆盖的 24 条重叠规则及无有效解析的历史条目（wechatos.net、weixinsxy.com），并补入实测访问的 wxgateway.com。
+# 微信 HTTPDNS 与朋友圈广告统一由主配置前置 Sukka 广告规则（Mac 全量 + iPhone 共享 non_ip/reject.conf）拦截；dl.wechat.com 由主配置在 download.conf 前直连。
+# 外层引用使用 extended-matching；本集为纯 DOMAIN/DOMAIN-SUFFIX，不使用逻辑规则、静态 IP、ASN、顶层 DOMAIN-KEYWORD 或 USER-AGENT。
 
-# 微信核心、登录、媒体与上传服务
-DOMAIN,slife.xy-asia.com
-DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net
-DOMAIN,dldir1.qq.com
-DOMAIN,soup.v.qq.com
-DOMAIN,vweixinf.tc.qq.com
-DOMAIN,weixin110.qq.com
-DOMAIN,vweixinthumb.tc.qq.com
-
-# 微信媒体 CDN、头像、图片与基础服务
-DOMAIN-SUFFIX,iot-tencent.com
+# 微信海外与核心服务（不在 Sukka domestic.conf 中）
+DOMAIN-SUFFIX,wechat.com
 DOMAIN-SUFFIX,servicewechat.com
-DOMAIN-SUFFIX,tenpay.com
+DOMAIN-SUFFIX,wxgateway.com
 DOMAIN-SUFFIX,wechatlegal.net
-DOMAIN-SUFFIX,wechatos.net
+
+# 微信支付（财付通 / WeChat Pay）
+DOMAIN-SUFFIX,tenpay.com
 DOMAIN-SUFFIX,wechatpay.com
 DOMAIN-SUFFIX,wechatpay.cn
-DOMAIN-SUFFIX,weixinsxy.com
-DOMAIN-SUFFIX,qpic.cn
-DOMAIN-SUFFIX,qlogo.cn
-DOMAIN-SUFFIX,video.qq.com
-DOMAIN-SUFFIX,wx.gtimg.com
-DOMAIN-SUFFIX,wximg.qq.com
-DOMAIN-SUFFIX,lbs.gtimg.com
-DOMAIN-SUFFIX,wx.qq.com
-DOMAIN-SUFFIX,wx2.qq.com
-DOMAIN-SUFFIX,weixin.com
-DOMAIN-SUFFIX,weixinbridge.com
-DOMAIN-SUFFIX,wxapp.tc.qq.com
-DOMAIN-SUFFIX,map.qq.com
-DOMAIN-SUFFIX,up-hl.3g.qq.com
-DOMAIN-SUFFIX,yun-hl.3g.qq.com
 
-# 企业微信与微信新生态服务
+# 企业微信、输入法与微信生态
 DOMAIN-SUFFIX,wecom.work
 DOMAIN-SUFFIX,wetype.cn
-DOMAIN-SUFFIX,wetype.com.cn
-
-# 微信域名统一直连：包含 sgshort 与 sgminorshort；保留广告与应用内 DNS 排除
-DOMAIN-SUFFIX,wechat.com
-AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))
-AND,((DOMAIN-SUFFIX,weixin.qq.com.cn),(NOT,((DOMAIN,dns.weixin.qq.com.cn))))
-AND,((DOMAIN-SUFFIX,wxs.qq.com),(NOT,((DOMAIN-KEYWORD,wxsnsdy))))
+DOMAIN-SUFFIX,iot-tencent.com
+DOMAIN,slife.xy-asia.com

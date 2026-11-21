@@ -127,6 +127,10 @@ for mutation in \
   's#ip/china_ip.conf,DIRECT#ip/china_ip.conf,DIRECT,no-resolve#' \
   's#domainset/download.conf,Proxy,extended-matching#domainset/download.conf,DIRECT#' \
   's#domainset/download.conf,Proxy,extended-matching#domainset/download.conf,Proxy#' \
+  's#non_ip/domestic.conf,DIRECT,extended-matching#non_ip/domestic.conf,DIRECT#' \
+  's#non_ip/direct.conf,DIRECT,extended-matching#non_ip/direct.conf,DIRECT#' \
+  's|RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching|RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY|' \
+  '/^DOMAIN,dl\.wechat\.com,DIRECT,extended-matching$/d' \
   '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy,extended-matching$/d' \
   '/^tun-included-routes = 169\.254\.169\.254\/32$/d' \
   '/^IP-CIDR,169\.254\.169\.254\/32,/d' \
@@ -149,6 +153,13 @@ awk '
 ' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
 reject 'reject-drop 广告规则置后降级'
 
+awk '
+  /^DOMAIN,dl\.wechat\.com,DIRECT,extended-matching$/ { dl=$0; next }
+  { print }
+  /List\/domainset\/download\.conf/ && dl { print dl; dl="" }
+' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
+reject 'dl.wechat.com 置后被 download.conf 截胡'
+
 cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
 printf '\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))\n' >> "$fixture_dir/source/quic-reject.list"
 reject '停用 QUIC 地址重新加入有效规则'
@@ -160,16 +171,20 @@ sed 's|DOMAIN-SUFFIX,muse.ai|DOMAIN-SUFFIX,auth0.com|' "$repo_root/ai-extra.list
 reject 'AI 补充扩大到共享认证后缀'
 cp "$repo_root/ai-extra.list" "$fixture_dir/source/ai-extra.list"
 
-sed 's|DOMAIN-SUFFIX,weixin.com$|DOMAIN-SUFFIX,weixin.com.invalid|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
+sed 's|DOMAIN-SUFFIX,wxgateway.com$|DOMAIN-SUFFIX,wxgateway.com.invalid|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
 reject '微信关键域名被追加后缀后仍被当成原条目'
 cp "$repo_root/wechat.list" "$fixture_dir/source/wechat.list"
 
-sed 's|DOMAIN-SUFFIX,wximg.qq.com$|DOMAIN-SUFFIX,qpic.cn|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
+sed 's|DOMAIN-SUFFIX,wechatlegal.net$|DOMAIN-SUFFIX,wechat.com|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
 reject '微信重复条目掩盖覆盖丢失'
 cp "$repo_root/wechat.list" "$fixture_dir/source/wechat.list"
 
-sed 's|DOMAIN-SUFFIX,wximg.qq.com$|DOMAIN-SUFFIX,wximg.qq.com,DIRECT|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
+sed 's|DOMAIN-SUFFIX,wechatlegal.net$|DOMAIN-SUFFIX,wechatlegal.net,DIRECT|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
 reject '微信规则集内误带策略字段'
+cp "$repo_root/wechat.list" "$fixture_dir/source/wechat.list"
+
+sed 's|DOMAIN-SUFFIX,wechatlegal.net$|DOMAIN,soup.v.qq.com|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
+reject '微信规则重新混入 Sukka 广告冲突域名'
 cp "$repo_root/wechat.list" "$fixture_dir/source/wechat.list"
 
 cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"

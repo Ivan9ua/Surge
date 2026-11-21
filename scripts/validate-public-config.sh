@@ -136,6 +136,7 @@ grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy,exte
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy,extended-matching' "$scan_root/Surge.conf" || fail "CDN 规则集缺少扩展匹配"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream,extended-matching' "$scan_root/Surge.conf" || fail "流媒体规则集缺少扩展匹配"
 grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT' "$scan_root/Surge.conf" || fail "Apple CDN 地址或匹配方式与本地决定不一致"
+grep -qFx 'DOMAIN,dl.wechat.com,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "缺少 dl.wechat.com 直连前置规则或缺少扩展匹配"
 for download_type in domainset non_ip; do
   grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy,extended-matching$" "$scan_root/Surge.conf" || fail "通用下载未映射到 Proxy 或缺少扩展匹配"
 done
@@ -171,6 +172,8 @@ for domestic_ip in "${domestic_ip_list[@]}"; do
 done
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,extended-matching' "$scan_root/Surge.conf" || fail "AI 规则缺少扩展匹配"
 grep -qFx 'RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/ai-extra.list,Intelligence,extended-matching' "$scan_root/Surge.conf" || fail "AI 补充引用缺失或参数异常"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "国内规则集缺少扩展匹配"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "直连规则集缺少扩展匹配"
 if ! awk '
   /^[[:space:]]*(#|;|\/\/|$)/ { next }
   { count++; if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/ || seen[$0]++) bad=1 }
@@ -238,7 +241,7 @@ fi
 required_platform_ad_rules=(
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY'
   'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,pre-matching #!MACOS-ONLY'
-  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
 )
 for required_rule in "${required_platform_ad_rules[@]}"; do
@@ -266,6 +269,7 @@ ordered_routes=(
   'List/domainset/cdn.conf' 'List/non_ip/cdn.conf'
   'List/non_ip/stream.conf' 'List/non_ip/telegram.conf'
   'List/domainset/apple_cdn.conf' 'List/non_ip/microsoft_cdn.conf'
+  'DOMAIN,dl.wechat.com,DIRECT,extended-matching'
   'List/domainset/download.conf' 'List/non_ip/download.conf'
   'ai-extra.list' 'List/non_ip/ai.conf' 'List/non_ip/apple_intelligence.conf'
   'List/non_ip/apple_cn.conf' 'List/non_ip/apple_services.conf' 'List/non_ip/microsoft.conf'
@@ -294,55 +298,44 @@ fi
 
 required_wechat_direct_rules=(
   'DOMAIN-SUFFIX,wechat.com'
-  'DOMAIN,slife.xy-asia.com'
-  'DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net'
-  'DOMAIN,dldir1.qq.com'
-  'DOMAIN,soup.v.qq.com'
-  'DOMAIN,weixin110.qq.com'
-  'DOMAIN-SUFFIX,weixin.com'
-  'DOMAIN-SUFFIX,weixinbridge.com'
+  'DOMAIN-SUFFIX,servicewechat.com'
+  'DOMAIN-SUFFIX,wxgateway.com'
+  'DOMAIN-SUFFIX,wechatlegal.net'
+  'DOMAIN-SUFFIX,tenpay.com'
+  'DOMAIN-SUFFIX,wechatpay.com'
   'DOMAIN-SUFFIX,wechatpay.cn'
-  'DOMAIN-SUFFIX,wxapp.tc.qq.com'
-  'DOMAIN-SUFFIX,map.qq.com'
   'DOMAIN-SUFFIX,wecom.work'
-  'DOMAIN-SUFFIX,video.qq.com'
   'DOMAIN-SUFFIX,wetype.cn'
+  'DOMAIN-SUFFIX,iot-tencent.com'
+  'DOMAIN,slife.xy-asia.com'
 )
 for required_rule in "${required_wechat_direct_rules[@]}"; do
   grep -qFx -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少域名: $required_rule"
 done
-required_wechat_exclusions=(
-  'AND,((DOMAIN-SUFFIX,weixin.qq.com),(NOT,((DOMAIN,dns.weixin.qq.com))),(NOT,((DOMAIN,udns.weixin.qq.com))),(NOT,((DOMAIN,aedns.weixin.qq.com))))'
-  'AND,((DOMAIN-SUFFIX,weixin.qq.com.cn),(NOT,((DOMAIN,dns.weixin.qq.com.cn))))'
-  'AND,((DOMAIN-SUFFIX,wxs.qq.com),(NOT,((DOMAIN-KEYWORD,wxsnsdy))))'
-)
-for required_rule in "${required_wechat_exclusions[@]}"; do
-  grep -qFx -- "$required_rule" "$scan_root/wechat.list" || fail "微信统一规则缺少广告或 DNS 排除: $required_rule"
-done
 if grep -q '^DOMAIN-SUFFIX,xy-asia\.com$' "$scan_root/wechat.list"; then
   fail "微信域名补充规则仍使用过宽 xy-asia.com 后缀"
 fi
-if grep -qFx 'DOMAIN,wup.imtt.qq.com' "$scan_root/wechat.list"; then
-  fail "wup.imtt.qq.com 与广告规则冲突，不应加入微信直连"
+if grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | grep -Eq '(wup\.imtt\.qq\.com|apd-pcdnwxlogin\.teg\.tencent-cloud\.net|soup\.v\.qq\.com|up-hl\.3g\.qq\.com|yun-hl\.3g\.qq\.com|wxs\.qq\.com)'; then
+  fail "微信规则含与 Sukka 广告拦截冲突的域名，不应加入微信直连"
 fi
 if grep -qE 'sg(minor)?short\.wechat\.com' "$scan_root/wechat.list"; then
   fail "微信统一规则仍含过时的海外端点排除或重复精确条目"
 fi
-if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT),' "$scan_root/wechat.list"; then
-  fail "微信统一规则不应使用静态 IP、ASN、顶层 DOMAIN-KEYWORD 或 USER-AGENT"
+if grep -qE '^(IP-CIDR|IP-CIDR6|IP-ASN|DOMAIN-KEYWORD|USER-AGENT|AND),' "$scan_root/wechat.list"; then
+  fail "微信统一规则不应使用逻辑规则、静态 IP、ASN、顶层 DOMAIN-KEYWORD 或 USER-AGENT"
 fi
 wechat_rule_count="$(grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/wechat.list" | wc -l | tr -d ' ')"
-[[ "$wechat_rule_count" -eq 36 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 36）"
+[[ "$wechat_rule_count" -eq 11 ]] || fail "微信统一规则数量异常: $wechat_rule_count（预期 11）"
 if ! awk '
   /^[[:space:]]*(#|;|\/\/|$)/ { next }
   {
-    if ($0 ~ /^AND,/) logical++
-    else if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/) bad=1
+    count++
+    if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/) bad=1
     if (seen[$0]++) bad=1
   }
-  END { exit (bad || logical != 3) }
+  END { exit (bad || count != 11) }
 ' "$scan_root/wechat.list"; then
-  fail "微信统一规则格式异常、存在重复或逻辑条目数量异常"
+  fail "微信统一规则格式异常、存在重复或条目数量异常"
 fi
 
 if grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/quic-reject.list" >/dev/null; then
