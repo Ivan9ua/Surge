@@ -1,0 +1,17 @@
+# 本机实际配置与凭据：仅保留仓库内的脱敏模板。
+Mac.conf
+Shared.dconf
+*.bak
+*.bak-*
+*.local.conf
+*.private.conf
+secrets/
+.surge-backups/
+.surge-audits/
+*.iosinterface
+.DS_Store
+*.p12
+*.pfx
+*.pem
+.env
+.env.*
