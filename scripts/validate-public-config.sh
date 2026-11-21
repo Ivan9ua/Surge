@@ -182,6 +182,7 @@ grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft
 for skk_api in ipv4-ip.api.skk.moe ipv6-ip.api.skk.moe ip.api.skk.moe; do
   grep -qFx "DOMAIN,$skk_api,VLESS-1,extended-matching" "$scan_root/Surge.conf" || fail "SKK IP API 缺少扩展匹配: $skk_api"
 done
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy,extended-matching' "$scan_root/Surge.conf" || fail "Global 规则集缺少扩展匹配"
 if ! awk '
   /^[[:space:]]*(#|;|\/\/|$)/ { next }
   { count++; if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/ || seen[$0]++) bad=1 }
@@ -265,7 +266,7 @@ if awk '
 fi
 
 required_platform_ad_rules=(
-  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching #!MACOS-ONLY'
   'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,pre-matching,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'

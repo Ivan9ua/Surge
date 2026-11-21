@@ -134,6 +134,8 @@ for mutation in \
   's#non_ip/apple_services\.conf,Apple,extended-matching#non_ip/apple_services.conf,Apple#' \
   's#non_ip/microsoft\.conf,Microsoft,extended-matching#non_ip/microsoft.conf,Microsoft#' \
   's#DOMAIN,ip\.api\.skk\.moe,VLESS-1,extended-matching#DOMAIN,ip.api.skk.moe,VLESS-1#' \
+  's#non_ip/reject-drop\.conf,REJECT-DROP,pre-matching,extended-matching#non_ip/reject-drop.conf,REJECT-DROP,pre-matching#' \
+  's#non_ip/global\.conf,Proxy,extended-matching#non_ip/global.conf,Proxy#' \
   's#\*\.music\.126\.net#*.126.net#' \
   's#100\.64\.0\.0/10,#100.64.0.0/10, 162.14.0.0/16,#' \
   's#domainset/apple_cdn.conf,DIRECT,extended-matching#domainset/apple_cdn.conf,DIRECT#' \
