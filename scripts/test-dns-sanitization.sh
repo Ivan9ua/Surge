@@ -129,6 +129,14 @@ for mutation in \
   's#domainset/download.conf,Proxy,extended-matching#domainset/download.conf,Proxy#' \
   's#non_ip/domestic.conf,DIRECT,extended-matching#non_ip/domestic.conf,DIRECT#' \
   's#non_ip/direct.conf,DIRECT,extended-matching#non_ip/direct.conf,DIRECT#' \
+  's#domainset/apple_cdn.conf,DIRECT,extended-matching#domainset/apple_cdn.conf,DIRECT#' \
+  's#non_ip/microsoft_cdn.conf,DIRECT,extended-matching#non_ip/microsoft_cdn.conf,DIRECT#' \
+  's#domainset/reject.conf,REJECT,pre-matching,extended-matching#domainset/reject.conf,REJECT,pre-matching#' \
+  's#ip/neteasemusic.conf,DIRECT,no-resolve#ip/neteasemusic.conf,DIRECT#' \
+  's#https://1\.12\.12\.12/dns-query#https://1.12.12.12/dns-query, https://120.53.53.53/dns-query#' \
+  's#music\.taihe\.com,#musicapi.taihe.com, music.taihe.com,#' \
+  's|^\[Rule\]|[Rule]\nRULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT|' \
+  '/^PROCESS-NAME,\/Applications\/WeChat\.app\/,/d' \
   's|RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching|RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY|' \
   '/^DOMAIN,dl\.wechat\.com,DIRECT,extended-matching$/d' \
   '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy,extended-matching$/d' \
@@ -169,6 +177,8 @@ sed 's|DOMAIN-SUFFIX,muse.ai|IP-CIDR,1.1.1.1/32,no-resolve|' "$repo_root/ai-extr
 reject 'AI 补充混入 IP 规则'
 sed 's|DOMAIN-SUFFIX,muse.ai|DOMAIN-SUFFIX,auth0.com|' "$repo_root/ai-extra.list" > "$fixture_dir/source/ai-extra.list"
 reject 'AI 补充扩大到共享认证后缀'
+sed 's|DOMAIN-SUFFIX,pplx.ai|DOMAIN-SUFFIX,oaiusercontent.com|' "$repo_root/ai-extra.list" > "$fixture_dir/source/ai-extra.list"
+reject 'AI 补充重新混入已被 cdn.conf 遮蔽条目'
 cp "$repo_root/ai-extra.list" "$fixture_dir/source/ai-extra.list"
 
 sed 's|DOMAIN-SUFFIX,wxgateway.com$|DOMAIN-SUFFIX,wxgateway.com.invalid|' "$repo_root/wechat.list" > "$fixture_dir/source/wechat.list"
