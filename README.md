@@ -1,6 +1,6 @@
 # Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-21，完成微信规则按 Sukka 原则瘦身（`wechat.list` 精简为 11 条纯域名差量集、补入 `wxgateway.com`、`dl.wechat.com` 前置直连、双端共享轻量 `non_ip/reject.conf` 并为 `domestic/direct` 补齐 `extended-matching`）。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-21，完成双端全字段与运行态审计落地（移除重复 DNSPod DoH 消 429、补齐 `domainset/reject` 与 `apple_cdn`/`microsoft_cdn` 的 `extended-matching`、精简 `non_ip/neteasemusic` 与失效 `always-real-ip`、`ai-extra.list` 去重至 32 条，并增补 Mac 微信 App Bundle 前缀兜底）。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
 
 ## 文件与使用
 
@@ -8,7 +8,7 @@
 |---|---|
 | [Surge.conf](Surge.conf) | 唯一主配置：网络、DNS、节点、策略组、分流、Host、MITM 与 IP Rewrite 通用设置 |
 | [wechat.list](wechat.list) | 11 条微信纯域名差量直连规则，配合 `domestic.conf` 在线引用 |
-| [ai-extra.list](ai-extra.list) | 35 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
+| [ai-extra.list](ai-extra.list) | 32 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
 | [AI-EXTRA.md](AI-EXTRA.md) | AI 补充范围、来源、排序与验证边界 |
 | [RULESET-MAINTENANCE.md](RULESET-MAINTENANCE.md) | 2026-10-26 规则集维护、运行态样本与校验修复 |
 | [quic-reject.list](quic-reject.list) | 已停用的空兼容地址，0 条规则；主配置不再引用 |
@@ -24,18 +24,19 @@
 4. 如需共用 MITM CA，只在私有配置或系统钥匙串配置证书与 `ca-keystore-name`，并在两台设备分别安装和信任。公开模板没有证书，不能直接覆盖现有生产配置。
 5. 修改后分别确认设备实际加载结果。iCloud 同步、Surge 重载、证书信任、在线规则刷新不是同一个步骤，不保证后台立即生效。
 
-`#!MACOS-ONLY` 隔离 Mac 独占外置节点 `Hikyaku`、Mac 全量广告重规则（`reject-drop` / `domainset/reject` / `reject-no-drop`，而轻量 374 行 `non_ip/reject.conf` 由双端共享以统一拦截微信 HTTPDNS 与广告域）及四条微信进程兜底。已删除 Mac Testing 段与 `[Ponte]` 段；非中性 `US` Smart 权重保留。模块状态、系统证书信任和运行时策略选择不由单文件完整管理。旧配置先移至私有归档，禁止上传归档。
+`#!MACOS-ONLY` 隔离 Mac 独占外置节点 `Hikyaku`、Mac 全量广告重规则（`reject-drop` / `domainset/reject` / `reject-no-drop`，而轻量 374 行 `non_ip/reject.conf` 由双端共享以统一拦截微信 HTTPDNS 与广告域）及五条微信进程兜底（含 `/Applications/WeChat.app/` Bundle 前缀）。已删除 Mac Testing 段与 `[Ponte]` 段；非中性 `US` Smart 权重保留。模块状态、系统证书信任和运行时策略选择不由单文件完整管理。旧配置先移至私有归档，禁止上传归档。
 
 ## 当前策略
 
 排序参考 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)，并非逐项照搬：
 
-云元数据双层拦截 → 广告与 HTTPDNS（Mac 全量 + iPhone 共享轻量 `non_ip/reject.conf`）→ CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → `dl.wechat.com` 直连 / 下载与更新 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 网易云 → 微信差量 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 & IPv6 → Mac 微信进程 → FINAL。
+云元数据双层拦截 → 广告与 HTTPDNS（Mac 全量 + iPhone 共享轻量 `non_ip/reject.conf`）→ CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → `dl.wechat.com` 直连 / 下载与更新 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 微信差量 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 & IPv6 → Mac 微信进程 → FINAL。
 
-- 广告主规则按 Sukka 原则将 `non_ip/reject-drop.conf` 置于广告组首位（Mac），并将轻量 `non_ip/reject.conf` 放开双端共享，统一在顶部拦截微信私有 HTTPDNS（`dns.wechat.com`、`dns/udns/aedns.weixin.qq.com`）与朋友圈广告（`wxsnsdy`）；CDN 和下载走 Proxy，并在 `domainset/download.conf` 前新增 `DOMAIN,dl.wechat.com,DIRECT,extended-matching`，使微信下载包走直连省去机场 IEPL 流量。
-- Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。在 `global.conf` 之前为 `ipv4-ip.api.skk.moe`、`ipv6-ip.api.skk.moe`、`ip.api.skk.moe` 指定直走 `VLESS-1`，以规避部分机场节点访问该接口时的 TLS EOF。
-- CDN、流媒体、下载、AI、Apple Intelligence、Telegram、微信差量以及 `non_ip/domestic.conf`、`non_ip/direct.conf` 均启用 `extended-matching`，使依赖 `qq.com` / `qpic.cn` 等主干后缀的裸 IP HTTP/TLS 流量（含微信 `mmtls` 裸 IP 请求）也能直接享受 Host/SNI 嗅探分流。
-- 广告、Telegram、流媒体、AI 的专项 IP 与前置云元数据 IP `169.254.169.254/32` 使用 `no-resolve`；网易云、国内及内网 IP 允许解析。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
+- 广告主规则按 Sukka 原则将 `non_ip/reject-drop.conf` 置于广告组首位（Mac），Mac `domainset/reject.conf` 联合启用 `pre-matching,extended-matching`，并放开轻量 `non_ip/reject.conf` 双端共享以统一拦截微信私有 HTTPDNS（`dns.wechat.com`、`dns/udns/aedns.weixin.qq.com`）与朋友圈广告（`wxsnsdy`）；CDN 和下载走 Proxy，并在 `domainset/download.conf` 前新增 `DOMAIN,dl.wechat.com,DIRECT,extended-matching`。
+- Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。在 `global.conf` 之前为 `ipv4-ip.api.skk.moe`、`ipv6-ip.api.skk.moe`、`ip.api.skk.moe` 指定直走 `VLESS-1`，以规避部分机场节点访问该接口时的 TLS EOF。已移除被 `domestic.conf` 全量覆盖的 `non_ip/neteasemusic.conf`，仅保留 `ip/neteasemusic.conf`（补 `,no-resolve`）兜底国内独有音乐 IP。
+- 广告、`cdn`、`stream`、`telegram`、`apple_cdn`、`microsoft_cdn`、`dl.wechat.com`、`download`、`ai-extra`、`ai`、`apple_intelligence`、微信差量以及 `non_ip/domestic.conf`、`non_ip/direct.conf` 均启用 `extended-matching`，防止裸 IP HTTP/SNI 请求绕过直连或拦截规则。
+- 广告、Telegram、流媒体、AI 与网易云音乐的专项 IP 与前置云元数据 IP `169.254.169.254/32` 使用 `no-resolve`；国内及内网 IP 允许解析（`ip/domestic.conf` 保留与 Sukka 模板对称）。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
+- DoH 上游仅保留公共/私人阿里 DNS + 单路腾讯 `1.12.12.12`（移除同商冗余的 `120.53.53.53`，消除双倍并发引发的高频 429 限流）。`always-real-ip` 已剔除 `musicapi.taihe.com` 与 `mdn.open.wo.cn` 两条无解析死域，保留 `*.126.net` 等高流量直连例外。
 - 当前 `ipv6=true`、`ipv6-vif=auto`，并已在末尾 IP 规则加入 `china_ip_ipv6.conf` 处理国内 IPv6 直连；不宣称可单独解决特定运营商或下载限速问题。
 - 全局测试使用 HTTP，延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
 - 策略组依次为 Proxy、Intelligence、Stream、Telegram、Apple、Microsoft、HK、TW、JP、SG、US、Flower Cloud。地区选项统一为 HK、TW、JP、SG、US；AI 组保留 US 首位，其余地区按相同相对顺序排列，`Stream` 由代理组接管。
@@ -53,6 +54,8 @@ Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 只兜底前面未命中�
 此前用户反馈的局部 UDP 拒绝、SG 出口及 Wi-Fi/热点对照均未明显改善慢视频，未证明硬拒绝有稳定收益，因此保留删除方案。用户近期反馈 iPhone 视频已明显改善，但不能将改善归因于本次删除。旧配置必须刷新资源才能清除缓存；当前单文件已无该依赖。若未来确有实测必要，再通过 GitHub 远程规则维护，不恢复未经验证的宽泛拦截。
 
 ## 模块与验证
+
+2026-11-21 双端全字段与运行态审计优化落地：移除同属 DNSPod 的重复 DoH `120.53.53.53` 以消除高频 429、为 Mac `domainset/reject.conf` 及双端 `apple_cdn` / `microsoft_cdn` 补齐 `extended-matching`、清理 `non_ip/neteasemusic.conf` 与两条无解析死域（`musicapi.taihe.com`、`mdn.open.wo.cn`）、为 `ip/neteasemusic.conf` 补 `,no-resolve`（保留 `ip/domestic.conf` 对称结构）、从 `ai-extra.list` 移除 3 条已被 `domainset/cdn.conf` 遮蔽条目（35 → 32 条），并增补 Mac 微信 App Bundle 前缀规则 `PROCESS-NAME,/Applications/WeChat.app/,DIRECT #!MACOS-ONLY`。Mac（`surge-cli`）与 iPhone（MCP）均实测 SNI 分流、DoH diagnostics、微信子进程匹配及内存（~23.8 MB）正常。
 
 2026-11-21 微信规则 Sukka 原则瘦身与双端统一：放开轻量 `non_ip/reject.conf`（374 行）双端共享、新增 `DOMAIN,dl.wechat.com,DIRECT,extended-matching` 绕过 `download.conf`、为 `non_ip/domestic.conf` 与 `non_ip/direct.conf` 补齐 `,extended-matching`，并将 `wechat.list` 精简为 11 条纯域名差量集（剔除 5 条与 `domainset/reject.conf` 冲突项及 24 条重叠项，补入实测访问的 `wxgateway.com`）。Mac（`surge-cli`）与 iPhone（MCP）均已实测验证：`dl.wechat.com`、`sgshort.wechat.com`、`mmbiz.qpic.cn` 命中 `DIRECT`，`dns.wechat.com`、`dns.weixin.qq.com`、`udns.weixin.qq.com`、`wxsnsdy.wxs.qq.com` 均前置命中 `REJECT`，iPhone 扩展内存约 24.7 MB、运行正常。
 
@@ -83,4 +86,4 @@ bash scripts/validate-public-config.sh --history-ref HEAD
 
 脚本要求源目录存在独立完整的 Surge.conf，先临时脱敏及校验，再覆盖公开模板；缺少源文件或校验失败即停止。在线规则及 QUIC 空兼容文件保留仓库版本，不从私有目录或历史备份隐式复制。不要直接复制私有配置，也不要在仓库填写生产凭据。
 
-CI 检查单文件结构、凭据/证书、个人 DNS、平台隔离、四个微信进程、规则顺序、关键参数及可达 Git 历史。Linux 无原生 Surge 时仅执行静态校验；原生语法与真实业务测试需分别进行。历史扫描不证明旧 PR 缓存、Fork 或他人克隆已经清理；泄露后先轮换，再按安全策略处理。
+CI 检查单文件结构、凭据/证书、个人 DNS、平台隔离、微信进程兜底、规则顺序、关键参数及可达 Git 历史。Linux 无原生 Surge 时仅执行静态校验；原生语法与真实业务测试需分别进行。历史扫描不证明旧 PR 缓存、Fork 或他人克隆已经清理；泄露后先轮换，再按安全策略处理。

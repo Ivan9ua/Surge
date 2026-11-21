@@ -1,6 +1,6 @@
 # NAME: AI Extra
 # UPDATED: 2026-11-21
-# TOTAL: 35
+# TOTAL: 32
 # 与 Sukka AI / Apple Intelligence 配合；引用策略 Intelligence,extended-matching。
 # 仅补 AI 产品域名；不含 IP、ASN、进程、通用登录/支付域和关键词。
 
@@ -14,13 +14,10 @@ DOMAIN-SUFFIX,copilot.microsoft.com
 DOMAIN-SUFFIX,copilot.cloud.microsoft
 DOMAIN-SUFFIX,copilot.com
 
-# GitHub Copilot：专用服务及官方建议接口；api.github.com 已由 Sukka 覆盖。
+# GitHub Copilot：专用服务入口；api.github.com 及 *.githubusercontent.com（含 copilot-proxy / origin-tracker）已由前置 Sukka 或 domainset/cdn.conf 覆盖。
 DOMAIN-SUFFIX,githubcopilot.com
-DOMAIN,copilot-proxy.githubusercontent.com
-DOMAIN,origin-tracker.githubusercontent.com
 
-# 模型产品内容域名；避免仅覆盖聊天主页。
-DOMAIN-SUFFIX,oaiusercontent.com
+# 模型产品内容域名；避免仅覆盖聊天主页（oaiusercontent.com 已由前置 domainset/cdn.conf 覆盖）。
 DOMAIN-SUFFIX,claudeusercontent.com
 
 # Cursor：补充站点、服务与 Agent VM；cursor.sh 已由 Sukka 覆盖。

@@ -1,6 +1,6 @@
 # AI / Agent 补充规则
 
-更新：2026-11-21。ai-extra.list 共35条，作为 Sukka AI 和 Apple Intelligence 的补充，而非完整替代。仅 DOMAIN / DOMAIN-SUFFIX；引用到 Intelligence 并启用 extended-matching。域名集合不是访问控制白名单，也不是可用性或地区资格保证。
+更新：2026-11-21。ai-extra.list 共32条，作为 Sukka AI 和 Apple Intelligence 的补充，而非完整替代。仅 DOMAIN / DOMAIN-SUFFIX；引用到 Intelligence 并启用 extended-matching。域名集合不是访问控制白名单，也不是可用性或地区资格保证。
 
 ## 收录与来源
 
@@ -12,8 +12,7 @@
 | Perplexity | perplexity.com、pplx.ai；实测未命中通用列表而落入FINAL | [Perplexity](https://www.perplexity.ai/) |
 | Hugging Face | hf.co、hf.space、huggingface.co；模型与Space权重下载及访问 | [Hugging Face](https://huggingface.co/) |
 | Microsoft Copilot | copilot.microsoft.com、copilot.cloud.microsoft、copilot.com，新旧产品入口 | [微软文档](https://support.microsoft.com/en-us/microsoft-365-copilot/what-is-microsoft-copilot-app) |
-| GitHub Copilot | githubcopilot.com、建议代理、origin-tracker接口；api.github.com由Sukka承担 | [官方白名单](https://docs.github.com/en/copilot/reference/copilot-allowlist-reference) |
-| ChatGPT内容 | oaiusercontent.com | [OpenAI网络建议](https://help.openai.com/en/articles/9247338-network-recommendations-for-chatgpt-errors-on-web-and-apps) |
+| GitHub Copilot | githubcopilot.com；api.github.com 及 copilot-proxy/origin-tracker.githubusercontent.com 已由 Sukka AI / domainset/cdn.conf 承担 | [官方白名单](https://docs.github.com/en/copilot/reference/copilot-allowlist-reference) |
 | Claude内容 | claudeusercontent.com，产品内容域候选 | [ACL4SSR列表](https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/AI.list)；本轮无完整官方白名单或真实附件请求验收 |
 | Cursor | cursor.com、cursorapi.com、cursorvm.com；cursor.sh由Sukka承担 | [官方网络文档](https://cursor.com/docs/enterprise/network-configuration) |
 | Windsurf/Codeium | codeium.com、codeiumdata.com、windsurf.com产品范围 | [官方网络排障](https://docs.devin.ai/desktop/troubleshooting/windsurf-common-issues) |
@@ -35,10 +34,10 @@ RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_intelligence.conf,Intelligenc
 
 - 不添加整套 facebook.com、instagram.com、whatsapp.net、googleapis.com、microsoft.com、auth0.com、stripe.com或云服务商ASN。
 - 不增加MITM hostname、脚本、QUIC硬拒绝或修改策略组选择。
-- 前置模块和CDN/下载规则仍可能先命中，不承诺所有AI关联请求统一出口；登录等共享服务保留原有策略。
+- 前置模块和CDN/下载规则仍可能先命中，不承诺所有AI关联请求统一出口；登录等共享服务保留原有策略；其中 `oaiusercontent.com` 与 `copilot-proxy/origin-tracker.githubusercontent.com` 因已被前置 `domainset/cdn.conf` 完全覆盖而移除，保持零死规则。
 - Muse的云VM或其他云端Agent访问第三方站点的请求不经过本机Surge，不能靠本机分流规则控制其完整任务网络。
 - 更新远程列表和更新主配置顺序是两件事；设备需加载最新共享配置并刷新新增资源。
 
 ## 检查
 
-维护检查要求35条不重复纯域名规则、正确引用和顺序，回归测试拒绝IP混入、共享认证后缀扩大及引用丢失。离线原生语法和静态命中检查不等于实际登录、上传、授权、付款或全部Agent功能验收；不宣称提速倍数或100%覆盖。
+维护检查要求32条不重复纯域名规则、正确引用和顺序，回归测试拒绝IP混入、共享认证后缀扩大、已被前置CDN遮蔽条目及引用丢失。离线原生语法和静态命中检查不等于实际登录、上传、授权、付款或全部Agent功能验收；不宣称提速倍数或100%覆盖。
