@@ -1,6 +1,0 @@
-# NAME: QUIC Reject (Retired)
-# UPDATED: 2026-10-14
-# TOTAL: 0
-# 已撤回全部自定义 UDP 443 硬拒绝规则；当前主配置不再引用本文件。
-# 仅保留原 URL 的空兼容响应，避免旧配置刷新时遇到 404。
-# 旧缓存须由设备刷新才会更新；不代表已启用 Adaptive QUIC。
