@@ -6,7 +6,7 @@ fixture_dir="$(mktemp -d "${TMPDIR:-/tmp}/surge-public-test.XXXXXX")"
 trap 'rm -rf -- "$fixture_dir"' EXIT
 mkdir -p "$fixture_dir/public/scripts" "$fixture_dir/source"
 cp "$repo_root/scripts/sync-local-surge.sh" "$repo_root/scripts/validate-public-config.sh" "$fixture_dir/public/scripts/"
-for name in Surge.conf wechat.list quic-reject.list ai-extra.list; do
+for name in Surge.conf wechat.list ai-extra.list; do
   cp "$repo_root/$name" "$fixture_dir/public/$name"
   cp "$repo_root/$name" "$fixture_dir/source/$name"
 done
@@ -244,9 +244,10 @@ awk '
 reject 'dl.wechat.com 置后被 download.conf 截胡'
 
 cp "$repo_root/Surge.conf" "$fixture_dir/source/Surge.conf"
-printf '\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,wechat.com))\n' >> "$fixture_dir/source/quic-reject.list"
-reject '停用 QUIC 地址重新加入有效规则'
-cp "$repo_root/quic-reject.list" "$fixture_dir/source/quic-reject.list"
+printf '# empty retired file\n' > "$fixture_dir/source/quic-reject.list"
+reject '重新引入已弃用的 quic-reject.list'
+grep -q '已弃用的 quic-reject.list' "$fixture_dir/result.log"
+rm -f "$fixture_dir/source/quic-reject.list"
 
 sed 's|DOMAIN-SUFFIX,muse.ai|IP-CIDR,1.1.1.1/32,no-resolve|' "$repo_root/ai-extra.list" > "$fixture_dir/source/ai-extra.list"
 reject 'AI 补充混入 IP 规则'

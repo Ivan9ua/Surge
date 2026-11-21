@@ -30,7 +30,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-required_files=(Surge.conf wechat.list quic-reject.list ai-extra.list)
+required_files=(Surge.conf wechat.list ai-extra.list)
 for config_file in "${required_files[@]}"; do
   [[ -f "$scan_root/$config_file" ]] || { echo "缺少文件: $config_file" >&2; exit 1; }
 done
@@ -41,7 +41,7 @@ fail() {
 }
 
 config_files=("$scan_root/Surge.conf")
-all_public_files=("${config_files[@]}" "$scan_root/wechat.list" "$scan_root/quic-reject.list" "$scan_root/ai-extra.list")
+all_public_files=("${config_files[@]}" "$scan_root/wechat.list" "$scan_root/ai-extra.list")
 private_fields='private-key|http-api(-mcp|-tls|-web-dashboard)?|external-controller-access|wifi-access-password|http-listen|socks5-listen|wifi-access-http-auth'
 private_assignment="^[[:space:]]*((#|;|//)[[:space:]]*)?(${private_fields})[[:space:]]*="
 
@@ -60,7 +60,7 @@ while IFS= read -r -d '' entry; do
   [[ -e "$path" || -L "$path" ]] || continue
   [[ ! -L "$path" ]] || fail "发布目录不应包含符号链接"
   case "$entry" in
-    Surge.conf|wechat.list|quic-reject.list|ai-extra.list) continue ;;
+    Surge.conf|wechat.list|ai-extra.list) continue ;;
     *.conf|*.dconf|*.sgmodule|*.bak|*.backup|*.old|*~|*.p12|*.pfx|*.key|*"$forbidden_extension")
       fail "发现未纳入脱敏流程的额外配置、备份或密钥文件" ;;
   esac
@@ -414,8 +414,8 @@ if ! awk '
   fail "微信统一规则格式异常、存在重复或条目数量异常"
 fi
 
-if grep -Ev '^[[:space:]]*(#|;|//|$)' "$scan_root/quic-reject.list" >/dev/null; then
-  fail "已停用的 QUIC 兼容地址不得包含有效规则"
+if [[ -e "$scan_root/quic-reject.list" ]]; then
+  fail "已弃用的 quic-reject.list 不应重新加入仓库"
 fi
 
 if grep -qE '^[[:space:]]*#!include[[:space:]]' "$scan_root/Surge.conf"; then
