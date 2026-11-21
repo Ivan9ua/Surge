@@ -175,6 +175,13 @@ grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/ai.conf,Intelligence,ext
 grep -qFx 'RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/ai-extra.list,Intelligence,extended-matching' "$scan_root/Surge.conf" || fail "AI 补充引用缺失或参数异常"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "国内规则集缺少扩展匹配"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "直连规则集缺少扩展匹配"
+grep -qFx 'DOMAIN,captive.apple.com,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "captive.apple.com 缺少扩展匹配"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "Apple CN 规则集缺少扩展匹配"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple,extended-matching' "$scan_root/Surge.conf" || fail "Apple Services 规则集缺少扩展匹配"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching' "$scan_root/Surge.conf" || fail "Microsoft 规则集缺少扩展匹配"
+for skk_api in ipv4-ip.api.skk.moe ipv6-ip.api.skk.moe ip.api.skk.moe; do
+  grep -qFx "DOMAIN,$skk_api,VLESS-1,extended-matching" "$scan_root/Surge.conf" || fail "SKK IP API 缺少扩展匹配: $skk_api"
+done
 if ! awk '
   /^[[:space:]]*(#|;|\/\/|$)/ { next }
   { count++; if ($0 !~ /^(DOMAIN|DOMAIN-SUFFIX),[a-z0-9.-]+$/ || seen[$0]++) bad=1 }
@@ -211,6 +218,12 @@ if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)(musicapi\.taihe\.com
 fi
 if grep -qF 'List/non_ip/neteasemusic.conf' "$scan_root/Surge.conf"; then
   fail "主配置仍含已精简移除的冗余 non_ip/neteasemusic.conf"
+fi
+if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)\*\.126\.net([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null || ! grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)\*\.music\.126\.net([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null; then
+  fail "always-real-ip 须收窄为 *.music.126.net（禁止泛写 *.126.net）"
+fi
+if grep -E '^skip-proxy[[:space:]]*=.*(162\.14\.0\.0/16|211\.99\.96\.0/19|162\.159\.19[235]\.0/24)' "$scan_root/Surge.conf" >/dev/null; then
+  fail "skip-proxy 仍残留已清理的历史公网 CIDR"
 fi
 if grep -qE 'US-Snell|US-Hysteria|Oracle-Xray|Tencent-Xray|Oracle-Hikyaku' "$scan_root/Surge.conf"; then
   fail "Surge.conf 节点名称尚未统一为公开别名"
