@@ -129,6 +129,13 @@ for mutation in \
   's#domainset/download.conf,Proxy,extended-matching#domainset/download.conf,Proxy#' \
   's#non_ip/domestic.conf,DIRECT,extended-matching#non_ip/domestic.conf,DIRECT#' \
   's#non_ip/direct.conf,DIRECT,extended-matching#non_ip/direct.conf,DIRECT#' \
+  's#DOMAIN,captive\.apple\.com,DIRECT,extended-matching#DOMAIN,captive.apple.com,DIRECT#' \
+  's#non_ip/apple_cn\.conf,DIRECT,extended-matching#non_ip/apple_cn.conf,DIRECT#' \
+  's#non_ip/apple_services\.conf,Apple,extended-matching#non_ip/apple_services.conf,Apple#' \
+  's#non_ip/microsoft\.conf,Microsoft,extended-matching#non_ip/microsoft.conf,Microsoft#' \
+  's#DOMAIN,ip\.api\.skk\.moe,VLESS-1,extended-matching#DOMAIN,ip.api.skk.moe,VLESS-1#' \
+  's#\*\.music\.126\.net#*.126.net#' \
+  's#100\.64\.0\.0/10,#100.64.0.0/10, 162.14.0.0/16,#' \
   's#domainset/apple_cdn.conf,DIRECT,extended-matching#domainset/apple_cdn.conf,DIRECT#' \
   's#non_ip/microsoft_cdn.conf,DIRECT,extended-matching#non_ip/microsoft_cdn.conf,DIRECT#' \
   's#domainset/reject.conf,REJECT,pre-matching,extended-matching#domainset/reject.conf,REJECT,pre-matching#' \

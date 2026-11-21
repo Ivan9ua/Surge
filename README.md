@@ -1,6 +1,6 @@
 # Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-21，完成双端全字段与运行态审计落地（移除重复 DNSPod DoH 消 429、补齐 `domainset/reject` 与 `apple_cdn`/`microsoft_cdn` 的 `extended-matching`、精简 `non_ip/neteasemusic` 与失效 `always-real-ip`、`ai-extra.list` 去重至 32 条，并增补 Mac 微信 App Bundle 前缀兜底）。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-21，完成 P2 规则 SNI 对齐（`Apple` / `Microsoft` / `SKK IP API` 全段启用 `extended-matching`）与洁癖精简（`always-real-ip` 收窄至 `*.music.126.net`，`skip-proxy` 移除 5 段历史公网 CIDR）。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
 
 ## 文件与使用
 
@@ -34,9 +34,9 @@
 
 - 广告主规则按 Sukka 原则将 `non_ip/reject-drop.conf` 置于广告组首位（Mac），Mac `domainset/reject.conf` 联合启用 `pre-matching,extended-matching`，并放开轻量 `non_ip/reject.conf` 双端共享以统一拦截微信私有 HTTPDNS（`dns.wechat.com`、`dns/udns/aedns.weixin.qq.com`）与朋友圈广告（`wxsnsdy`）；CDN 和下载走 Proxy，并在 `domainset/download.conf` 前新增 `DOMAIN,dl.wechat.com,DIRECT,extended-matching`。
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。在 `global.conf` 之前为 `ipv4-ip.api.skk.moe`、`ipv6-ip.api.skk.moe`、`ip.api.skk.moe` 指定直走 `VLESS-1`，以规避部分机场节点访问该接口时的 TLS EOF。已移除被 `domestic.conf` 全量覆盖的 `non_ip/neteasemusic.conf`，仅保留 `ip/neteasemusic.conf`（补 `,no-resolve`）兜底国内独有音乐 IP。
-- 广告、`cdn`、`stream`、`telegram`、`apple_cdn`、`microsoft_cdn`、`dl.wechat.com`、`download`、`ai-extra`、`ai`、`apple_intelligence`、微信差量以及 `non_ip/domestic.conf`、`non_ip/direct.conf` 均启用 `extended-matching`，防止裸 IP HTTP/SNI 请求绕过直连或拦截规则。
+- 广告、`cdn`、`stream`、`telegram`、`apple_cdn`、`microsoft_cdn`、`dl.wechat.com`、`download`、`ai-extra`、`ai`、`apple_intelligence`、`Apple` 全段（含 `captive.apple.com` 与 `apple_cn`）、`Microsoft`、`SKK IP API`、微信差量以及 `non_ip/domestic.conf`、`non_ip/direct.conf` 均启用 `extended-matching`，防止裸 IP HTTP/SNI 请求绕过直连、指定出口或拦截规则。
 - 广告、Telegram、流媒体、AI 与网易云音乐的专项 IP 与前置云元数据 IP `169.254.169.254/32` 使用 `no-resolve`；国内及内网 IP 允许解析（`ip/domestic.conf` 保留与 Sukka 模板对称）。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
-- DoH 上游仅保留公共/私人阿里 DNS + 单路腾讯 `1.12.12.12`（移除同商冗余的 `120.53.53.53`，消除双倍并发引发的高频 429 限流）。`always-real-ip` 已剔除 `musicapi.taihe.com` 与 `mdn.open.wo.cn` 两条无解析死域，保留 `*.126.net` 等高流量直连例外。
+- DoH 上游仅保留公共/私人阿里 DNS + 单路腾讯 `1.12.12.12`（移除同商冗余的 `120.53.53.53`，消除双倍并发引发的高频 429 限流）。`always-real-ip` 已剔除 `musicapi.taihe.com` 与 `mdn.open.wo.cn` 两条无解析死域，并将 `*.126.net` 精准收窄为 `*.music.126.net`；`skip-proxy` 移除 Enhanced Mode 下不再需要的 5 段历史公网 CIDR（`162.14.0.0/16`、`211.99.96.0/19`、`162.159.192/193/195.0/24`），保留内网段与国内银联/App 例外。
 - 当前 `ipv6=true`、`ipv6-vif=auto`，并已在末尾 IP 规则加入 `china_ip_ipv6.conf` 处理国内 IPv6 直连；不宣称可单独解决特定运营商或下载限速问题。
 - 全局测试使用 HTTP，延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
 - 策略组依次为 Proxy、Intelligence、Stream、Telegram、Apple、Microsoft、HK、TW、JP、SG、US、Flower Cloud。地区选项统一为 HK、TW、JP、SG、US；AI 组保留 US 首位，其余地区按相同相对顺序排列，`Stream` 由代理组接管。
@@ -54,6 +54,8 @@ Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 只兜底前面未命中�
 此前用户反馈的局部 UDP 拒绝、SG 出口及 Wi-Fi/热点对照均未明显改善慢视频，未证明硬拒绝有稳定收益，因此保留删除方案。用户近期反馈 iPhone 视频已明显改善，但不能将改善归因于本次删除。旧配置必须刷新资源才能清除缓存；当前单文件已无该依赖。若未来确有实测必要，再通过 GitHub 远程规则维护，不恢复未经验证的宽泛拦截。
 
 ## 模块与验证
+
+2026-11-21 P2 规则 SNI 对齐与洁癖精简：同步为 `captive.apple.com`、`apple_cn.conf`、`apple_services.conf`、`microsoft.conf` 与 3 条 `*.api.skk.moe` 补齐 `,extended-matching`，将 `always-real-ip` 中 `*.126.net` 收窄为 `*.music.126.net`，并自 `skip-proxy` 移除 5 段历史公网 CIDR（保留 `udp-priority = false` 与 Mac `non_ip/reject-no-drop.conf`）。同时合入 `ai-extra.list`（32 条）并于双端定向刷新；Mac（`surge-cli`）与 iPhone（MCP）均实测 SNI 分流与扩展内存（~23.7 MB）正常。
 
 2026-11-21 双端全字段与运行态审计优化落地：移除同属 DNSPod 的重复 DoH `120.53.53.53` 以消除高频 429、为 Mac `domainset/reject.conf` 及双端 `apple_cdn` / `microsoft_cdn` 补齐 `extended-matching`、清理 `non_ip/neteasemusic.conf` 与两条无解析死域（`musicapi.taihe.com`、`mdn.open.wo.cn`）、为 `ip/neteasemusic.conf` 补 `,no-resolve`（保留 `ip/domestic.conf` 对称结构）、从 `ai-extra.list` 移除 3 条已被 `domainset/cdn.conf` 遮蔽条目（35 → 32 条），并增补 Mac 微信 App Bundle 前缀规则 `PROCESS-NAME,/Applications/WeChat.app/,DIRECT #!MACOS-ONLY`。Mac（`surge-cli`）与 iPhone（MCP）均实测 SNI 分流、DoH diagnostics、微信子进程匹配及内存（~23.8 MB）正常。
 
