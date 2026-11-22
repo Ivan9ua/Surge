@@ -18,12 +18,12 @@
 主配置没有 `#!include`，不再维护 `Mac.conf`、`iPhone.conf` 或两份 Shared 分离配置。`wechat.list` 与 `ai-extra.list` 在仓库独立维护；已弃用的 `quic-reject.list` 已彻底删除且禁止重新入库。
 
 1. 将 `Surge.conf` 复制到自己的私有 Surge iCloud 配置目录。
-2. 仅在私有副本为两个 VLESS 节点分别填写服务器地址和对应的 SNI（模板均为 `example.com`），替换 UUID（`00000000-0000-0000-0000-000000000000`）、`reality-public-key` / `reality-short-id`、`Hikyaku` 的 `exec` 路径与 `addresses`（`198.51.100.1`）以及 `YOUR_SURGE_SUBSCRIPTION_URL`；公开别名 `VLESS-1`、`VLESS-2`、`Hikyaku` 对应私有节点，个人 AliDNS 标识已替换为通用 DoH。
+2. 仅在私有副本为两个 VLESS 节点分别填写服务器地址和对应的 SNI（模板均为 `example.com`），替换 UUID（`00000000-0000-0000-0000-000000000000`）、`reality-public-key` / `reality-short-id`，并替换 `YOUR_SURGE_SUBSCRIPTION_URL`；公开别名 `VLESS-1`、`VLESS-2` 对应私有节点，个人 AliDNS 标识已替换为通用 DoH。
 3. 双端均选中同一份 iCloud `Surge.conf`，分别确认自动重载开启。仍使用旧入口的设备须先切换，再清理旧文件。
 4. 如需共用 MITM CA，只在私有配置或系统钥匙串配置证书与 `ca-keystore-name`，并在两台设备分别安装和信任。公开模板没有证书，不能直接覆盖现有生产配置。
 5. 修改后分别确认设备实际加载结果。iCloud 同步、Surge 重载、证书信任、在线规则刷新不是同一个步骤，不保证后台立即生效。
 
-`#!MACOS-ONLY` 隔离 Mac 独占外置节点 `Hikyaku`、Mac 全量广告重规则（`reject-drop` / `domainset/reject` / `reject-no-drop`，而轻量 374 行 `non_ip/reject.conf` 由双端共享以统一拦截微信 HTTPDNS 与广告域）及五条微信进程兜底（含 `/Applications/WeChat.app/` Bundle 前缀）。已删除 Mac Testing 段与 `[Ponte]` 段；非中性 `US` Smart 权重保留。模块状态、系统证书信任和运行时策略选择不由单文件完整管理。旧配置先移至私有归档，禁止上传归档。
+`#!MACOS-ONLY` 隔离 Mac 全量广告重规则（`reject-drop` / `domainset/reject` / `reject-no-drop`，而轻量 374 行 `non_ip/reject.conf` 由双端共享以统一拦截微信 HTTPDNS 与广告域）及五条微信进程兜底（含 `/Applications/WeChat.app/` Bundle 前缀）。已删除 Mac Testing 段与 `[Ponte]` 段；非中性 `US` Smart 权重保留。模块状态、系统证书信任和运行时策略选择不由单文件完整管理。旧配置先移至私有归档，禁止上传归档。
 
 ## 当前策略
 

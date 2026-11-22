@@ -258,7 +258,7 @@ if ! awk '
     name = $0
     sub(/=.*/, "", name)
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", name)
-    if (name !~ /^(VLESS-[0-9]+|Hikyaku|Hysteria|Snell|Node-[0-9]+)$/) bad=1
+    if (name !~ /^(VLESS-[0-9]+|Hysteria|Snell|Node-[0-9]+)$/) bad=1
   }
   END { exit bad }
 ' "$scan_root/Surge.conf"; then
