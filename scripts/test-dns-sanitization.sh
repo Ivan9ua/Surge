@@ -14,7 +14,7 @@ done
 cat > "$fixture_dir/aliases.map" <<'EOF'
 Private-VLESS-A=VLESS-1
 Private-VLESS-B=VLESS-2
-Private-Ext-Node=Hikyaku
+Private-Ext-Node=Node-1
 Private-Hy2=Hysteria
 Private-Provider=Subscription
 EOF
@@ -95,15 +95,14 @@ grep -q 'VLESS-1 = vless, example\.com, 443, username=00000000-0000-0000-0000-00
 mutate 's#reality-public-key=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA#reality-public-key=SYNTHETIC_LEAKED_KEY#'
 reject '被占位 UUID 掩盖的 REALITY 公钥'
 
-sed -E \
-  -e 's#exec = "/path/to/external-proxy/start-client\.sh"#exec = "/Users/tester/Library/start-client.sh"#' \
-  -e 's#addresses = 198\.51\.100\.1#addresses = 203.0.113.9#' \
-  -e 's#Hikyaku#Private-Ext-Node#g' \
-  "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
+awk '
+  { print }
+  /^\[Proxy\]$/ { print "Private-Ext-Node = external, exec = \"/Users/tester/Library/start-client.sh\", local-port = 11080, addresses = 203.0.113.9, udp-relay=true #!MACOS-ONLY" }
+' "$repo_root/Surge.conf" > "$fixture_dir/source/Surge.conf"
 reject 'external 代理本机路径与真实 IP'
 sync_public
 assert_absent 'Users/tester|203\.0\.113\.9|Private-Ext-Node'
-grep -q 'Hikyaku = external, exec = "/path/to/external-proxy/start-client\.sh", local-port = 11080, addresses = 198\.51\.100\.1, udp-relay=true #!MACOS-ONLY' "$fixture_dir/public/Surge.conf"
+grep -q 'Node-1 = external, exec = "/path/to/external-proxy/start-client\.sh", local-port = 11080, addresses = 198\.51\.100\.1, udp-relay=true #!MACOS-ONLY' "$fixture_dir/public/Surge.conf"
 
 awk '
   { print }

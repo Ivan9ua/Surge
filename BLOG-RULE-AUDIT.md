@@ -6,7 +6,7 @@
 
 源文件 `[Rule]` 共 **45 条有效主规则**：32 条远程规则集（`RULE-SET` / `DOMAIN-SET`）、7 条内联域名/IP 规则、5 条 Mac 微信进程规则、1 条 `FINAL`。
 
-- **Mac（加载全部 45 条）**：启用全部 `#!MACOS-ONLY` 广告重规则、Mac 微信进程兜底与外置节点 `Hikyaku`。
+- **Mac（加载全部 45 条）**：启用全部 `#!MACOS-ONLY` 广告重规则及 Mac 微信进程兜底。
 - **iPhone（排除 8 条 `#!MACOS-ONLY` 后加载 37 条，不含设备本地模块注入）**：仅共享轻量 374 行 `non_ip/reject.conf` 统一拦截微信 HTTPDNS 与朋友圈广告，控制 Network Extension 内存占用。
 
 > 注：下表中 `EM` = `extended-matching`，`PM` = `pre-matching`。
