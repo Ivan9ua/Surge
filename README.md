@@ -11,7 +11,7 @@
 | [ai-extra.list](ai-extra.list) | 32 条纯域名 AI/Agent 补充规则；与 Sukka AI 配合 |
 | [AI-EXTRA.md](AI-EXTRA.md) | AI 补充范围、来源、排序与验证边界 |
 | [RULESET-MAINTENANCE.md](RULESET-MAINTENANCE.md) | 2026-11-22 规则集维护、双端运行态样本与校验护栏 |
-| [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 2026-11-22 规则顺序、45 条主规则核对与未验证边界 |
+| [BLOG-RULE-AUDIT.md](BLOG-RULE-AUDIT.md) | 2026-11-24 规则顺序、44 条主规则核对与未验证边界 |
 | [SECURITY.md](SECURITY.md) | 脱敏同步、白名单校验与泄露处理 |
 | [scripts/](scripts/) | 同步、安全校验及合成数据回归测试 |
 
@@ -29,14 +29,14 @@
 
 排序参考 [Sukka 博客](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)，并非逐项照搬：
 
-云元数据双层拦截 → 广告与 HTTPDNS（Mac 全量 + iPhone 共享轻量 `non_ip/reject.conf`）→ CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → `dl.wechat.com` 直连 / 下载与更新 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 微信差量 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IPv4 & IPv6 → Mac 微信进程 → FINAL。
+云元数据双层拦截 → 广告与 HTTPDNS（Mac 全量 + iPhone 共享轻量 `non_ip/reject.conf`）→ CDN → 流媒体 → Telegram → Apple/Microsoft 国内 CDN → `dl.wechat.com` 直连 / 下载与更新 → AI 补充/Sukka AI/Apple Intelligence → Apple 中国区/其他服务 → Microsoft → 海外 → 微信差量 → 国内/直连 → 内网域名 → 专项 IP → 内网/国内 IP → Mac 微信进程 → FINAL。
 
 - 广告主规则按 Sukka 原则将 `non_ip/reject-drop.conf` 置于广告组首位（Mac），与 `domainset/reject.conf` 均联合启用 `pre-matching,extended-matching`，并放开轻量 `non_ip/reject.conf` 双端共享以统一拦截微信私有 HTTPDNS（`dns.wechat.com`、`dns/udns/aedns.weixin.qq.com`）与朋友圈广告（`wxsnsdy`）；CDN 和下载走 Proxy，并在 `domainset/download.conf` 前新增 `DOMAIN,dl.wechat.com,DIRECT,extended-matching`。
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。在 `global.conf` 之前为 `ipv4-ip.api.skk.moe`、`ipv6-ip.api.skk.moe`、`ip.api.skk.moe` 指定直走 `VLESS-1`，以规避部分机场节点访问该接口时的 TLS EOF。已移除被 `domestic.conf` 全量覆盖的 `non_ip/neteasemusic.conf`，仅保留 `ip/neteasemusic.conf`（补 `,no-resolve`）兜底国内独有音乐 IP。
 - 广告、`cdn`、`stream`、`telegram`、`apple_cdn`、`microsoft_cdn`、`dl.wechat.com`、`download`、`ai-extra`、`ai`、`apple_intelligence`、`Apple` 全段（含 `captive.apple.com` 与 `apple_cn`）、`Microsoft`、`SKK IP API`、`global`、微信差量以及 `non_ip/domestic.conf`、`non_ip/direct.conf` 均启用 `extended-matching`，防止裸 IP HTTP/SNI 请求绕过直连、指定出口或拦截规则。
 - 广告、Telegram、流媒体、AI 与网易云音乐的专项 IP 与前置云元数据 IP `169.254.169.254/32` 使用 `no-resolve`；国内及内网 IP 允许解析（`ip/domestic.conf` 保留与 Sukka 模板对称）。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
 - DoH 上游保留公共/私人阿里 DNS + 跨厂商 360 公共 DoH（`https://doh.360.cn/dns-query`，已将触发限流 `429` 的腾讯 `1.12.12.12` 彻底替换）。`always-real-ip` 已剔除 `musicapi.taihe.com` 与 `mdn.open.wo.cn` 两条无解析死域，并将 `*.126.net` 精准收窄为 `*.music.126.net`；`skip-proxy` 移除 Enhanced Mode 下不再需要的 5 段历史公网 CIDR（`162.14.0.0/16`、`211.99.96.0/19`、`162.159.192/193/195.0/24`），保留内网段与国内银联/App 例外。
-- 当前 `ipv6=true`、`ipv6-vif=auto`，并已在末尾 IP 规则加入 `china_ip_ipv6.conf` 处理国内 IPv6 直连；不宣称可单独解决特定运营商或下载限速问题。
+- 当前已长期关闭 IPv6（`ipv6=false`、`ipv6-vif=disabled`），并移除冗余的 `china_ip_ipv6.conf`，避免双栈 `AAAA` 并发查询与冷解析尾延迟；不宣称可单独解决特定运营商或下载限速问题。
 - 全局测试统一使用纯 HTTP `proxy-test-url`（各节点不再单独覆写 HTTPS `test-url`，避免同一 `smart` 组内“热 TLS 二次请求 vs 冷 HTTP”计分不对称），且保持省略 VLESS `client-fingerprint` 与 `ecn`（默认 `auto`）及不启用 `ech-config`；延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
 - 策略组依次为 Proxy、Intelligence、Stream、Telegram、Apple、Microsoft、HK、TW、JP、SG、US、Subscription。地区选项统一为 HK、TW、JP、SG、US；AI 组保留 US 首位，其余地区按相同相对顺序排列，`Stream` 由代理组接管。
 - DNS 劫持仅配置 `8.8.8.8:53`、`8.8.4.4:53`；主配置 `[Host]` 保留 DoH 独立引导映射（公开版使用 `dns.alidns.com = 223.5.5.5, 223.6.6.6` 与 `doh.360.cn = server:101.198.198.198`），设备启用的 Local DNS Mapping 模块另行提供国内规则分流映射。
@@ -54,7 +54,7 @@ Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 和 `/Applications/WeChat.
 
 ## 模块与验证
 
-2026-11-24 `6.13.0 (12920)` / iOS `6.100.0 (4042)` 多日审计与 DNS/Smart 调优：实测移除 VLESS 单节点 `https://` `test-url` 覆写以统一 `US` Smart 组同标尺 HTTP 测速，保持省略 VLESS `client-fingerprint` 与 `ecn`（默认 `auto`，兼容 `12920` 原生指纹与系统自适应 ECN，不与 REALITY 混用 `ech-config`）；同时将副 DoH 由高并发触发 `429` 的 `1.12.12.12` 替换为 `https://doh.360.cn/dns-query` 并在 `[Host]` 增补 `doh.360.cn = server:101.198.198.198` 独立引导，Mac 实测阿里 `15 ms` / 360 `33 ms`、`0` 配置警告。
+2026-11-24 `6.13.0 (12920)` / iOS `6.100.0 (4042)` 多日审计与 DNS/Smart/IPv6 调优：移除 VLESS 单节点 `https://` `test-url` 覆写以统一 `US` Smart 组同标尺 HTTP 测速，保持省略 VLESS `client-fingerprint` 与 `ecn`（默认 `auto`，兼容 `12920` 原生指纹与系统自适应 ECN，不与 REALITY 混用 `ech-config`）；将副 DoH 由高并发触发 `429` 的 `1.12.12.12` 替换为 `https://doh.360.cn/dns-query` 并在 `[Host]` 增补 `doh.360.cn = server:101.198.198.198` 独立引导；随后确定长期关闭 IPv6（`ipv6 = false`、`ipv6-vif = disabled`）并同步清理末尾 `china_ip_ipv6.conf`，Mac `surge-cli` 重载及双路 DoH 实测正常。
 
 2026-11-22 仓库安全加固与文档同步：将私有节点/订阅组名称映射外迁至本机 `$HOME/.config/surge-public-sync/aliases.map`，并将公开校验升级为严格名称白名单与中性图标校验；正式删除已弃用的 `quic-reject.list`，同步更新全部维护脚本、回归测试与文档至最新双端单文件状态。
 
