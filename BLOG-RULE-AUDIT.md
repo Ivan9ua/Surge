@@ -37,9 +37,10 @@
 | 40–44 | `PROCESS-NAME`：`WeChat`、`WeChatAppEx`、`XPlayer`、`WeChatHelper`、`/Applications/WeChat.app/` | `DIRECT` | Mac 专用 |
 | 45 | `FINAL` | `Proxy,dns-failed` | 双端 |
 
-## 参数取舍与近期精简（2026-11-19 ~ 2026-11-22）
+## 参数取舍与近期精简（2026-11-19 ~ 2026-11-24）
 
-- **网络与 DNS**：启用 `ipv6 = true`、`ipv6-vif = auto`；保留 `udp-priority = false`。DoH 精简为阿里 DNS + 单路腾讯 `1.12.12.12`（移除同商冗余的 `120.53.53.53` 以减少重复查询与 429）。
+- **网络与 DNS**：启用 `ipv6 = true`、`ipv6-vif = auto`；保留 `udp-priority = false`。DoH 演进为阿里 DNS + 跨厂商 360 公共 DoH（`https://doh.360.cn/dns-query`，配 `[Host]` `doh.360.cn = server:101.198.198.198` 引导；彻底下线易在双栈 `A+AAAA` 并发下触发 `429` 的 `120.53.53.53` 与 `1.12.12.12`）。
+- **节点与测速口径**：全组统一使用全局纯 HTTP `proxy-test-url`（不给单节点额外配置 `https://` `test-url`，防止热 TLS 二次请求计分不对称）；保持省略 VLESS `client-fingerprint` 与 `ecn`（默认 `auto`，兼容 `6.13.0` 原生 `apple-26` 与自适应 ECN），不用 `ech-config`（与 REALITY 互斥）。
 - **`always-real-ip` 与 `skip-proxy`**：`always-real-ip` 移除两条 NXDOMAIN 死域（`musicapi.taihe.com`、`mdn.open.wo.cn`）与四个宽泛微信后缀，并将 `*.126.net` 收窄为 `*.music.126.net`；`skip-proxy` 移除 Enhanced Mode 下无需保留的 5 段历史公网 CIDR。
 - **云元数据双层拦截**：`tun-included-routes = 169.254.169.254/32` 配合 `[IP Rewrite]`（`169.254.169.254 = reject`）及顶部两条 `pre-matching` 规则共同阻断探测，且不触发额外 DNS 解析。
 - **QUIC 与微信规则**：彻底撤回四条内联 UDP 443 硬拒绝并删除仓库中已弃用的 `quic-reject.list`；`wechat.list` 按 Sukka 差量原则瘦身至 11 条纯域名规则；`ai-extra.list` 剔除 3 条被 `domainset/cdn.conf` 遮蔽条目后保持 32 条。
@@ -55,6 +56,7 @@
 
 ## 已验证结果与未验证边界
 
+- **2026-11-24 多日审计与 DNS/Smart 调优（Mac `6.13.0 Build 12920` / iPhone `6.100.0 Build 4042`）**：验证 `12920` 用户态 `Network.framework` 栈（`tfo_heuristics_disable` 归零、`ECN` 自适应启用且零报错）与 `45` 条 `[Rule]` 多日准确分流；移除 VLESS 单点 HTTPS `test-url` 覆写并将副 DoH 切换为 `https://doh.360.cn/dns-query` 后，Mac `surge-cli reload` 与 `diagnostics` 实测双路 DoH（`15 ms` / `33 ms`）全部健康。
 - **2026-11-21 双端连续运行复核**：Mac `6.13.0` 与 iPhone `6.100.0`（Core `6013000`）外部规则集全部就绪，DoH 高频 429 消除；Mac `surge-cli rule explain` 与 iPhone 实测已验证裸 IP + SNI 命中 `reject-drop.conf` 与 `global.conf`、`dl.wechat.com` / `sgshort.wechat.com` / `mmbiz.qpic.cn` 命中 `DIRECT`、微信 HTTPDNS 与朋友圈广告域前置命中 `REJECT`，iPhone 扩展内存维持约 24 MB 区间。
 - **仓库重建与 CI 护栏（2026-11-22）**：公开仓库已完成单根清理重建、全历史扫描与 `test-dns-sanitization.sh` / `surge-cli --check` 验证，`raw.githubusercontent.com` 在线规则可正常拉取。
 - **未验证边界**：未在当前周期内对同一未缓存视频、同 CDN 与同运营商网络执行吞吐对照；未逐项审计 iPhone 系统 CA 信任与所有第三方应用的证书固定（Certificate Pinning）。历史扫描不替代各自设备上的实时配置加载与真实业务验收。

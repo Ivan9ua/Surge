@@ -1,6 +1,6 @@
 # Surge 双端单文件配置
 
-个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-22，完成严格公开白名单脱敏映射（外置私有映射表）、全量 `extended-matching` 闭环对齐、微信/AI 规则集瘦身，并正式删除已弃用的 `quic-reject.list`。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
+个人 Surge Mac / iPhone 公开脱敏模板。更新：2026-11-24，完成双栈 DoH 副上游替换（`1.12.12.12` → `doh.360.cn` + 独立 `[Host]` 引导）、统一全组 HTTP `proxy-test-url` 测速标尺、严格公开白名单脱敏映射及全部规则文档同步。不发布真实节点、订阅、个人 DNS 标识、管理密钥或证书，也不将模板视为当前设备完整运行态。
 
 ## 文件与使用
 
@@ -35,11 +35,11 @@
 - Apple/Microsoft 国内 CDN、Apple 中国区、微信、国内与内网走 DIRECT；其他服务由各自策略组选择。在 `global.conf` 之前为 `ipv4-ip.api.skk.moe`、`ipv6-ip.api.skk.moe`、`ip.api.skk.moe` 指定直走 `VLESS-1`，以规避部分机场节点访问该接口时的 TLS EOF。已移除被 `domestic.conf` 全量覆盖的 `non_ip/neteasemusic.conf`，仅保留 `ip/neteasemusic.conf`（补 `,no-resolve`）兜底国内独有音乐 IP。
 - 广告、`cdn`、`stream`、`telegram`、`apple_cdn`、`microsoft_cdn`、`dl.wechat.com`、`download`、`ai-extra`、`ai`、`apple_intelligence`、`Apple` 全段（含 `captive.apple.com` 与 `apple_cn`）、`Microsoft`、`SKK IP API`、`global`、微信差量以及 `non_ip/domestic.conf`、`non_ip/direct.conf` 均启用 `extended-matching`，防止裸 IP HTTP/SNI 请求绕过直连、指定出口或拦截规则。
 - 广告、Telegram、流媒体、AI 与网易云音乐的专项 IP 与前置云元数据 IP `169.254.169.254/32` 使用 `no-resolve`；国内及内网 IP 允许解析（`ip/domestic.conf` 保留与 Sukka 模板对称）。DNS 失败使用 `FINAL,Proxy,dns-failed`，可能早于进程兜底返回。
-- DoH 上游仅保留公共/私人阿里 DNS + 单路腾讯 `1.12.12.12`（移除同商冗余的 `120.53.53.53`，减少重复查询和 429；蜂窝切换仍需观察）。`always-real-ip` 已剔除 `musicapi.taihe.com` 与 `mdn.open.wo.cn` 两条无解析死域，并将 `*.126.net` 精准收窄为 `*.music.126.net`；`skip-proxy` 移除 Enhanced Mode 下不再需要的 5 段历史公网 CIDR（`162.14.0.0/16`、`211.99.96.0/19`、`162.159.192/193/195.0/24`），保留内网段与国内银联/App 例外。
+- DoH 上游保留公共/私人阿里 DNS + 跨厂商 360 公共 DoH（`https://doh.360.cn/dns-query`，已将触发限流 `429` 的腾讯 `1.12.12.12` 彻底替换）。`always-real-ip` 已剔除 `musicapi.taihe.com` 与 `mdn.open.wo.cn` 两条无解析死域，并将 `*.126.net` 精准收窄为 `*.music.126.net`；`skip-proxy` 移除 Enhanced Mode 下不再需要的 5 段历史公网 CIDR（`162.14.0.0/16`、`211.99.96.0/19`、`162.159.192/193/195.0/24`），保留内网段与国内银联/App 例外。
 - 当前 `ipv6=true`、`ipv6-vif=auto`，并已在末尾 IP 规则加入 `china_ip_ipv6.conf` 处理国内 IPv6 直连；不宣称可单独解决特定运营商或下载限速问题。
-- 全局测试使用 HTTP，延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
+- 全局测试统一使用纯 HTTP `proxy-test-url`（各节点不再单独覆写 HTTPS `test-url`，避免同一 `smart` 组内“热 TLS 二次请求 vs 冷 HTTP”计分不对称），且保持省略 VLESS `client-fingerprint` 与 `ecn`（默认 `auto`）及不启用 `ech-config`；延迟不等于吞吐。地区与机场订阅同属 `节点选择` 分类。
 - 策略组依次为 Proxy、Intelligence、Stream、Telegram、Apple、Microsoft、HK、TW、JP、SG、US、Subscription。地区选项统一为 HK、TW、JP、SG、US；AI 组保留 US 首位，其余地区按相同相对顺序排列，`Stream` 由代理组接管。
-- DNS 劫持仅配置 `8.8.8.8:53`、`8.8.4.4:53`；主配置 `[Host]` 保留 DoH 引导映射（公开版使用 `dns.alidns.com = 223.5.5.5, 223.6.6.6`），设备启用的 Local DNS Mapping 模块另行提供国内规则分流映射。
+- DNS 劫持仅配置 `8.8.8.8:53`、`8.8.4.4:53`；主配置 `[Host]` 保留 DoH 独立引导映射（公开版使用 `dns.alidns.com = 223.5.5.5, 223.6.6.6` 与 `doh.360.cn = server:101.198.198.198`），设备启用的 Local DNS Mapping 模块另行提供国内规则分流映射。
 - `[General]` 通过 `tun-included-routes = 169.254.169.254/32` 配合 `[IP Rewrite]`（`169.254.169.254 = reject`）及前置 `IP-CIDR,169.254.169.254/32,REJECT-NO-DROP,no-resolve,pre-matching` 完成云元数据探测双层阻断；保留 `skip-proxy`、`always-real-ip`（含多级 `time.*.apple.com`）、网易云、`hostname-disabled`。
 
 ## 微信与 QUIC
@@ -53,6 +53,8 @@ Mac 的 WeChat、WeChatAppEx、XPlayer、WeChatHelper 和 `/Applications/WeChat.
 此前用户反馈的局部 UDP 拒绝、SG 出口及 Wi-Fi/热点对照均未明显改善慢视频，未证明硬拒绝有稳定收益，因此彻底清理不再保留。用户近期反馈 iPhone 视频已明显改善，但不能将改善归因于删除规则。若未来确有实测必要，仅在独立新规则分支中验证，不恢复未经验证的宽泛拦截。
 
 ## 模块与验证
+
+2026-11-24 `6.13.0 (12920)` / iOS `6.100.0 (4042)` 多日审计与 DNS/Smart 调优：实测移除 VLESS 单节点 `https://` `test-url` 覆写以统一 `US` Smart 组同标尺 HTTP 测速，保持省略 VLESS `client-fingerprint` 与 `ecn`（默认 `auto`，兼容 `12920` 原生指纹与系统自适应 ECN，不与 REALITY 混用 `ech-config`）；同时将副 DoH 由高并发触发 `429` 的 `1.12.12.12` 替换为 `https://doh.360.cn/dns-query` 并在 `[Host]` 增补 `doh.360.cn = server:101.198.198.198` 独立引导，Mac 实测阿里 `15 ms` / 360 `33 ms`、`0` 配置警告。
 
 2026-11-22 仓库安全加固与文档同步：将私有节点/订阅组名称映射外迁至本机 `$HOME/.config/surge-public-sync/aliases.map`，并将公开校验升级为严格名称白名单与中性图标校验；正式删除已弃用的 `quic-reject.list`，同步更新全部维护脚本、回归测试与文档至最新双端单文件状态。
 

@@ -207,7 +207,9 @@ for mutation in \
   's#non_ip/microsoft_cdn.conf,DIRECT,extended-matching#non_ip/microsoft_cdn.conf,DIRECT#' \
   's#domainset/reject.conf,REJECT,pre-matching,extended-matching#domainset/reject.conf,REJECT,pre-matching#' \
   's#ip/neteasemusic.conf,DIRECT,no-resolve#ip/neteasemusic.conf,DIRECT#' \
-  's#https://1\.12\.12\.12/dns-query#https://1.12.12.12/dns-query, https://120.53.53.53/dns-query#' \
+  's#^encrypted-dns-server = .*#&, https://120.53.53.53/dns-query#' \
+  's#https://doh\.360\.cn/dns-query#https://1.12.12.12/dns-query#' \
+  '/^doh\.360\.cn = server:101\.198\.198\.198$/d' \
   's#music\.taihe\.com,#musicapi.taihe.com, music.taihe.com,#' \
   's|^\[Rule\]|[Rule]\nRULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT|' \
   '/^PROCESS-NAME,\/Applications\/WeChat\.app\/,/d' \
