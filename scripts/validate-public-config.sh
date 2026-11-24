@@ -235,9 +235,13 @@ for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram,no-resolve' 
   read -r ip_name ip_route <<< "$ip_policy"
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Surge.conf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
 done
-if grep -q '120\.53\.53\.53/dns-query' "$scan_root/Surge.conf"; then
-  fail "encrypted-dns-server 仍含同源重复的 DNSPod IP (120.53.53.53)"
+if grep -qE '(120\.53\.53\.53|1\.12\.12\.12)/dns-query' "$scan_root/Surge.conf"; then
+  fail "encrypted-dns-server 仍含已下线的 DNSPod 公共地址 (120.53.53.53 / 1.12.12.12)"
 fi
+if ! grep -qE '^encrypted-dns-server[[:space:]]*=.*https://doh\.360\.cn/dns-query' "$scan_root/Surge.conf"; then
+  fail "encrypted-dns-server 缺少优选独立副 DoH (https://doh.360.cn/dns-query)"
+fi
+grep -qFx 'doh.360.cn = server:101.198.198.198' "$scan_root/Surge.conf" || fail "Surge.conf 缺少 doh.360.cn 引导映射"
 if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)(musicapi\.taihe\.com|mdn\.open\.wo\.cn)([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null; then
   fail "always-real-ip 仍残留已验证 NXDOMAIN 的失效域名"
 fi
