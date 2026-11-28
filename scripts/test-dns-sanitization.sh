@@ -195,32 +195,28 @@ for mutation in \
   's#non_ip/domestic.conf,DIRECT,extended-matching#non_ip/domestic.conf,DIRECT#' \
   's#non_ip/direct.conf,DIRECT,extended-matching#non_ip/direct.conf,DIRECT#' \
   's#DOMAIN,captive\.apple\.com,DIRECT,extended-matching#DOMAIN,captive.apple.com,DIRECT#' \
-  's#non_ip/apple_cn\.conf,DIRECT,extended-matching#non_ip/apple_cn.conf,DIRECT#' \
+  's#non_ip/apple_cn\.conf,DIRECT#non_ip/apple_cn.conf,Proxy#' \
   's#non_ip/apple_services\.conf,Apple,extended-matching#non_ip/apple_services.conf,Apple#' \
   's#non_ip/microsoft\.conf,Microsoft,extended-matching#non_ip/microsoft.conf,Microsoft#' \
-  's#DOMAIN,ip\.api\.skk\.moe,VLESS-1,extended-matching#DOMAIN,ip.api.skk.moe,VLESS-1#' \
-  's#non_ip/reject-drop\.conf,REJECT-DROP,pre-matching,extended-matching#non_ip/reject-drop.conf,REJECT-DROP,pre-matching#' \
+  's#non_ip/reject-drop\.conf,REJECT-DROP,pre-matching#non_ip/reject-drop.conf,REJECT-DROP#' \
   's#non_ip/global\.conf,Proxy,extended-matching#non_ip/global.conf,Proxy#' \
   's#\*\.music\.126\.net#*.126.net#' \
   's#100\.64\.0\.0/10,#100.64.0.0/10, 162.14.0.0/16,#' \
-  's#domainset/apple_cdn.conf,DIRECT,extended-matching#domainset/apple_cdn.conf,DIRECT#' \
-  's#non_ip/microsoft_cdn.conf,DIRECT,extended-matching#non_ip/microsoft_cdn.conf,DIRECT#' \
+  's#domainset/apple_cdn.conf,DIRECT#domainset/apple_cdn.conf,Proxy#' \
+  's#non_ip/microsoft_cdn.conf,DIRECT#non_ip/microsoft_cdn.conf,Proxy#' \
   's#domainset/reject.conf,REJECT,pre-matching,extended-matching#domainset/reject.conf,REJECT,pre-matching#' \
-  's#ip/neteasemusic.conf,DIRECT,no-resolve#ip/neteasemusic.conf,DIRECT#' \
+  's#ip/neteasemusic.conf,DIRECT#ip/neteasemusic.conf,DIRECT,no-resolve#' \
   's#^encrypted-dns-server = .*#&, https://120.53.53.53/dns-query#' \
   's#https://doh\.360\.cn/dns-query#https://1.12.12.12/dns-query#' \
   '/^doh\.360\.cn = server:101\.198\.198\.198$/d' \
   's#music\.taihe\.com,#musicapi.taihe.com, music.taihe.com,#' \
-  's|^\[Rule\]|[Rule]\nRULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT|' \
   '/^PROCESS-NAME,\/Applications\/WeChat\.app\/,/d' \
   's|RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching|RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching #!MACOS-ONLY|' \
   '/^DOMAIN,dl\.wechat\.com,DIRECT,extended-matching$/d' \
   '/^DOMAIN-SET,.*domainset\/cdn.conf,Proxy,extended-matching$/d' \
   '/^tun-included-routes = 169\.254\.169\.254\/32$/d' \
   '/^IP-CIDR,169\.254\.169\.254\/32,/d' \
-  '/^PROCESS-NAME,XPlayer,/d' \
   '/^RULE-SET,.*\/ai-extra.list,/d' \
-  's|PROCESS-NAME,WeChat,DIRECT #!MACOS-ONLY|PROCESS-NAME,WeChat,DIRECT|' \
   's|^\[Rule\]|[Rule]\nRULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/quic-reject.list,REJECT-NO-DROP,extended-matching|' \
   's|^\[Rule\]|[Rule]\nAND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,qpic.cn,extended-matching)),REJECT-NO-DROP|' \
   's|^\[Proxy\]|[Testing]\n\n[Proxy]|'; do

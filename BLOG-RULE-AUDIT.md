@@ -1,41 +1,28 @@
 # 配置核对记录
 
-更新：2026-11-24。以当前单文件 [Surge.conf](Surge.conf) 与双端 Core `6013000` 核对结果为准。参考：[Sukka 排序](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)、[首条命中语义](https://manual.nssurge.com/rules/overview.html)。
+更新：2026-11-28。以当前单文件 [Surge.conf](Surge.conf) 与双端 Core `6013000` 核对结果为准。参考：[Sukka 排序](https://blog.skk.moe/post/i-have-my-unique-surge-setup/)、[首条命中语义](https://manual.nssurge.com/rules/overview.html)。
 
 ## 规则数量与平台隔离
 
-源文件 `[Rule]` 共 **44 条有效主规则**：31 条远程规则集（`RULE-SET` / `DOMAIN-SET`）、7 条内联域名/IP 规则、5 条 Mac 微信进程规则、1 条 `FINAL`。
+源文件 `[Rule]` 共 **38 条有效主规则**，其中 Mac 加载 38 条，iPhone 忽略 4 条 Mac 专用规则后加载 34 条。以下数量仅统计主配置。
 
-- **Mac（加载全部 44 条）**：启用全部 `#!MACOS-ONLY` 广告重规则及 Mac 微信进程兜底。
-- **iPhone（排除 8 条 `#!MACOS-ONLY` 后加载 36 条，不含设备本地模块注入）**：仅共享轻量 374 行 `non_ip/reject.conf` 统一拦截微信 HTTPDNS 与朋友圈广告，控制 Network Extension 内存占用。
-
-> 注：下表中 `EM` = `extended-matching`，`PM` = `pre-matching`。
-
-## 规则顺序（44 条）
+## 规则顺序（38 条）
 
 | 序号 | 规则 / 规则集 | 策略 / 参数 | 作用域 |
 |---:|---|---|---|
-| 1–2 | `DOMAIN,metadata.google.internal`、`IP-CIDR,169.254.169.254/32` | `REJECT-NO-DROP,pre-matching`（IP 另带 `no-resolve`） | 双端 |
-| 3–4 | `non_ip/reject-drop`、`domainset/reject` | `REJECT-DROP` / `REJECT`；`PM,EM` | Mac 专用 |
-| 5 | `non_ip/reject` | `REJECT,EM`（统一拦截微信 HTTPDNS 与广告域） | 双端共享 |
-| 6 | `non_ip/reject-no-drop` | `REJECT-NO-DROP,EM` | Mac 专用 |
-| 7–8 | `domainset/cdn`、`non_ip/cdn` | `Proxy,EM` | 双端 |
-| 9–10 | `non_ip/stream`、`non_ip/telegram` | `Stream,EM` / `Telegram,EM` | 双端 |
-| 11–12 | `domainset/apple_cdn`、`non_ip/microsoft_cdn` | `DIRECT,EM` | 双端 |
-| 13 | `DOMAIN,dl.wechat.com` | `DIRECT,EM`（先于下载规则避免被代理截胡） | 双端 |
-| 14–15 | `domainset/download`、`non_ip/download` | `Proxy,EM` | 双端 |
-| 16–18 | [ai-extra.list](ai-extra.list)（32 条）、`non_ip/ai`、`apple_intelligence` | `Intelligence,EM` | 双端 |
-| 19–21 | `captive.apple.com`、`non_ip/apple_cn`、`non_ip/apple_services` | `DIRECT,EM` / `Apple,EM` | 双端 |
-| 22 | `non_ip/microsoft` | `Microsoft,EM` | 双端 |
-| 23–25 | `ipv4-ip.api.skk.moe`、`ipv6-ip.api.skk.moe`、`ip.api.skk.moe` | `VLESS-1,EM`（避开部分订阅节点 TLS EOF） | 双端 |
-| 26 | `non_ip/global` | `Proxy,EM` | 双端 |
-| 27 | [wechat.list](wechat.list)（11 条纯域名 Sukka 差量） | `DIRECT,EM` | 双端 |
-| 28–29 | `non_ip/domestic`、`non_ip/direct` | `DIRECT,EM` | 双端 |
-| 30 | `non_ip/lan` | `DIRECT` | 双端 |
-| 31–35 | `ip/reject`、`ip/telegram`、`ip/stream`、`ip/ai`、`ip/neteasemusic` | 对应策略 + `no-resolve`（移除被全覆盖的 `non_ip/neteasemusic.conf`） | 双端 |
-| 36–38 | `ip/lan`、`ip/domestic`、`ip/china_ip` | `DIRECT`（允许 DNS 解析；保留 `ip/domestic` 与 Sukka 模板对称） | 双端 |
-| 39–43 | `PROCESS-NAME`：`WeChat`、`WeChatAppEx`、`XPlayer`、`WeChatHelper`、`/Applications/WeChat.app/` | `DIRECT` | Mac 专用 |
-| 44 | `FINAL` | `Proxy,dns-failed` | 双端 |
+| 1–2 | 元数据域名、`169.254.169.254/32` | `REJECT-NO-DROP,pre-matching`（IP 另带 `no-resolve`） | 双端 |
+| 3–4 | `non_ip/reject-drop`、`domainset/reject` | `REJECT-DROP,pre-matching` / `REJECT,pre-matching,extended-matching` | Mac |
+| 5–6 | `non_ip/reject`、`non_ip/reject-no-drop` | `REJECT` / `REJECT-NO-DROP`，均带扩展匹配 | 前者双端，后者 Mac |
+| 7–10 | CDN 域名及规则集、流媒体、Telegram | `Proxy` / `Stream` / `Telegram`，均带扩展匹配 | 双端 |
+| 11–15 | Apple 与 Microsoft 国内 CDN、微信下载、通用下载 | 国内 CDN 和微信下载直连，通用下载走 `Proxy` | 双端 |
+| 16–18 | [AI 补充](ai-extra.list)、Sukka AI、Apple Intelligence | `Intelligence,extended-matching` | 双端 |
+| 19–23 | `captive.apple.com`、Apple 中国区、Apple 服务、Microsoft、Global | `DIRECT` / `Apple` / `Microsoft` / `Proxy` | 双端 |
+| 24–28 | [微信差量](wechat.list)、网易云音乐、国内、直连及内网域名 | `DIRECT` | 双端 |
+| 29 | `ip/reject` | `REJECT-DROP,no-resolve` | 双端 |
+| 30 | 微信应用包路径 | `DIRECT` | Mac |
+| 31–34 | Telegram、流媒体、AI 和网易云音乐 IP | 对应分流策略，允许 DNS 解析 | 双端 |
+| 35–37 | 内网和国内 IP | `DIRECT`，允许 DNS 解析 | 双端 |
+| 38 | `FINAL` | `Proxy,dns-failed` | 双端 |
 
 ## 参数取舍与近期精简（2026-11-19 ~ 2026-11-24）
 
@@ -50,7 +37,7 @@
 ## 设计边界
 
 - CDN/下载资源类型规则靠前，可能优先于后序业务交集；`dl.wechat.com` 已显式前置至下载规则之前直连。
-- `no-resolve` 仅阻止所附专项 IP 规则触发 DNS 解析，后序国内/内网 IP 规则仍允许解析；DNS 失败进入 `FINAL,Proxy,dns-failed`，不保证回落到微信进程规则。
+- `no-resolve` 仅阻止所附专项 IP 规则触发 DNS 解析，Telegram、流媒体、AI、网易云音乐及国内/内网 IP 规则允许解析。微信应用包规则位于这几项之前。DNS 失败进入 `FINAL,Proxy,dns-failed`。
 - 除 `lan.conf` 与末尾允许解析的国内 IP 段外，全部主要域名/规则集均已统一启用 `extended-matching`，避免已知裸 IP 请求或纯 SNI 握手绕过预期策略。
 - 撤销微信 UDP 443 硬拒绝不等于开启 `block-quic=adaptive` 也不代表放行全部 UDP 流量。
 
