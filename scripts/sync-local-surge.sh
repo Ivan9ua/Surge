@@ -59,6 +59,7 @@ sanitize_config() {
       -e 's/(psk=)[^,]*/\1YOUR_SNELL_PSK/g' \
       -e 's/(password=)[^,]*/\1YOUR_PROXY_PASSWORD/g' \
       -e 's/(policy-path=)[^,]*/\1YOUR_SURGE_SUBSCRIPTION_URL/g' \
+      -e '/= *smart,/s/(policy-priority[[:space:]]*=[[:space:]]*)([^",[:space:]][^,]*)(,|$)/\1"\2"\3/' \
       -e 's#icon-url=https://raw\.githubusercontent\.com/lige47/QuanX-icon-rule/main/icon/06jichang/[^,[:space:]]*#icon-url=https://raw.githubusercontent.com/Irrucky/Tool/main/Surge/icon/surge_2.png#g' \
       -e 's#https://[A-Za-z0-9.-]+\.alidns\.com/dns-query#https://dns.alidns.com/dns-query#g' \
       -e 's/^[[:space:]]*[A-Za-z0-9.-]+\.alidns\.com([[:space:]]*=)/dns.alidns.com\1/g' \

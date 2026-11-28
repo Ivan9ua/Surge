@@ -159,8 +159,8 @@ fi
 grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/cdn.conf,Proxy,extended-matching' "$scan_root/Surge.conf" || fail "CDN 域名集缺少扩展匹配"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/cdn.conf,Proxy,extended-matching' "$scan_root/Surge.conf" || fail "CDN 规则集缺少扩展匹配"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/stream.conf,Stream,extended-matching' "$scan_root/Surge.conf" || fail "流媒体规则集缺少扩展匹配"
-grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "Apple CDN 缺少扩展匹配"
-grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "Microsoft CDN 缺少扩展匹配"
+grep -qFx 'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/apple_cdn.conf,DIRECT' "$scan_root/Surge.conf" || fail "Apple CDN 缺少直连规则"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft_cdn.conf,DIRECT' "$scan_root/Surge.conf" || fail "Microsoft CDN 缺少直连规则"
 grep -qFx 'DOMAIN,dl.wechat.com,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "缺少 dl.wechat.com 直连前置规则或缺少扩展匹配"
 for download_type in domainset non_ip; do
   grep -qE "^.+,https://ruleset\.skk\.moe/List/$download_type/download\.conf,Proxy,extended-matching$" "$scan_root/Surge.conf" || fail "通用下载未映射到 Proxy 或缺少扩展匹配"
@@ -182,7 +182,7 @@ fi
 if grep -q '^PROTOCOL,MTProto,Telegram$' "$scan_root/Surge.conf"; then
   fail "共享规则仍含已删除的 MTProto 入站分流"
 fi
-telegram_cidr_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram,no-resolve' "$scan_root/Surge.conf" | cut -d: -f1 || true)
+telegram_cidr_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram.conf,Telegram' "$scan_root/Surge.conf" | cut -d: -f1 || true)
 telegram_asn_line=$(grep -nFx 'RULE-SET,https://ruleset.skk.moe/List/ip/telegram_asn.conf,Telegram,no-resolve' "$scan_root/Surge.conf" | cut -d: -f1 || true)
 [[ -n "$telegram_cidr_line" ]] || fail "缺少 Telegram 官方 CIDR 规则"
 if [[ -n "$telegram_asn_line" && "$telegram_cidr_line" -ge "$telegram_asn_line" ]]; then
@@ -200,12 +200,9 @@ grep -qFx 'RULE-SET,https://raw.githubusercontent.com/Ivan9ua/Surge/main/ai-extr
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/domestic.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "国内规则集缺少扩展匹配"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/direct.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "直连规则集缺少扩展匹配"
 grep -qFx 'DOMAIN,captive.apple.com,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "captive.apple.com 缺少扩展匹配"
-grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "Apple CN 规则集缺少扩展匹配"
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_cn.conf,DIRECT' "$scan_root/Surge.conf" || fail "Apple CN 规则集缺少直连规则"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/apple_services.conf,Apple,extended-matching' "$scan_root/Surge.conf" || fail "Apple Services 规则集缺少扩展匹配"
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/microsoft.conf,Microsoft,extended-matching' "$scan_root/Surge.conf" || fail "Microsoft 规则集缺少扩展匹配"
-for skk_api in ipv4-ip.api.skk.moe ipv6-ip.api.skk.moe ip.api.skk.moe; do
-  grep -qFx "DOMAIN,$skk_api,VLESS-1,extended-matching" "$scan_root/Surge.conf" || fail "SKK IP API 缺少扩展匹配: $skk_api"
-done
 grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/global.conf,Proxy,extended-matching' "$scan_root/Surge.conf" || fail "Global 规则集缺少扩展匹配"
 if ! awk '
   /^[[:space:]]*(#|;|\/\/|$)/ { next }
@@ -231,7 +228,7 @@ for ai_domain in \
   'DOMAIN-SUFFIX,huggingface.co'; do
   grep -qFx "$ai_domain" "$scan_root/ai-extra.list" || fail "AI 补充缺少关键产品域名"
 done
-for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram,no-resolve' 'stream Stream,no-resolve' 'ai Intelligence,no-resolve' 'neteasemusic DIRECT,no-resolve'; do
+for ip_policy in 'reject REJECT-DROP,no-resolve' 'telegram Telegram' 'stream Stream' 'ai Intelligence' 'neteasemusic DIRECT'; do
   read -r ip_name ip_route <<< "$ip_policy"
   grep -qFx "RULE-SET,https://ruleset.skk.moe/List/ip/$ip_name.conf,$ip_route" "$scan_root/Surge.conf" || fail "专项 IP 参数与最新本地不一致: $ip_name"
 done
@@ -245,9 +242,7 @@ grep -qFx 'doh.360.cn = server:101.198.198.198' "$scan_root/Surge.conf" || fail 
 if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)(musicapi\.taihe\.com|mdn\.open\.wo\.cn)([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null; then
   fail "always-real-ip 仍残留已验证 NXDOMAIN 的失效域名"
 fi
-if grep -qF 'List/non_ip/neteasemusic.conf' "$scan_root/Surge.conf"; then
-  fail "主配置仍含已精简移除的冗余 non_ip/neteasemusic.conf"
-fi
+grep -qFx 'RULE-SET,https://ruleset.skk.moe/List/non_ip/neteasemusic.conf,DIRECT,extended-matching' "$scan_root/Surge.conf" || fail "网易云音乐域名规则缺少直连或扩展匹配"
 if grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)\*\.126\.net([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null || ! grep -E '^always-real-ip[[:space:]]*=.*(^|,[[:space:]]*)\*\.music\.126\.net([[:space:]]*,|$)' "$scan_root/Surge.conf" >/dev/null; then
   fail "always-real-ip 须收窄为 *.music.126.net（禁止泛写 *.126.net）"
 fi
@@ -319,7 +314,7 @@ if awk '
 fi
 
 required_platform_ad_rules=(
-  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching,extended-matching #!MACOS-ONLY'
+  'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-drop.conf,REJECT-DROP,pre-matching #!MACOS-ONLY'
   'DOMAIN-SET,https://ruleset.skk.moe/List/domainset/reject.conf,REJECT,pre-matching,extended-matching #!MACOS-ONLY'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject.conf,REJECT,extended-matching'
   'RULE-SET,https://ruleset.skk.moe/List/non_ip/reject-no-drop.conf,REJECT-NO-DROP,extended-matching #!MACOS-ONLY'
@@ -354,16 +349,17 @@ ordered_routes=(
   'ai-extra.list' 'List/non_ip/ai.conf' 'List/non_ip/apple_intelligence.conf'
   'List/non_ip/apple_cn.conf' 'List/non_ip/apple_services.conf' 'List/non_ip/microsoft.conf'
   'List/non_ip/global.conf'
-  'wechat.list'
+  'wechat.list' 'List/non_ip/neteasemusic.conf'
   'List/non_ip/domestic.conf' 'List/non_ip/direct.conf' 'List/non_ip/lan.conf'
-  'List/ip/reject.conf' 'List/ip/telegram.conf' 'List/ip/stream.conf' 'List/ip/ai.conf'
+  'List/ip/reject.conf' 'PROCESS-NAME,/Applications/WeChat.app/,'
+  'List/ip/telegram.conf' 'List/ip/stream.conf' 'List/ip/ai.conf'
   'List/ip/neteasemusic.conf' 'List/ip/lan.conf' 'List/ip/domestic.conf'
   'List/ip/china_ip.conf'
 )
 if grep -q '^RULE-SET,https://ruleset.skk.moe/List/ip/china_ip_ipv6.conf,' "$scan_root/Surge.conf"; then
   ordered_routes+=('List/ip/china_ip_ipv6.conf')
 fi
-ordered_routes+=('PROCESS-NAME,WeChat,' 'PROCESS-NAME,WeChatAppEx,' 'PROCESS-NAME,XPlayer,' 'PROCESS-NAME,WeChatHelper,' 'PROCESS-NAME,/Applications/WeChat.app/,' 'FINAL,Proxy,dns-failed')
+ordered_routes+=('FINAL,Proxy,dns-failed')
 previous_route_line=0
 for route in "${ordered_routes[@]}"; do
   route_line="$(line_of "$scan_root/Surge.conf" "$route")"
@@ -425,9 +421,8 @@ fi
 if grep -qE '^[[:space:]]*#!include[[:space:]]' "$scan_root/Surge.conf"; then
   fail "主配置必须独立完整，不能引用分离配置"
 fi
-for process in WeChat WeChatAppEx XPlayer WeChatHelper /Applications/WeChat.app/; do
-  grep -qFx "PROCESS-NAME,$process,DIRECT #!MACOS-ONLY" "$scan_root/Surge.conf" || fail "微信进程兜底缺失或未隔离: $process"
-done
+grep -qFx 'PROCESS-NAME,/Applications/WeChat.app/,DIRECT #!MACOS-ONLY' "$scan_root/Surge.conf" ||
+  fail "微信应用包兜底缺失或未隔离"
 
 if command -v surge-cli >/dev/null 2>&1; then
   surge-cli --check "$scan_root/Surge.conf" >/dev/null
